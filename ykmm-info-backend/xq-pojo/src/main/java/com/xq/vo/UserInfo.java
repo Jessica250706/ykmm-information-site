@@ -62,13 +62,16 @@ public class UserInfo {
      * 从 SysUser 实体构建 UserInfo（用于脱敏后返回给前端）
      */
     public static UserInfo from(SysUser user) {
+        if (user == null) {
+            return null;
+        }
         return UserInfo.builder()
                 .id(user.getId())
                 .uid(user.getUid())
                 .email(user.getEmail())
                 .nickname(user.getNickname())
                 .avatar(user.getAvatar())
-                .lastLoginTime(LocalDateTime.now())
+                .lastLoginTime(user.getLastLoginTime())
                 .status(user.getStatus())
                 .role(user.getRole())
                 .createdAt(user.getCreatedAt())

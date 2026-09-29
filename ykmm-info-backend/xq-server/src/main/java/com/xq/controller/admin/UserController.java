@@ -9,6 +9,7 @@ import com.xq.entity.SysUser;
 import com.xq.result.PageResult;
 import com.xq.result.Result;
 import com.xq.service.UserService;
+import com.xq.vo.UserInfo;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -29,7 +30,7 @@ public class UserController {
      */
     @RequireRole(UserRoleConstant.ADMIN)
     @GetMapping
-    public Result<PageResult> page(UserPageQueryDTO query) {
+    public Result<PageResult<UserInfo>> page(UserPageQueryDTO query) {
         log.info("管理端查询用户列表：{}", query);
         return Result.success(userService.pageQuery(query));
     }

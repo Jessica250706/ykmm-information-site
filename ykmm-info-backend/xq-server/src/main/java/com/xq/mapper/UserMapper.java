@@ -1,5 +1,6 @@
 package com.xq.mapper;
 
+import com.github.pagehelper.Page;
 import com.xq.dto.UserPageQueryDTO;
 import com.xq.entity.SysUser;
 import org.apache.ibatis.annotations.Mapper;
@@ -13,7 +14,7 @@ public interface UserMapper {
     /**
      * 分页查询用户
      */
-    List<SysUser> pageQuery(UserPageQueryDTO query);
+    Page<SysUser> pageQuery(UserPageQueryDTO query);
 
     /**
      * 统计总数

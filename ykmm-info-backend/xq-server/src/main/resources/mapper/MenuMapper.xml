@@ -22,7 +22,7 @@
     SELECT
     <include refid="baseColumns"/>
     FROM sys_menu
-    ORDER BY sort ASC, id ASC
+    ORDER BY sort, id
   </select>
 
   <select id="listByType" resultType="com.xq.entity.SysMenu">
@@ -30,7 +30,7 @@
     <include refid="baseColumns"/>
     FROM sys_menu
     WHERE menu_type = #{menuType}
-    ORDER BY sort ASC, id ASC
+    ORDER BY sort, id
   </select>
 
   <select id="getById" resultType="com.xq.entity.SysMenu">

@@ -4,13 +4,14 @@ import com.xq.dto.UserEditDTO;
 import com.xq.dto.UserPageQueryDTO;
 import com.xq.entity.SysUser;
 import com.xq.result.PageResult;
+import com.xq.vo.UserInfo;
 
 public interface UserService {
 
     /**
      * 分页查询用户
      */
-    PageResult pageQuery(UserPageQueryDTO query);
+    PageResult<UserInfo> pageQuery(UserPageQueryDTO query);
 
     /**
      * 用户详情

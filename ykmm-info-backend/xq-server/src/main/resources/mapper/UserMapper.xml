@@ -7,7 +7,7 @@
     id, uid, email, password, nickname, avatar,
         ip_address AS ipAddress,
         last_login_time AS lastLoginTime,
-        status,
+        status, role,
         created_at AS createdAt,
         updated_at AS updatedAt
   </sql>
@@ -69,15 +69,13 @@
       <if test="nickname != null">nickname = #{nickname},</if>
       <if test="avatar != null">avatar = #{avatar},</if>
       <if test="status != null">status = #{status},</if>
-      updated_at = CURRENT_TIMESTAMP
     </set>
     WHERE id = #{id}
   </update>
 
   <update id="updateStatus">
     UPDATE sys_user
-    SET status     = #{status},
-        updated_at = CURRENT_TIMESTAMP
+    SET status = #{status}
     WHERE id = #{id}
   </update>
 

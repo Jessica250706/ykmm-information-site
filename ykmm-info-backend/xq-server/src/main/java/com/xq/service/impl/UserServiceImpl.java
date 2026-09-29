@@ -8,11 +8,15 @@ import com.xq.entity.SysUser;
 import com.xq.mapper.UserMapper;
 import com.xq.result.PageResult;
 import com.xq.service.UserService;
+import com.xq.vo.UserInfo;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -22,7 +26,7 @@ public class UserServiceImpl implements UserService {
     private UserMapper userMapper;
 
     @Override
-    public PageResult pageQuery(UserPageQueryDTO query) {
+    public PageResult<UserInfo> pageQuery(UserPageQueryDTO query) {
         // 页码与页大小兜底
         if (query.getPage() == null || query.getPage() < 1) {
             query.setPage(1);
@@ -36,8 +40,14 @@ public class UserServiceImpl implements UserService {
 
         // PageHelper 分页
         PageHelper.startPage(query.getPage(), query.getPageSize());
-        Page<SysUser> page = (Page<SysUser>) userMapper.pageQuery(query);
-        return new PageResult(page.getTotal(), page.getResult());
+        Page<SysUser> page = userMapper.pageQuery(query);
+
+        // SysUser → UserInfo
+        List<UserInfo> list = page.getResult().stream()
+                .map(UserInfo::from)
+                .collect(Collectors.toList());
+
+        return new PageResult<>(page.getTotal(), list);
     }
 
     @Override
