@@ -6,33 +6,66 @@ import lombok.Data;
 
 import java.time.LocalDateTime;
 
+/**
+ * 用户信息（响应视图对象）
+ */
 @Data
 @Builder
 public class UserInfo {
 
-  private Long id;
+    /**
+     * 主键
+     */
+    private Long id;
 
-  private String uid;
+    /**
+     * 随机唯一标识
+     */
+    private String uid;
 
-  private String email;
+    /**
+     * 邮箱
+     */
+    private String email;
 
-  private String nickname;
+    /**
+     * 昵称
+     */
+    private String nickname;
 
-  private String avatar;
+    /**
+     * 头像
+     */
+    private String avatar;
 
-  private Integer status;
+    /**
+     * 最后上线时间
+     */
+    private LocalDateTime lastLoginTime;
 
-  private LocalDateTime createdAt;
+    /**
+     * 1正常 0禁用
+     */
+    private Integer status;
 
-  public static UserInfo from(SysUser user) {
-    return UserInfo.builder()
-        .id(user.getId())
-        .uid(user.getUid())
-        .email(user.getEmail())
-        .nickname(user.getNickname())
-        .avatar(user.getAvatar())
-        .status(user.getStatus())
-        .createdAt(user.getCreatedAt())
-        .build();
-  }
+    /**
+     * 创建时间
+     */
+    private LocalDateTime createdAt;
+
+    /**
+     * 从 SysUser 实体构建 UserInfo（用于脱敏后返回给前端）
+     */
+    public static UserInfo from(SysUser user) {
+        return UserInfo.builder()
+                .id(user.getId())
+                .uid(user.getUid())
+                .email(user.getEmail())
+                .nickname(user.getNickname())
+                .avatar(user.getAvatar())
+                .lastLoginTime(LocalDateTime.now())
+                .status(user.getStatus())
+                .createdAt(user.getCreatedAt())
+                .build();
+    }
 }

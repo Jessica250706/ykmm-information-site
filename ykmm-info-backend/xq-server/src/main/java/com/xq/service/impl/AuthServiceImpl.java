@@ -4,6 +4,7 @@ import com.xq.constant.MessageConstant;
 import com.xq.entity.SysUser;
 import com.xq.exception.AccountLockedException;
 import com.xq.exception.AccountNotFoundException;
+import com.xq.exception.EmailAlreadyExistsException;
 import com.xq.exception.PasswordErrorException;
 import com.xq.mapper.SysUserMapper;
 import com.xq.service.AuthService;
@@ -30,7 +31,7 @@ public class AuthServiceImpl implements AuthService {
   public SysUser register(String email, String password, String nickname) {
     SysUser exist = sysUserMapper.getByEmail(email);
     if (exist != null) {
-      throw new AccountNotFoundException("该邮箱已注册");
+      throw new EmailAlreadyExistsException(MessageConstant.EMAIL_ALREADY_EXISTS);
     }
 
     String uid = UUID.randomUUID().toString().replace("-", "");
@@ -44,8 +45,6 @@ public class AuthServiceImpl implements AuthService {
         .password(passwordEncoder.encode(password))
         .nickname(nickname)
         .status(1)
-        .createdAt(LocalDateTime.now())
-        .updatedAt(LocalDateTime.now())
         .build();
 
     sysUserMapper.insert(user);

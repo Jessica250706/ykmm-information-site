@@ -18,6 +18,11 @@ spring:
       host: ${xq.redis.host}
       port: ${xq.redis.port}
       database: ${xq.redis.database}
+  jackson:
+    date-format: yyyy-MM-dd HH:mm:ss
+    time-zone: GMT+8
+    serialization:
+      write-dates-as-timestamps: false
 
 mybatis:
   #mapper配置文件

@@ -5,10 +5,8 @@
 
   <insert id="insert" parameterType="com.xq.entity.SysUser"
           useGeneratedKeys="true" keyProperty="id">
-    INSERT INTO sys_user (uid, email, password, nickname, avatar, ip_address, last_login_time, status, created_at,
-                          updated_at)
-    VALUES (#{uid}, #{email}, #{password}, #{nickname}, #{avatar}, #{ipAddress}, #{lastLoginTime}, #{status},
-            #{createdAt}, #{updatedAt})
+    INSERT INTO sys_user (uid, email, password, nickname, avatar, ip_address, last_login_time, status)
+    VALUES (#{uid}, #{email}, #{password}, #{nickname}, #{avatar}, #{ipAddress}, #{lastLoginTime}, #{status})
   </insert>
 
   <select id="getByEmail" resultType="com.xq.entity.SysUser">
