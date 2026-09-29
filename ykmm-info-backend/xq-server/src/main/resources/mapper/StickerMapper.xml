@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xq.mapper.StickerMapper">
+
+  <select id="listByCondition" resultType="com.xq.entity.Sticker">
+    SELECT id,
+    label,
+    image_url AS imageUrl,
+    emoji,
+    sticker_type AS stickerType,
+    created_at AS createdAt
+    FROM sticker
+    <where>
+      <if test="keyword != null and keyword != ''">
+        AND label LIKE CONCAT('%', #{keyword}, '%')
+      </if>
+      <if test="stickerType != null">
+        AND sticker_type = #{stickerType}
+      </if>
+    </where>
+    ORDER BY id ASC
+  </select>
+
+  <select id="getById" resultType="com.xq.entity.Sticker">
+    SELECT id,
+           label,
+           image_url    AS imageUrl,
+           emoji,
+           sticker_type AS stickerType,
+           created_at   AS createdAt
+    FROM sticker
+    WHERE id = #{id}
+  </select>
+
+</mapper>

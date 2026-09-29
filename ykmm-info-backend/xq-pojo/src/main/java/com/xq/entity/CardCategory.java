@@ -18,12 +18,18 @@ public class CardCategory implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    /** 主键 */
+    /**
+     * 主键
+     */
     private Integer id;
 
-    /** 类别名：生日、纪念日等 */
+    /**
+     * 类别名：生日、纪念日等
+     */
     private String name;
 
-    /** 排序 */
+    /**
+     * 排序
+     */
     private Integer sort;
 }
