@@ -1,0 +1,17 @@
+xq:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    host: localhost
+    port: 3306
+    database: your_database
+    username: your_username
+    password: your_password
+  alioss:
+    endpoint: your_endpoint
+    access-key-id: your_ak
+    access-key-secret: your_sk
+    bucket-name: your_bucket
+  redis:
+    host: localhost
+    port: 6379
+    database: 0

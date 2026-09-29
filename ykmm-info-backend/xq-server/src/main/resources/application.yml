@@ -1,0 +1,51 @@
+server:
+  port: 8080
+
+spring:
+  profiles:
+    active: dev
+  main:
+    allow-circular-references: true
+  datasource:
+    driver-class-name: ${xq.datasource.driver-class-name}
+    url: jdbc:mysql://${xq.datasource.host}:${xq.datasource.port}/${xq.datasource.database}?serverTimezone=Asia/Shanghai&useUnicode=true&characterEncoding=utf-8&zeroDateTimeBehavior=convertToNull&useSSL=false&allowPublicKeyRetrieval=true
+    username: ${xq.datasource.username}
+    password: ${xq.datasource.password}
+  data:
+    redis:
+      host: ${xq.redis.host}
+      port: ${xq.redis.port}
+      database: ${xq.redis.database}
+
+mybatis:
+  #mapper配置文件
+  mapper-locations: classpath:mapper/*.xml
+  type-aliases-package: com.xq.entity
+  configuration:
+    #开启驼峰命名
+    map-underscore-to-camel-case: true
+
+logging:
+  level:
+    com:
+      xq:
+        mapper: debug
+        service: info
+        controller: info
+
+xq:
+  jwt:
+    # 设置jwt签名加密时使用的秘钥
+    admin-secret-key: itcast
+    # 设置jwt过期时间
+    admin-ttl: 604800000
+    # 设置前端传递过来的令牌名称
+    admin-token-name: token
+    user-secret-key: itheima
+    user-ttl: 604800000
+    user-token-name: authentication
+  alioss:
+    endpoint: ${xq.alioss.endpoint}
+    access-key-id: ${xq.alioss.access-key-id}
+    access-key-secret: ${xq.alioss.access-key-secret}
+    bucket-name: ${xq.alioss.bucket-name}
