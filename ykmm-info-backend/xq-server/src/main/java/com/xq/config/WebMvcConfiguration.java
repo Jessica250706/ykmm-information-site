@@ -1,7 +1,6 @@
 package com.xq.config;
 
-import com.xq.interceptor.JwtTokenAdminInterceptor;
-import com.xq.interceptor.JwtTokenUserInterceptor;
+import com.xq.interceptor.JwtTokenInterceptor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
@@ -11,24 +10,17 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 @RequiredArgsConstructor
 public class WebMvcConfiguration implements WebMvcConfigurer {
 
-  private final JwtTokenUserInterceptor jwtTokenUserInterceptor;
+    private final JwtTokenInterceptor jwtTokenInterceptor;
 
-  private final JwtTokenAdminInterceptor jwtTokenAdminInterceptor;
-
-  @Override
-  public void addInterceptors(InterceptorRegistry registry) {
-
-    registry.addInterceptor(jwtTokenUserInterceptor)
-        .addPathPatterns("/**")
-        .excludePathPatterns(
-            "/auth/register",
-            "/auth/login",
-            "/error");
-
-    registry.addInterceptor(jwtTokenAdminInterceptor)
-        .addPathPatterns("/admin/**")
-        .excludePathPatterns(
-            "/admin/auth/login",
-            "/error");
-  }
+    @Override
+    public void addInterceptors(InterceptorRegistry registry) {
+        registry.addInterceptor(jwtTokenInterceptor)
+                .addPathPatterns("/**")
+                .excludePathPatterns(
+                        "/auth/login",
+                        "/auth/register",
+                        "/common/dict/**",       // 字典类公开接口
+                        "/doc.html", "/webjars/**", "/v3/api-docs/**",  // Knife4j
+                        "/error");
+    }
 }

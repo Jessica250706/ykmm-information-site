@@ -8,9 +8,13 @@ import lombok.Data;
 @Data
 public class LoginRequest {
 
-  /** 邮箱 */
-  private String email;
+    /**
+     * 邮箱
+     */
+    private String email;
 
-  /** 密码 */
-  private String password;
+    /**
+     * 密码
+     */
+    private String password;
 }

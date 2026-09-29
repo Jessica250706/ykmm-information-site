@@ -43,14 +43,11 @@ logging:
 xq:
   jwt:
     # 设置jwt签名加密时使用的秘钥
-    admin-secret-key: 5Y2l3K7p9QwXvB1nR8tF6zJ4mC0aH2sL7dP3uE9oI1=
+    secret-key: 5Y2l3K7p9QwXvB1nR8tF6zJ4mC0aH2sL7dP3uE9oI1=
     # 设置jwt过期时间
-    admin-ttl: 604800000
+    ttl: 604800000
     # 设置前端传递过来的令牌名称
-    admin-token-name: token
-    user-secret-key: aB3cD4eF5gH6iJ7kL8mN9oP0qR1sT2uV3wX4yZ5aBcD=
-    user-ttl: 604800000
-    user-token-name: Authorization
+    token-name: Authorization
   alioss:
     endpoint: ${xq.alioss.endpoint}
     access-key-id: ${xq.alioss.access-key-id}

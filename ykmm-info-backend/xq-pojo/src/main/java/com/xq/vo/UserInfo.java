@@ -49,6 +49,11 @@ public class UserInfo {
     private Integer status;
 
     /**
+     * 角色：1-管理员 2-普通用户
+     */
+    private Integer role;
+
+    /**
      * 创建时间
      */
     private LocalDateTime createdAt;
@@ -65,6 +70,7 @@ public class UserInfo {
                 .avatar(user.getAvatar())
                 .lastLoginTime(LocalDateTime.now())
                 .status(user.getStatus())
+                .role(user.getRole())
                 .createdAt(user.getCreatedAt())
                 .build();
     }

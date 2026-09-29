@@ -1,5 +1,6 @@
 package com.xq.controller.auth;
 
+import com.xq.constant.JwtClaimsConstant;
 import com.xq.context.BaseContext;
 import com.xq.dto.LoginRequest;
 import com.xq.dto.PasswordRequest;
@@ -41,7 +42,7 @@ public class AuthController {
     public Result<LoginResponse> register(@RequestBody RegisterRequest req) {
         log.info("用户注册：{}", req.getEmail());
         SysUser user = authService.register(req.getEmail(), req.getPassword(), req.getNickname());
-        String token = tokenService.createUserToken(user.getId());
+        String token = tokenService.createToken(user.getId(), user.getRole());
         // TODO: 用户注册成功后，向对应邮箱发送邮件
         return Result.success(LoginResponse.builder()
                 .token(token)
@@ -59,7 +60,7 @@ public class AuthController {
     public Result<LoginResponse> login(@RequestBody LoginRequest req) {
         log.info("用户登录：{}", req.getEmail());
         SysUser user = authService.login(req.getEmail(), req.getPassword());
-        String token = tokenService.createUserToken(user.getId());
+        String token = tokenService.createToken(user.getId(), user.getRole());
         return Result.success(LoginResponse.builder()
                 .token(token)
                 .user(UserInfo.from(user))
@@ -87,13 +88,14 @@ public class AuthController {
     @PostMapping("/refresh")
     public Result<Map<String, String>> refresh() {
         Long userId = BaseContext.getCurrentId();
-        log.info("刷新 token：userId={}", userId);
+        Integer role = BaseContext.getCurrentRole();
+        log.info("刷新 token：userId={}，role={}", userId, role);
         String newToken = authService.refreshToken(userId);
         if (newToken == null) {
-            newToken = tokenService.createUserToken(userId);
+            newToken = tokenService.createToken(userId, role);
         }
         Map<String, String> data = new HashMap<>();
-        data.put("token", newToken);
+        data.put(JwtClaimsConstant.TOKEN, newToken);
         return Result.success(data);
     }
 

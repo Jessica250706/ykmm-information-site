@@ -2,18 +2,18 @@ package com.xq.context;
 
 public class BaseContext {
 
-    public static ThreadLocal<Long> threadLocal = new ThreadLocal<>();
+    private static final ThreadLocal<Long> currentId = new ThreadLocal<>();
+    private static final ThreadLocal<Integer> currentRole = new ThreadLocal<>();
 
-    public static void setCurrentId(Long id) {
-        threadLocal.set(id);
-    }
+    public static void setCurrentId(Long id) { currentId.set(id); }
+    public static Long getCurrentId() { return currentId.get(); }
 
-    public static Long getCurrentId() {
-        return threadLocal.get();
-    }
+    public static void setCurrentRole(Integer role) { currentRole.set(role); }
+    public static Integer getCurrentRole() { return currentRole.get(); }
 
-    public static void removeCurrentId() {
-        threadLocal.remove();
+    public static void remove() {
+        currentId.remove();
+        currentRole.remove();
     }
 
 }

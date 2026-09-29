@@ -17,22 +17,13 @@ public class TokenServiceImpl implements TokenService {
     private final JwtProperties jwtProperties;
 
     @Override
-    public String createUserToken(Long userId) {
+    public String createToken(Long userId, Integer role) {
         Map<String, Object> claims = new HashMap<>();
         claims.put(JwtClaimsConstant.USER_ID, userId);
+        claims.put(JwtClaimsConstant.ROLE, role);
         return JwtUtil.createJWT(
-                jwtProperties.getUserSecretKey(),
-                jwtProperties.getUserTtl(),
-                claims);
-    }
-
-    @Override
-    public String createAdminToken(Long empId) {
-        Map<String, Object> claims = new HashMap<>();
-        claims.put(JwtClaimsConstant.EMP_ID, empId);
-        return JwtUtil.createJWT(
-                jwtProperties.getAdminSecretKey(),
-                jwtProperties.getAdminTtl(),
+                jwtProperties.getSecretKey(),
+                jwtProperties.getTtl(),
                 claims);
     }
 }
