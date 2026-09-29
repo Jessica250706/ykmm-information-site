@@ -40,7 +40,7 @@ public class UserController {
      */
     @RequireRole({UserRoleConstant.ADMIN, UserRoleConstant.USER})
     @GetMapping("/{id}")
-    public Result<SysUser> detail(@PathVariable Long id) {
+    public Result<UserInfo> detail(@PathVariable Long id) {
         return Result.success(userService.getById(id));
     }
 

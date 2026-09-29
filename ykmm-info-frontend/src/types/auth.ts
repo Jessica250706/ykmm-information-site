@@ -1,3 +1,5 @@
+import type { UserInfo } from '@/types/user'
+
 /**
  * 注册请求参数，包含邮箱、密码和昵称
  *
@@ -18,20 +20,6 @@ export interface RegisterRequest {
 export interface LoginResponse {
   token?: string
   user?: UserInfo
-  [property: string]: any
-}
-
-/**
- * UserInfo
- */
-export interface UserInfo {
-  avatar?: string
-  createdAt?: string
-  email?: string
-  id?: number
-  nickname?: string
-  status?: number
-  uid?: string
   [property: string]: any
 }
 

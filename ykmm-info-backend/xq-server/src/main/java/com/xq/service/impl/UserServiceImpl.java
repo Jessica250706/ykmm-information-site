@@ -51,7 +51,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public SysUser getById(Long id) {
+    public UserInfo getById(Long id) {
         if (id == null) {
             throw new RuntimeException("用户ID不能为空");
         }
@@ -59,7 +59,7 @@ public class UserServiceImpl implements UserService {
         if (user == null) {
             throw new RuntimeException("用户不存在");
         }
-        return user;
+        return UserInfo.from(user);
     }
 
     @Override

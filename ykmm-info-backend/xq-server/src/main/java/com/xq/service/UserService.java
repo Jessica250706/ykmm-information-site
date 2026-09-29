@@ -16,7 +16,7 @@ public interface UserService {
     /**
      * 用户详情
      */
-    SysUser getById(Long id);
+    UserInfo getById(Long id);
 
     /**
      * 编辑用户
