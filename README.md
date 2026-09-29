@@ -1,4 +1,4 @@
-# 项目
+# 一、项目
 
 ## 1.项目参考
 
@@ -16,3 +16,8 @@ clone 后复制 `application-dev.example.yml` 为 `application-dev.yml`，填入
 
 ## 3.项目运行
 
+# 二、版本管理
+
+## 1.feature/v1.0
+
+管理端构建。

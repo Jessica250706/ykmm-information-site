@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xq.mapper.SysUserMapper">
+
+  <insert id="insert" parameterType="com.xq.entity.SysUser"
+          useGeneratedKeys="true" keyProperty="id">
+    INSERT INTO sys_user (uid, email, password, nickname, avatar, ip_address, last_login_time, status, created_at,
+                          updated_at)
+    VALUES (#{uid}, #{email}, #{password}, #{nickname}, #{avatar}, #{ipAddress}, #{lastLoginTime}, #{status},
+            #{createdAt}, #{updatedAt})
+  </insert>
+
+  <select id="getByEmail" resultType="com.xq.entity.SysUser">
+    SELECT *
+    FROM sys_user
+    WHERE email = #{email}
+  </select>
+
+  <select id="getById" resultType="com.xq.entity.SysUser">
+    SELECT *
+    FROM sys_user
+    WHERE id = #{id}
+  </select>
+
+  <update id="updateById" parameterType="com.xq.entity.SysUser">
+    UPDATE sys_user
+    <set>
+      <if test="uid != null">uid = #{uid},</if>
+      <if test="email != null">email = #{email},</if>
+      <if test="password != null">password = #{password},</if>
+      <if test="nickname != null">nickname = #{nickname},</if>
+      <if test="avatar != null">avatar = #{avatar},</if>
+      <if test="ipAddress != null">ip_address = #{ipAddress},</if>
+      <if test="lastLoginTime != null">last_login_time = #{lastLoginTime},</if>
+      <if test="status != null">status = #{status},</if>
+      updated_at = NOW()
+    </set>
+    WHERE id = #{id}
+  </update>
+
+  <update id="updateLoginInfo">
+    UPDATE sys_user
+    SET ip_address      = #{ipAddress},
+        last_login_time = #{lastLoginTime}
+    WHERE id = #{id}
+  </update>
+
+  <update id="updatePassword">
+    UPDATE sys_user
+    SET password   = #{password},
+        updated_at = NOW()
+    WHERE id = #{id}
+  </update>
+
+</mapper>
