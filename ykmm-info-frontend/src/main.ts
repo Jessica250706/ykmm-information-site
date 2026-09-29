@@ -9,7 +9,7 @@ import { createPersistedState } from 'pinia-plugin-persistedstate'
 // import { lazyPlugin } from '@/directives/lazy.ts' // 引入懒加载指令插件，并注册
 import router from '@/router'
 import App from './App.vue'
-import '@/styles/common.scss'
+import '@/styles/style.css'
 
 const app = createApp(App)
 const pinia = createPinia()
