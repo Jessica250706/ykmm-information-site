@@ -45,7 +45,7 @@ xq:
     admin-token-name: token
     user-secret-key: aB3cD4eF5gH6iJ7kL8mN9oP0qR1sT2uV3wX4yZ5aBcD=
     user-ttl: 604800000
-    user-token-name: authentication
+    user-token-name: Authorization
   alioss:
     endpoint: ${xq.alioss.endpoint}
     access-key-id: ${xq.alioss.access-key-id}

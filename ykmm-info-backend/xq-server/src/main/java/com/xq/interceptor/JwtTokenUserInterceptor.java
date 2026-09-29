@@ -34,6 +34,8 @@ public class JwtTokenUserInterceptor implements HandlerInterceptor {
      * @throws Exception
      */
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
+        log.info("JwtTokenUserInterceptor.preHandle 被调用，URI={}", request.getRequestURI());
+
         // 判断当前拦截到的是 Controller 的方法还是其他资源
         if (!(handler instanceof HandlerMethod)) {
             // 当前拦截到的不是动态方法，直接放行

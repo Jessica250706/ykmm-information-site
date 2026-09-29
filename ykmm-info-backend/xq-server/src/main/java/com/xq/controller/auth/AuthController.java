@@ -42,6 +42,7 @@ public class AuthController {
         log.info("用户注册：{}", req.getEmail());
         SysUser user = authService.register(req.getEmail(), req.getPassword(), req.getNickname());
         String token = tokenService.createUserToken(user.getId());
+        // TODO: 用户注册成功后，向对应邮箱发送邮件
         return Result.success(LoginResponse.builder()
                 .token(token)
                 .user(UserInfo.from(user))
@@ -104,6 +105,7 @@ public class AuthController {
     @GetMapping("/me")
     public Result<UserInfo> me() {
         Long userId = BaseContext.getCurrentId();
+        log.info("userId={}", userId);
         SysUser user = authService.getCurrentUser(userId);
         return Result.success(UserInfo.from(user));
     }
