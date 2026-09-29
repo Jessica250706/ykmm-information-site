@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xq.mapper.MenuMapper">
+
+  <sql id="baseColumns">
+    id,
+        parent_id AS parentId,
+        name,
+        path,
+        component,
+        icon,
+        menu_type AS menuType,
+        sort,
+        visible,
+        permission,
+        created_at AS createdAt,
+        updated_at AS updatedAt
+  </sql>
+
+  <select id="listAll" resultType="com.xq.entity.SysMenu">
+    SELECT
+    <include refid="baseColumns"/>
+    FROM sys_menu
+    ORDER BY sort ASC, id ASC
+  </select>
+
+  <select id="listByType" resultType="com.xq.entity.SysMenu">
+    SELECT
+    <include refid="baseColumns"/>
+    FROM sys_menu
+    WHERE menu_type = #{menuType}
+    ORDER BY sort ASC, id ASC
+  </select>
+
+  <select id="getById" resultType="com.xq.entity.SysMenu">
+    SELECT
+    <include refid="baseColumns"/>
+    FROM sys_menu
+    WHERE id = #{id}
+  </select>
+
+  <select id="countChildren" resultType="int">
+    SELECT COUNT(*)
+    FROM sys_menu
+    WHERE parent_id = #{parentId}
+  </select>
+
+  <insert id="insert" parameterType="com.xq.entity.SysMenu"
+          useGeneratedKeys="true" keyProperty="id">
+    INSERT INTO sys_menu (parent_id, name, path, component, icon,
+                          menu_type, sort, visible, permission,
+                          created_at, updated_at)
+    VALUES (#{parentId}, #{name}, #{path}, #{component}, #{icon},
+            #{menuType}, #{sort}, #{visible}, #{permission},
+            CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+  </insert>
+
+  <update id="update" parameterType="com.xq.entity.SysMenu">
+    UPDATE sys_menu
+    <set>
+      <if test="parentId != null">parent_id = #{parentId},</if>
+      <if test="name != null">name = #{name},</if>
+      <if test="path != null">path = #{path},</if>
+      <if test="component != null">component = #{component},</if>
+      <if test="icon != null">icon = #{icon},</if>
+      <if test="menuType != null">menu_type = #{menuType},</if>
+      <if test="sort != null">sort = #{sort},</if>
+      <if test="visible != null">visible = #{visible},</if>
+      <if test="permission != null">permission = #{permission},</if>
+      updated_at = CURRENT_TIMESTAMP
+    </set>
+    WHERE id = #{id}
+  </update>
+
+  <delete id="deleteById">
+    DELETE
+    FROM sys_menu
+    WHERE id = #{id}
+  </delete>
+
+</mapper>

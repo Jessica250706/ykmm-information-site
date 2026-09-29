@@ -15,14 +15,14 @@ import java.util.List;
 @NoArgsConstructor
 public class PageResult implements Serializable {
 
-    /*
-    * 总记录数
-    * */
+    /**
+     * 总记录数
+     */
     private long total;
 
-    /*
-    * 当前页数据集合
-    * */
+    /**
+     * 当前页数据
+     */
     private List records;
 
 }

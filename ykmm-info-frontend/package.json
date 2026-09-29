@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@element-plus/icons-vue": "^2.3.2",
+    "@tailwindcss/vite": "^4.3.3",
     "@vueuse/core": "^15.0.0",
     "axios": "^1.20.0",
     "dayjs": "^1.11.23",
@@ -19,6 +20,7 @@
     "element-plus": "^2.14.6",
     "pinia": "^4.0.3",
     "pinia-plugin-persistedstate": "^4.7.1",
+    "tailwindcss": "^4.3.3",
     "vue": "^3.5.42",
     "vue-router": "^4.6.4"
   },

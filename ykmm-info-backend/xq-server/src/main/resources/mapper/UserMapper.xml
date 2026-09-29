@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xq.mapper.UserMapper">
+
+  <sql id="baseColumns">
+    id, uid, email, password, nickname, avatar,
+        ip_address AS ipAddress,
+        last_login_time AS lastLoginTime,
+        status,
+        created_at AS createdAt,
+        updated_at AS updatedAt
+  </sql>
+
+  <select id="pageQuery" resultType="com.xq.entity.SysUser">
+    SELECT
+    <include refid="baseColumns"/>
+    FROM sys_user
+    <where>
+      <if test="keyword != null and keyword != ''">
+        AND (
+        email LIKE CONCAT('%', #{keyword}, '%')
+        OR nickname LIKE CONCAT('%', #{keyword}, '%')
+        OR uid LIKE CONCAT('%', #{keyword}, '%')
+        )
+      </if>
+      <if test="status != null">
+        AND status = #{status}
+      </if>
+    </where>
+    ORDER BY id DESC
+  </select>
+
+  <select id="countByQuery" resultType="long">
+    SELECT COUNT(*)
+    FROM sys_user
+    <where>
+      <if test="keyword != null and keyword != ''">
+        AND (
+        email LIKE CONCAT('%', #{keyword}, '%')
+        OR nickname LIKE CONCAT('%', #{keyword}, '%')
+        OR uid LIKE CONCAT('%', #{keyword}, '%')
+        )
+      </if>
+      <if test="status != null">
+        AND status = #{status}
+      </if>
+    </where>
+  </select>
+
+  <select id="getById" resultType="com.xq.entity.SysUser">
+    SELECT
+    <include refid="baseColumns"/>
+    FROM sys_user
+    WHERE id = #{id}
+  </select>
+
+  <select id="getByEmail" resultType="com.xq.entity.SysUser">
+    SELECT
+    <include refid="baseColumns"/>
+    FROM sys_user
+    WHERE email = #{email}
+  </select>
+
+  <update id="update" parameterType="com.xq.entity.SysUser">
+    UPDATE sys_user
+    <set>
+      <if test="email != null">email = #{email},</if>
+      <if test="nickname != null">nickname = #{nickname},</if>
+      <if test="avatar != null">avatar = #{avatar},</if>
+      <if test="status != null">status = #{status},</if>
+      updated_at = CURRENT_TIMESTAMP
+    </set>
+    WHERE id = #{id}
+  </update>
+
+  <update id="updateStatus">
+    UPDATE sys_user
+    SET status     = #{status},
+        updated_at = CURRENT_TIMESTAMP
+    WHERE id = #{id}
+  </update>
+
+  <delete id="deleteById">
+    DELETE
+    FROM sys_user
+    WHERE id = #{id}
+  </delete>
+
+</mapper>

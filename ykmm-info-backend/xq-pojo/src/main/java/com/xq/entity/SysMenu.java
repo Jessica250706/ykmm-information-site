@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
+import java.util.List;
 
 /**
  * 菜单表
@@ -19,39 +20,68 @@ public class SysMenu implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    /** 主键 */
+    /**
+     * 主键
+     */
     private Long id;
 
-    /** 父菜单ID */
+    /**
+     * 父菜单ID
+     */
     private Long parentId;
 
-    /** 菜单名称 */
+    /**
+     * 菜单名称
+     */
     private String name;
 
-    /** 路由路径 */
+    /**
+     * 路由路径
+     */
     private String path;
 
-    /** 前端组件 */
+    /**
+     * 前端组件
+     */
     private String component;
 
-    /** 图标 */
+    /**
+     * 图标
+     */
     private String icon;
 
-    /** 1管理端 2用户端 */
+    /**
+     * 1管理端 2用户端
+     */
     private Integer menuType;
 
-    /** 排序 */
+    /**
+     * 排序
+     */
     private Integer sort;
 
-    /** 是否显示 */
+    /**
+     * 是否显示
+     */
     private Integer visible;
 
-    /** 权限标识 */
+    /**
+     * 权限标识
+     */
     private String permission;
 
-    /** 创建时间 */
+    /**
+     * 创建时间
+     */
     private LocalDateTime createdAt;
 
-    /** 更新时间 */
+    /**
+     * 更新时间
+     */
     private LocalDateTime updatedAt;
+
+    /**
+     * 子菜单，构建树时使用
+     */
+    private List<SysMenu> children;
 }
