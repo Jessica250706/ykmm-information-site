@@ -1,5 +1,5 @@
 <template>
-  <div class="user-manage">
+  <div class="user-manage flex h-full flex-col">
     <!-- 搜索区 -->
     <el-card class="mb-4" shadow="never">
       <el-form :model="query" inline @submit.prevent>
@@ -28,8 +28,8 @@
     </el-card>
 
     <!-- 表格区 -->
-    <el-card shadow="never">
-      <ProTable ref="tableRef" :columns="columns" :request="fetchList" row-key="id" border stripe>
+    <el-card class="flex-1" shadow="never">
+      <ProTable ref="tableRef" :columns="columns" :request="fetchList" row-key="id" stripe>
         <!-- 头像 -->
         <template #avatar="{ row }">
           <el-avatar :size="32" :src="row.avatar">
@@ -100,10 +100,10 @@ const columns: ProTableColumn<UserInfo>[] = [
   { label: '头像', width: 80, align: 'center', slot: 'avatar' },
   { prop: 'nickname', label: '昵称', minWidth: 120 },
   { prop: 'email', label: '邮箱', minWidth: 200, showOverflowTooltip: true },
-  { prop: 'uid', label: 'UID', minWidth: 180, showOverflowTooltip: true },
+  { prop: 'uid', label: 'UID', minWidth: 300, showOverflowTooltip: true },
   { prop: 'role', label: '角色', width: 100, align: 'center', slot: 'role' },
   { prop: 'status', label: '状态', width: 90, align: 'center', slot: 'status' },
-  { prop: 'lastLoginTime', label: '最后登录', width: 170, showOverflowTooltip: true },
+  { prop: 'lastLoginTime', label: '最后登录时间', width: 170, showOverflowTooltip: true },
   { label: '操作', width: 130, align: 'center', fixed: 'right', slot: 'action' },
 ]
 

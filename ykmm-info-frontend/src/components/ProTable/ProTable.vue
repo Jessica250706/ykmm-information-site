@@ -1,11 +1,12 @@
 <template>
-  <div class="pro-table flex flex-col gap-4">
+  <div class="pro-table flex h-full flex-col">
     <!-- 表格 -->
     <el-table
       ref="tableRef"
       v-bind="$attrs"
       v-loading="loading"
       :data="tableData"
+      class="min-h-0 flex-1"
       @selection-change="(val: T[]) => emit('selection-change', val)"
       @sort-change="(val: any) => emit('sort-change', val)"
     >
@@ -48,7 +49,7 @@
     </el-table>
 
     <!-- 分页 -->
-    <div v-if="showPagination" class="flex justify-end">
+    <div v-if="showPagination" class="mt-4 flex shrink-0 justify-end">
       <el-pagination
         v-model:current-page="currentPage"
         v-model:page-size="pageSize"

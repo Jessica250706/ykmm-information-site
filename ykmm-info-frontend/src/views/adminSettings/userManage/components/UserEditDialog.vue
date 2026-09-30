@@ -3,7 +3,7 @@
     :model-value="modelValue"
     title="编辑用户"
     width="480px"
-    @update:model-value="(v) => emit('update:modelValue', v)"
+    @update:model-value="handleVisibleChange"
   >
     <el-form ref="formRef" :model="form" :rules="rules" label-width="72px">
       <el-form-item label="昵称" prop="nickname">
@@ -65,6 +65,10 @@ watch(
   },
   { immediate: true },
 )
+
+function handleVisibleChange(v: boolean) {
+  emit('update:modelValue', v)
+}
 
 async function handleSubmit() {
   if (!formRef.value || !props.user?.id) return
