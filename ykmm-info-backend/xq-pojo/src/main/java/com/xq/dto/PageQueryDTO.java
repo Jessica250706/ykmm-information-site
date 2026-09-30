@@ -18,7 +18,7 @@ public class PageQueryDTO implements Serializable {
     /**
      * 页码，从 1 开始
      */
-    private Integer page = 1;
+    private Integer pageNum = 1;
 
     /**
      * 每页条数，默认 10，最大 100
@@ -28,11 +28,11 @@ public class PageQueryDTO implements Serializable {
     /**
      * 页码兜底：null 或 <1 时置为 1
      */
-    public Integer getPage() {
-        if (page == null || page < 1) {
+    public Integer getPageNum() {
+        if (pageNum == null || pageNum < 1) {
             return 1;
         }
-        return page;
+        return pageNum;
     }
 
     /**

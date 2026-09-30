@@ -46,11 +46,12 @@ public class JwtTokenInterceptor implements HandlerInterceptor {
         }
 
         // 1、从请求头中获取令牌
-        String token = request.getHeader(jwtProperties.getTokenName());
-        if (token == null || token.isEmpty()) {
+        String authHeader = request.getHeader("Authorization");
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             response.setStatus(401);
             return false;
         }
+        String token = authHeader.substring(7); // 去掉 "Bearer " 共 7 个字符
 
         // 2、校验令牌
         Claims claims;

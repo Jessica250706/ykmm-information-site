@@ -28,7 +28,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public PageResult<UserInfo> pageQuery(UserPageQueryDTO query) {
         // PageHelper 分页
-        PageHelper.startPage(query.getPage(), query.getPageSize());
+        PageHelper.startPage(query.getPageNum(), query.getPageSize());
         Page<SysUser> page = userMapper.pageQuery(query);
 
         // SysUser → UserInfo

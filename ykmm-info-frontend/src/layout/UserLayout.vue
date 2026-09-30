@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen bg-slate-50 text-slate-800">
+  <div class="min-h-screen">
     <el-container class="min-h-screen">
       <el-header
         class="sticky top-0 z-30 border-b border-slate-200 bg-white/85 backdrop-blur"
@@ -40,7 +40,7 @@
               plain
               @click="router.push('/admin')"
             >
-              管理端
+              前往管理端 →
             </el-button>
 
             <RouterLink

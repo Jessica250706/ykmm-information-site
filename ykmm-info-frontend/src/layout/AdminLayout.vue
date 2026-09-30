@@ -4,7 +4,7 @@
     <el-aside class="admin-aside flex flex-col" width="240px">
       <div
         :style="{ borderColor: 'var(--menu-border)' }"
-        class="flex h-16 shrink-0 items-center gap-2 border-b px-5"
+        class="flex h-16 shrink-0 items-center gap-2 px-5"
       >
         <el-avatar
           :size="32"

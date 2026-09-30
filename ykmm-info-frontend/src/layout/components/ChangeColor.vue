@@ -7,6 +7,7 @@
   <!-- 右侧抽屉 -->
   <el-drawer
     v-model="drawerVisible"
+    :append-to-body="true"
     :show-close="true"
     :size="320"
     direction="rtl"

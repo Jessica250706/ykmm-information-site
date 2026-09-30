@@ -40,12 +40,30 @@ export default defineConfigWithVueTs(
             'EVENTS',
             'CONTENT',
           ],
-          alphabetical: true, // 同一分组内是否按字母序排列
+          alphabetical: true,
         },
       ],
     },
   },
+
   vueTsConfigs.recommended,
+
+  // ⬇️ 放在 oxlint 之前，让 ESLint 侧先声明规则
+  {
+    name: 'app/no-unused-vars',
+    rules: {
+      '@typescript-eslint/no-unused-vars': [
+        'error',
+        {
+          argsIgnorePattern: '^_',
+          varsIgnorePattern: '^_',
+          caughtErrorsIgnorePattern: '^_',
+          // 关键：解构排除字段时，允许 ...rest 的兄弟变量未使用
+          ignoreRestSiblings: true,
+        },
+      ],
+    },
+  },
 
   ...pluginOxlint.buildFromOxlintConfigFile('.oxlintrc.json'),
 
@@ -56,7 +74,6 @@ export default defineConfigWithVueTs(
       'import-x': importX,
     },
     rules: {
-      // 注意规则前缀从 'import/' 变成了 'import-x/'
       'import-x/order': [
         'error',
         {

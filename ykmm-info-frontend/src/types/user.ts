@@ -1,14 +1,12 @@
-export interface UserRequest {
-  /**
-   * 关键字：邮箱 / 昵称 / uid
-   */
+import type { PageRequest } from './common'
+
+/** 用户查询请求 */
+export interface UserRequest extends PageRequest {
+  /** 关键字：邮箱 / 昵称 / uid */
   keyword?: string
-  page?: number
-  pageSize?: number
-  /**
-   * 状态：1正常 0禁用，null不限
-   */
+  /** 状态：1正常 0禁用，null不限 */
   status?: number
+  /** 允许扩展其他字段 */
   [property: string]: any
 }
 
