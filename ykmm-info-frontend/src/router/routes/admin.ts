@@ -1,5 +1,5 @@
-import type { RouteRecordRaw } from 'vue-router'
 import { ROLE } from '@/constants/index'
+import type { RouteRecordRaw } from 'vue-router'
 
 export const adminRoutes: RouteRecordRaw = {
   path: '/admin',

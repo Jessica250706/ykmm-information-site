@@ -64,14 +64,13 @@ import { reactive, ref } from 'vue'
 import { Lock, Message } from '@element-plus/icons-vue'
 import { ElMessage, type FormInstance, type FormRules } from 'element-plus'
 import { useRoute, useRouter } from 'vue-router'
-import { loginAPI } from '@/api/auth'
-import { useAuth } from '@/composables/useAuth'
 import { ROLE } from '@/constants/index'
+import { useUserStore } from '@/stores/user'
 import type { LoginRequest } from '@/types/auth'
 
 const route = useRoute()
 const router = useRouter()
-const { setAuth } = useAuth()
+const userStore = useUserStore()
 
 const formRef = ref<FormInstance>()
 
@@ -106,13 +105,7 @@ async function handleSubmit() {
 
   loading.value = true
   try {
-    const {
-      data: { token, user },
-    } = await loginAPI({ ...form })
-
-    if (token && user) {
-      setAuth(token, user)
-    }
+    const { user } = await userStore.login({ ...form })
 
     if (rememberMe.value) {
       localStorage.setItem(REMEMBER_KEY, form.email ?? '')
@@ -123,14 +116,12 @@ async function handleSubmit() {
     ElMessage.success('登录成功')
 
     const redirect = route.query.redirect as string | undefined
-    console.log('redirect:', redirect)
     if (redirect) {
       await router.replace(redirect)
     } else {
       await router.replace(user?.role === ROLE.ADMIN ? '/admin' : '/cards')
     }
   } catch (err: unknown) {
-    // 错误提示交给 http 拦截器统一处理
     console.error('[login] failed:', err)
   } finally {
     loading.value = false

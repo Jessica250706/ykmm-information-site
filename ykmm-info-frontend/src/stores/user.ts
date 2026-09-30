@@ -1,27 +1,49 @@
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 import { defineStore } from 'pinia'
 import { loginAPI } from '@/api/auth'
-import type { LoginRequest, UserInfo } from '@/types/auth'
+import { ROLE } from '@/constants/index'
+import type { LoginRequest } from '@/types/auth'
+import type { UserInfo } from '@/types/user'
 
 export const useUserStore = defineStore(
   'user',
   () => {
-    // state
-    const userInfo = ref<UserInfo>()
+    const token = ref<string | null>(null)
+    const userInfo = ref<UserInfo | null>(null)
 
-    // action
-    const getUserInfo = async (data: LoginRequest) => {
+    const isLogin = computed(() => !!token.value)
+    const role = computed(() => userInfo.value?.role)
+    const isAdmin = computed(() => role.value === ROLE.ADMIN)
+
+    const login = async (data: LoginRequest) => {
       const res = await loginAPI(data)
-      userInfo.value = res.result
+      token.value = res.data.token ?? null
+      userInfo.value = res.data.user ?? null
+      return res.data
     }
 
-    const clearUserInfo = () => {
-      userInfo.value = undefined
+    function setAuth(nextToken: string, nextUser: UserInfo) {
+      token.value = nextToken
+      userInfo.value = nextUser
     }
+
+    function logout() {
+      token.value = null
+      userInfo.value = null
+    }
+
+    // 兼容旧调用
+    const clearUserInfo = logout
 
     return {
+      token,
       userInfo,
-      getUserInfo,
+      isLogin,
+      role,
+      isAdmin,
+      login,
+      setAuth,
+      logout,
       clearUserInfo,
     }
   },

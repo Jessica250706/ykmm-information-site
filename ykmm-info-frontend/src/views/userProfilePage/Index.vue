@@ -29,10 +29,10 @@
 
 <script setup lang="ts">
 import { useRouter } from 'vue-router'
-import { useAuth } from '@/composables/useAuth'
+import { useUserStore } from '@/stores/user'
 
 const router = useRouter()
-const { isAdmin, logout } = useAuth()
+const { isAdmin, logout } = useUserStore()
 
 function handleLogout() {
   logout()

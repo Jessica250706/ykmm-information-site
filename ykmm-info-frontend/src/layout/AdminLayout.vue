@@ -65,13 +65,13 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { RouterLink, RouterView, useRoute, useRouter } from 'vue-router'
-import { useAuth } from '@/composables/useAuth'
 import { adminMenu } from '@/config/adminMenu'
+import { useUserStore } from '@/stores/user'
 import AdminMenuItem from './components/AdminMenuItem.vue'
 
 const route = useRoute()
 const router = useRouter()
-const { logout } = useAuth()
+const { logout } = useUserStore()
 
 const breadcrumbs = computed(() =>
   route.matched.map((r) => r.meta?.title).filter((t): t is string => !!t),

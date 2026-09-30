@@ -18,13 +18,13 @@
           <RouterLink
             v-for="nav in userNav"
             :key="nav.to"
-            class="rounded-lg px-3 py-2 text-sm transition"
             :class="
               isActive(nav.to)
                 ? 'bg-indigo-50 font-medium text-indigo-600'
                 : 'text-slate-600 hover:bg-slate-100'
             "
             :to="nav.to"
+            class="rounded-lg px-3 py-2 text-sm transition"
           >
             {{ nav.label }}
           </RouterLink>
@@ -41,8 +41,8 @@
           </RouterLink>
 
           <RouterLink
-            class="flex items-center gap-2 rounded-full py-1 pl-1 pr-3 transition"
             :class="isActive('/profile') ? 'bg-indigo-50 text-indigo-600' : 'hover:bg-slate-100'"
+            class="flex items-center gap-2 rounded-full py-1 pl-1 pr-3 transition"
             to="/profile"
           >
             <span class="grid h-7 w-7 place-items-center rounded-full bg-slate-200 text-xs">
@@ -67,11 +67,11 @@
 
 <script setup lang="ts">
 import { RouterLink, RouterView, useRoute } from 'vue-router'
-import { useAuth } from '@/composables/useAuth'
 import { userNav } from '@/config/userNav'
+import { useUserStore } from '@/stores/user'
 
 const route = useRoute()
-const { isAdmin } = useAuth()
+const { isAdmin } = useUserStore()
 
 const isActive = (path: string) => route.path === path || route.path.startsWith(`${path}/`)
 </script>

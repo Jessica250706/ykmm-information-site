@@ -81,7 +81,7 @@ import { Lock, Message, User } from '@element-plus/icons-vue'
 import { ElMessage, type FormInstance, type FormRules } from 'element-plus'
 import { useRouter } from 'vue-router'
 import { registerAPI } from '@/api/auth'
-import { useAuth } from '@/composables/useAuth'
+import { useUserStore } from '@/stores/user'
 import type { RegisterRequest } from '@/types/auth'
 
 /** 表单内部类型：比 RegisterRequest 多一个确认密码字段 */
@@ -90,7 +90,7 @@ interface RegisterForm extends RegisterRequest {
 }
 
 const router = useRouter()
-const { setAuth } = useAuth()
+const { setAuth } = useUserStore()
 
 const formRef = ref<FormInstance>()
 

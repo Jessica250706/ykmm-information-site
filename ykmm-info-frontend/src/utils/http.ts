@@ -44,7 +44,7 @@ const httpInstance = axios.create({
 httpInstance.interceptors.request.use(
   (config) => {
     const userStore = useUserStore()
-    const token = userStore.userInfo?.token
+    const token = userStore.token
     if (token) {
       config.headers.Authorization = `Bearer ${token}`
     }
@@ -56,7 +56,6 @@ httpInstance.interceptors.request.use(
 httpInstance.interceptors.response.use(
   (res) => {
     const body = res.data as ApiResponse
-    console.log('body:', body)
 
     if (body.code !== 200) {
       ElMessage.error(body.msg || '请求失败')
