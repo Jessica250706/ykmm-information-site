@@ -1,9 +1,9 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="">
   <head>
-    <meta charset="UTF-8">
-    <link rel="icon" href="/favicon.ico">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8" />
+    <link rel="icon" href="/favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Vite App</title>
   </head>
   <body>
@@ -11,3 +11,11 @@
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>
+<!-- index.html -->
+<script>
+  ;(function () {
+    var saved = localStorage.getItem('app-theme') || 'spring'
+    document.documentElement.setAttribute('data-theme', saved)
+    // 这里也可以直接写入 --el-color-primary 等变量，避免 FOUC
+  })()
+</script>

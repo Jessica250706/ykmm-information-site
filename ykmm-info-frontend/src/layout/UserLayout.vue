@@ -1,79 +1,91 @@
 <template>
   <div class="min-h-screen bg-slate-50 text-slate-800">
-    <!-- 顶部导航 -->
-    <header class="sticky top-0 z-30 border-b border-slate-200 bg-white/85 backdrop-blur">
-      <div class="mx-auto flex h-16 max-w-6xl items-center px-4">
-        <!-- Logo -->
-        <RouterLink class="flex shrink-0 items-center gap-2" to="/cards">
-          <span
-            class="grid h-8 w-8 place-items-center rounded-lg bg-indigo-500 text-sm font-bold text-white"
-          >
-            U
-          </span>
-          <span class="font-semibold">用户端</span>
-        </RouterLink>
-
-        <!-- 左侧目录：卡面 / 剧情 -->
-        <nav class="ml-8 flex items-center gap-1">
-          <RouterLink
-            v-for="nav in userNav"
-            :key="nav.to"
-            :class="
-              isActive(nav.to)
-                ? 'bg-indigo-50 font-medium text-indigo-600'
-                : 'text-slate-600 hover:bg-slate-100'
-            "
-            :to="nav.to"
-            class="rounded-lg px-3 py-2 text-sm transition"
-          >
-            {{ nav.label }}
-          </RouterLink>
-        </nav>
-
-        <!-- 最右侧：管理端入口（仅管理员可见） + 个人中心 -->
-        <div class="ml-auto flex items-center gap-3">
-          <RouterLink
-            v-if="isAdmin"
-            class="hidden rounded-lg border border-slate-200 px-3 py-1.5 text-sm text-slate-600 transition hover:border-indigo-300 hover:text-indigo-600 sm:block"
-            to="/admin"
-          >
-            管理端
+    <el-container class="min-h-screen">
+      <el-header
+        class="sticky top-0 z-30 border-b border-slate-200 bg-white/85 backdrop-blur"
+        height="64px"
+      >
+        <div class="mx-auto flex h-full max-w-6xl items-center px-4">
+          <!-- Logo -->
+          <RouterLink class="flex shrink-0 items-center gap-2" to="/cards">
+            <el-avatar
+              :size="32"
+              :style="{ backgroundColor: 'var(--el-color-primary)' }"
+              class="text-sm font-bold"
+            >
+              U
+            </el-avatar>
+            <span class="font-semibold">用户端</span>
           </RouterLink>
 
-          <RouterLink
-            :class="isActive('/profile') ? 'bg-indigo-50 text-indigo-600' : 'hover:bg-slate-100'"
-            class="flex items-center gap-2 rounded-full py-1 pl-1 pr-3 transition"
-            to="/profile"
+          <!-- 左侧目录：卡面 / 剧情 -->
+          <el-menu
+            :default-active="activeMenu"
+            :ellipsis="false"
+            class="ml-8 user-nav-menu"
+            mode="horizontal"
+            router
           >
-            <span class="grid h-7 w-7 place-items-center rounded-full bg-slate-200 text-xs">
-              我
-            </span>
-            <span class="text-sm">个人中心</span>
-          </RouterLink>
+            <el-menu-item v-for="nav in userNav" :key="nav.to" :index="nav.to">
+              {{ nav.label }}
+            </el-menu-item>
+          </el-menu>
+
+          <!-- 最右侧：管理端入口（仅管理员可见） + 个人中心 + 主题切换 -->
+          <div class="ml-auto flex items-center gap-3">
+            <el-button
+              v-if="isAdmin"
+              class="hidden sm:inline-flex"
+              size="small"
+              plain
+              @click="router.push('/admin')"
+            >
+              管理端
+            </el-button>
+
+            <RouterLink
+              :class="isActive('/profile') ? 'theme-pill-active' : 'hover:bg-slate-100'"
+              class="flex items-center gap-2 rounded-full py-1 pl-1 pr-3 transition"
+              to="/profile"
+            >
+              <el-avatar :size="28" class="bg-slate-200! text-xs!">我</el-avatar>
+              <span class="text-sm">个人中心</span>
+            </RouterLink>
+
+            <ChangeColor />
+          </div>
         </div>
-      </div>
-    </header>
+      </el-header>
 
-    <!-- 内容区 -->
-    <main class="mx-auto max-w-6xl px-4 py-6">
-      <RouterView v-slot="{ Component }">
-        <Transition mode="out-in" name="fade">
-          <component :is="Component" />
-        </Transition>
-      </RouterView>
-    </main>
+      <!-- 内容区 -->
+      <el-main class="p-0!">
+        <div class="mx-auto w-full max-w-6xl px-4 py-6">
+          <RouterView v-slot="{ Component }">
+            <Transition mode="out-in" name="fade">
+              <component :is="Component" />
+            </Transition>
+          </RouterView>
+        </div>
+      </el-main>
+    </el-container>
   </div>
 </template>
 
 <script setup lang="ts">
-import { RouterLink, RouterView, useRoute } from 'vue-router'
+import { computed } from 'vue'
+import { RouterLink, RouterView, useRoute, useRouter } from 'vue-router'
 import { userNav } from '@/config/userNav'
 import { useUserStore } from '@/stores/user'
+import ChangeColor from './components/ChangeColor.vue'
 
 const route = useRoute()
+const router = useRouter()
 const { isAdmin } = useUserStore()
 
 const isActive = (path: string) => route.path === path || route.path.startsWith(`${path}/`)
+
+/** 把 isActive 逻辑适配给 el-menu 的 default-active */
+const activeMenu = computed(() => userNav.find((nav) => isActive(nav.to))?.to ?? '')
 </script>
 
 <style lang="scss" scoped>
@@ -84,5 +96,41 @@ const isActive = (path: string) => route.path === path || route.path.startsWith(
 .fade-enter-from,
 .fade-leave-to {
   opacity: 0;
+}
+
+/* 个人中心激活态 */
+.theme-pill-active {
+  background: var(--menu-hover-bg);
+  color: var(--menu-text-active);
+}
+
+.user-nav-menu {
+  border-bottom: none;
+  background: transparent;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  :deep(.el-menu-item) {
+    height: 40px;
+    line-height: 40px;
+    margin-left: 24px;
+    padding: 0 12px;
+    border-bottom: none;
+    border-radius: 0.5rem;
+    font-size: 14px;
+    color: var(--menu-text);
+
+    &:hover {
+      background: var(--menu-hover-bg);
+      color: var(--menu-text);
+    }
+
+    &.is-active {
+      background: var(--menu-active-bg);
+      color: var(--menu-text-active);
+      font-weight: 500;
+    }
+  }
 }
 </style>

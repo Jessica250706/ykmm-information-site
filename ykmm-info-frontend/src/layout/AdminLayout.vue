@@ -1,65 +1,69 @@
 <template>
-  <div class="flex h-screen bg-slate-100 text-slate-800">
+  <el-container class="h-screen bg-slate-50 text-slate-800">
     <!-- 侧边栏 -->
-    <aside class="flex w-60 shrink-0 flex-col bg-slate-900">
-      <div class="flex h-16 items-center gap-2 border-b border-slate-800 px-5">
-        <span
-          class="grid h-8 w-8 place-items-center rounded-lg bg-indigo-500 text-sm font-bold text-white"
+    <el-aside class="admin-aside flex flex-col" width="240px">
+      <div
+        :style="{ borderColor: 'var(--menu-border)' }"
+        class="flex h-16 shrink-0 items-center gap-2 border-b px-5"
+      >
+        <el-avatar
+          :size="32"
+          :style="{ backgroundColor: 'var(--el-color-primary)' }"
+          class="text-sm font-bold"
+          shape="square"
         >
           A
-        </span>
-        <span class="font-semibold text-white">管理后台</span>
+        </el-avatar>
+        <span class="font-semibold text-slate-800">管理后台</span>
       </div>
 
-      <nav class="flex-1 space-y-1 overflow-y-auto p-3">
-        <AdminMenuItem v-for="item in adminMenu" :key="item.title" :item="item" />
-      </nav>
+      <el-scrollbar class="flex-1">
+        <el-menu :default-active="route.path" class="admin-menu" router>
+          <AdminMenuItem v-for="item in adminMenu" :key="item.title" :item="item" />
+        </el-menu>
+      </el-scrollbar>
 
-      <div class="border-t border-slate-800 p-3">
+      <div :style="{ borderColor: 'var(--menu-border)' }" class="shrink-0 border-t p-3">
         <RouterLink
-          class="flex items-center justify-center gap-1 rounded-lg bg-slate-800 px-3 py-2 text-sm text-slate-300 transition hover:bg-slate-700 hover:text-white"
+          :style="{ backgroundColor: 'var(--menu-hover-bg)', color: 'var(--menu-text)' }"
+          class="flex items-center justify-center gap-1 rounded-lg px-3 py-2 text-sm transition hover:brightness-95"
           to="/cards"
         >
           前往用户端 →
         </RouterLink>
       </div>
-    </aside>
+    </el-aside>
 
     <!-- 主区域 -->
-    <div class="flex min-w-0 flex-1 flex-col">
-      <header
-        class="flex h-16 shrink-0 items-center justify-between border-b border-slate-200 bg-white px-6"
+    <el-container class="min-w-0 flex-1 flex-col">
+      <el-header
+        class="flex shrink-0 items-center justify-between border-b border-slate-200 bg-white px-6"
+        height="64px"
       >
-        <nav class="flex items-center gap-2 text-sm text-slate-500">
-          <template v-for="(item, i) in breadcrumbs" :key="item">
-            <span v-if="i > 0" class="text-slate-300">/</span>
+        <el-breadcrumb separator="/">
+          <el-breadcrumb-item v-for="(item, i) in breadcrumbs" :key="item">
             <span :class="i === breadcrumbs.length - 1 ? 'font-medium text-slate-900' : ''">
               {{ item }}
             </span>
-          </template>
-        </nav>
+          </el-breadcrumb-item>
+        </el-breadcrumb>
 
         <div class="flex items-center gap-3">
           <span class="text-sm text-slate-500">管理员</span>
-          <button
-            class="text-sm text-slate-500 transition hover:text-indigo-600"
-            type="button"
-            @click="handleLogout"
-          >
-            退出
-          </button>
+          <el-button type="primary" link @click="handleLogout">退出</el-button>
+          <ChangeColor />
         </div>
-      </header>
+      </el-header>
 
-      <main class="flex-1 overflow-y-auto p-6">
+      <el-main class="p-6!">
         <RouterView v-slot="{ Component }">
           <Transition mode="out-in" name="fade">
             <component :is="Component" />
           </Transition>
         </RouterView>
-      </main>
-    </div>
-  </div>
+      </el-main>
+    </el-container>
+  </el-container>
 </template>
 
 <script setup lang="ts">
@@ -68,6 +72,7 @@ import { RouterLink, RouterView, useRoute, useRouter } from 'vue-router'
 import { adminMenu } from '@/config/adminMenu'
 import { useUserStore } from '@/stores/user'
 import AdminMenuItem from './components/AdminMenuItem.vue'
+import ChangeColor from './components/ChangeColor.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -91,5 +96,35 @@ function handleLogout() {
 .fade-enter-from,
 .fade-leave-to {
   opacity: 0;
+}
+
+/* 侧栏背景跟随 --menu-bg */
+.admin-aside {
+  background: var(--menu-bg);
+  border-right: 1px solid var(--menu-border);
+}
+
+/* 菜单：全部由 CSS 变量驱动，切换主题时自动变色 */
+.admin-menu {
+  --el-menu-bg-color: var(--menu-bg);
+  --el-menu-text-color: var(--menu-text);
+  --el-menu-active-color: var(--menu-text-active);
+  --el-menu-hover-bg-color: var(--menu-hover-bg);
+  --el-menu-item-height: 44px;
+  --el-menu-sub-item-height: 40px;
+  --el-menu-border-color: var(--menu-border);
+  --el-menu-base-level-padding: 16px;
+
+  border-right: none;
+
+  :deep(.el-menu-item.is-active) {
+    background: var(--menu-active-bg);
+    color: var(--menu-text-active);
+    font-weight: 500;
+  }
+
+  :deep(.el-sub-menu.is-active > .el-sub-menu__title) {
+    color: var(--menu-text-active);
+  }
 }
 </style>

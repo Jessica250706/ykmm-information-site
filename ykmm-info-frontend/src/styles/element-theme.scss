@@ -1,0 +1,35 @@
+// ============================================================
+// 春日清新绿 · Element Plus 主题覆盖
+// ============================================================
+
+@forward 'element-plus/theme-chalk/src/common/var.scss' with (
+  $colors: (
+    // 主色：新叶绿
+    'primary': (
+      'base': #3da35d,
+    ),
+    // 成功色：靠近主色，但更沉稳一些，避免和 primary 混淆
+    'success': (
+      'base': #2e8b57,
+    ),
+    // 警告色：柔和的暖黄，像春日的阳光
+    'warning': (
+      'base': #e6a23c,
+    ),
+    // 危险色：降低饱和度，避免过于刺眼
+    'danger': (
+      'base': #e05c5c,
+    ),
+    'error': (
+      'base': #e05c5c,
+    ),
+    // 信息色：偏冷的灰绿，和整体绿色调呼应
+    'info': (
+      'base': #7a9e8a,
+    ),
+  ),
+);
+
+// 如果你使用了 Element Plus 的完整样式引入，
+// 需要取消下面这行的注释，让覆盖后的变量重新生成所有组件样式：
+@use "element-plus/theme-chalk/src/index.scss" as *;

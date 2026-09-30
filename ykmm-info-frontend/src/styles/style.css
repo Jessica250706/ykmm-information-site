@@ -1,1 +1,10 @@
-@import "tailwindcss"
+@import 'tailwindcss';
+
+@theme {
+  /* 把 Tailwind 的 primary 指向 Element Plus 的 CSS 变量 */
+  --color-primary: var(--el-color-primary);
+  --color-primary-light: var(--el-color-primary-light-3);
+  --color-primary-lighter: var(--el-color-primary-light-5);
+  --color-primary-lightest: var(--el-color-primary-light-7);
+  --color-primary-dark: var(--el-color-primary-dark-2);
+}
