@@ -1,5 +1,5 @@
-import type { UserRequest, UserInfo, UserEditDTO, UserStatusDTO } from '@/types/user'
 import type { PageResult } from '@/types/common'
+import type { UserEditDTO, UserInfo, UserRequest, UserStatusDTO } from '@/types/user'
 import request from '@/utils/http'
 
 /**

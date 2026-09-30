@@ -10,9 +10,13 @@ import lombok.Data;
 @Builder
 public class LoginResponse {
 
-  /** JWT 令牌 */
-  private String token;
+    /**
+     * JWT 令牌
+     */
+    private String token;
 
-  /** 当前登录用户信息 */
-  private UserInfo user;
+    /**
+     * 当前登录用户信息
+     */
+    private UserInfo user;
 }

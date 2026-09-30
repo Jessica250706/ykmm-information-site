@@ -4,12 +4,18 @@
 <mapper namespace="com.xq.mapper.UserMapper">
 
   <sql id="baseColumns">
-    id, uid, email, password, nickname, avatar,
-        ip_address AS ipAddress,
-        last_login_time AS lastLoginTime,
-        status, role,
-        created_at AS createdAt,
-        updated_at AS updatedAt
+    id,
+    uid,
+    email,
+    password,
+    nickname,
+    avatar,
+    ip_address AS ipAddress,
+    last_login_time AS lastLoginTime,
+    status,
+    role,
+    created_at AS createdAt,
+    updated_at AS updatedAt
   </sql>
 
   <select id="pageQuery" resultType="com.xq.entity.SysUser">

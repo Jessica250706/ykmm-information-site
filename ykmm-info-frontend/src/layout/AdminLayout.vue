@@ -17,8 +17,8 @@
 
       <div class="border-t border-slate-800 p-3">
         <RouterLink
-          to="/cards"
           class="flex items-center justify-center gap-1 rounded-lg bg-slate-800 px-3 py-2 text-sm text-slate-300 transition hover:bg-slate-700 hover:text-white"
+          to="/cards"
         >
           前往用户端 →
         </RouterLink>
@@ -42,8 +42,8 @@
         <div class="flex items-center gap-3">
           <span class="text-sm text-slate-500">管理员</span>
           <button
-            type="button"
             class="text-sm text-slate-500 transition hover:text-indigo-600"
+            type="button"
             @click="handleLogout"
           >
             退出
@@ -53,7 +53,7 @@
 
       <main class="flex-1 overflow-y-auto p-6">
         <RouterView v-slot="{ Component }">
-          <Transition name="fade" mode="out-in">
+          <Transition mode="out-in" name="fade">
             <component :is="Component" />
           </Transition>
         </RouterView>
@@ -65,9 +65,9 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { RouterLink, RouterView, useRoute, useRouter } from 'vue-router'
-import AdminMenuItem from './components/AdminMenuItem.vue'
-import { adminMenu } from '@/config/adminMenu'
 import { useAuth } from '@/composables/useAuth'
+import { adminMenu } from '@/config/adminMenu'
+import AdminMenuItem from './components/AdminMenuItem.vue'
 
 const route = useRoute()
 const router = useRouter()

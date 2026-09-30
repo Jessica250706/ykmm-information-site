@@ -7,8 +7,19 @@ import java.io.Serializable;
 @Data
 public class UserEditDTO implements Serializable {
 
+    /**
+     * 邮箱
+     */
     private String email;
+
+    /**
+     * 昵称
+     */
     private String nickname;
+
+    /**
+     * 头像
+     */
     private String avatar;
 
     /**

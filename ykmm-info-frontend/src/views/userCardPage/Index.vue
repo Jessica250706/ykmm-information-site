@@ -4,9 +4,9 @@
       <h1 class="text-xl font-semibold">卡面</h1>
       <input
         v-model="keyword"
-        type="search"
-        placeholder="搜索卡面 / 系列"
         class="w-56 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm outline-none transition focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100"
+        placeholder="搜索卡面 / 系列"
+        type="search"
       />
     </div>
 

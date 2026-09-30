@@ -27,17 +27,6 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public PageResult<UserInfo> pageQuery(UserPageQueryDTO query) {
-        // 页码与页大小兜底
-        if (query.getPage() == null || query.getPage() < 1) {
-            query.setPage(1);
-        }
-        if (query.getPageSize() == null || query.getPageSize() < 1) {
-            query.setPageSize(10);
-        }
-        if (query.getPageSize() > 100) {
-            query.setPageSize(100);
-        }
-
         // PageHelper 分页
         PageHelper.startPage(query.getPage(), query.getPageSize());
         Page<SysUser> page = userMapper.pageQuery(query);

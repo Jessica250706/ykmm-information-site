@@ -2,10 +2,10 @@
   <!-- 分组节点 -->
   <button
     v-if="hasChildren"
-    type="button"
     class="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm transition"
     :class="isActive ? 'text-white' : 'text-slate-400 hover:bg-slate-800 hover:text-white'"
     :style="{ paddingLeft: `${12 + level * 12}px` }"
+    type="button"
     @click="open = !open"
   >
     <span class="text-base leading-none">{{ item.icon }}</span>
@@ -21,7 +21,6 @@
   <!-- 叶子节点 -->
   <RouterLink
     v-else
-    :to="item.path!"
     class="block rounded-lg py-2 text-sm transition"
     :class="
       isActive
@@ -29,6 +28,7 @@
         : 'text-slate-400 hover:bg-slate-800 hover:text-white'
     "
     :style="{ paddingLeft: `${12 + level * 12}px` }"
+    :to="item.path!"
   >
     {{ item.title }}
   </RouterLink>

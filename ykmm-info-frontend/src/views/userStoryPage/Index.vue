@@ -21,8 +21,8 @@
         <span v-if="c.locked" class="text-xs text-slate-400">未解锁</span>
         <button
           v-else
-          type="button"
           class="rounded-lg bg-indigo-600 px-3 py-1.5 text-sm text-white transition hover:bg-indigo-700"
+          type="button"
         >
           阅读
         </button>

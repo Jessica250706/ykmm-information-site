@@ -8,12 +8,18 @@ import lombok.Data;
 @Data
 public class RegisterRequest {
 
-  /** 邮箱 */
-  private String email;
+    /**
+     * 邮箱
+     */
+    private String email;
 
-  /** 密码 */
-  private String password;
+    /**
+     * 密码
+     */
+    private String password;
 
-  /** 昵称 */
-  private String nickname;
+    /**
+     * 昵称
+     */
+    private String nickname;
 }

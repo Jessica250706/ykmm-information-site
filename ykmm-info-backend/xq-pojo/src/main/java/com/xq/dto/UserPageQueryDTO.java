@@ -1,14 +1,20 @@
 package com.xq.dto;
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
+import java.io.Serial;
 import java.io.Serializable;
 
+/**
+ * 用户分页查询 DTO
+ */
 @Data
-public class UserPageQueryDTO implements Serializable {
+@EqualsAndHashCode(callSuper = true)
+public class UserPageQueryDTO extends PageQueryDTO implements Serializable {
 
-    private Integer page = 1;
-    private Integer pageSize = 10;
+    @Serial
+    private static final long serialVersionUID = 1L;
 
     /**
      * 关键字：邮箱 / 昵称 / uid

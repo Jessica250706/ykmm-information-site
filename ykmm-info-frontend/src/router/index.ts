@@ -1,8 +1,8 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import type { RouteRecordRaw } from 'vue-router'
+import { setupRouterGuards } from './guards'
 import { adminRoutes } from './routes/admin'
 import { userRoutes } from './routes/user'
-import { setupRouterGuards } from './guards'
+import type { RouteRecordRaw } from 'vue-router'
 
 const routes: RouteRecordRaw[] = [
   {
@@ -10,6 +10,12 @@ const routes: RouteRecordRaw[] = [
     name: 'Login',
     component: () => import('@/views/login/Index.vue'),
     meta: { title: '登录' },
+  },
+  {
+    path: '/register',
+    name: 'Register',
+    component: () => import('@/views/register/Index.vue'),
+    meta: { title: '注册' },
   },
   adminRoutes,
   userRoutes,

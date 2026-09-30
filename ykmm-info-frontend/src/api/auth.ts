@@ -1,11 +1,11 @@
 import type {
-  RegisterRequest,
-  LoginResponse,
   LoginRequest,
+  LoginResponse,
   MapString,
-  UserInfo,
   PasswordRequest,
+  RegisterRequest,
 } from '@/types/auth'
+import type { UserInfo } from '@/types/user'
 import request from '@/utils/http'
 
 /**

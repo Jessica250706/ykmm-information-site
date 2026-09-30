@@ -1,14 +1,14 @@
 import axios from 'axios'
 import { ElMessage } from 'element-plus'
-import { useRouter } from 'vue-router'
+import router from '@/router'
 import { useUserStore } from '@/stores/user'
 import type { AxiosRequestConfig } from 'axios'
 import 'element-plus/theme-chalk/el-message.css'
 
 export interface ApiResponse<T = unknown> {
-  code: string
+  code: number
   msg: string
-  result: T
+  data: T
 }
 
 interface HttpInstance {
@@ -54,17 +54,26 @@ httpInstance.interceptors.request.use(
 )
 
 httpInstance.interceptors.response.use(
-  (res) => res.data,
+  (res) => {
+    const body = res.data as ApiResponse
+    console.log('body:', body)
+
+    if (body.code !== 200) {
+      ElMessage.error(body.msg || '请求失败')
+      return Promise.reject(new Error(body.msg))
+    }
+
+    return body as unknown as typeof res
+  },
   (e) => {
     // 统一错误提示
-    ElMessage.error(e.response.data.msg)
+    ElMessage.error(e.response?.data?.msg ?? e.message ?? '请求失败')
     // 401 token 失效处理
     if (e.response.status === 401) {
       // 1. 清除本地用户数据
       const userStore = useUserStore()
       userStore.clearUserInfo()
       // 2. 跳转到登录页
-      const router = useRouter()
       router.replace('/login')
     }
     return Promise.reject(e)

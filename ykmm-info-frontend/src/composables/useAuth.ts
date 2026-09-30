@@ -1,44 +1,53 @@
 import { computed, ref } from 'vue'
+import type { UserInfo } from '@/types/user'
+import { ROLE } from '@/constants/index'
 
 const STORAGE_KEY = 'app-auth'
 
 interface AuthState {
   token: string | null
-  roles: string[]
+  userInfo: UserInfo | null
 }
 
 function read(): AuthState {
   try {
     const raw = localStorage.getItem(STORAGE_KEY)
-    return raw ? (JSON.parse(raw) as AuthState) : { token: null, roles: [] }
+    return raw ? (JSON.parse(raw) as AuthState) : { token: null, userInfo: null }
   } catch {
-    return { token: null, roles: [] }
+    return { token: null, userInfo: null }
   }
 }
 
-// 模块级单例，组件外（路由守卫）也能访问
-const token = ref<string | null>(read().token)
-const roles = ref<string[]>(read().roles)
+// 模块级单例，路由守卫里也能用
+const initial = read()
+const token = ref<string | null>(initial.token)
+const userInfo = ref<UserInfo | null>(initial.userInfo)
 
 function persist() {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify({ token: token.value, roles: roles.value }))
+  localStorage.setItem(
+    STORAGE_KEY,
+    JSON.stringify({ token: token.value, userInfo: userInfo.value }),
+  )
 }
 
 export function useAuth() {
   const isLogin = computed(() => !!token.value)
-  const isAdmin = computed(() => roles.value.includes('admin'))
 
-  function login(mockToken: string, nextRoles: string[]) {
-    token.value = mockToken
-    roles.value = nextRoles
+  /** 角色：1-管理员 2-普通用户 */
+  const role = computed(() => userInfo.value?.role)
+  const isAdmin = computed(() => role.value === ROLE.ADMIN)
+
+  function setAuth(nextToken: string, nextUser: UserInfo) {
+    token.value = nextToken
+    userInfo.value = nextUser
     persist()
   }
 
   function logout() {
     token.value = null
-    roles.value = []
+    userInfo.value = null
     persist()
   }
 
-  return { token, roles, isLogin, isAdmin, login, logout }
+  return { token, userInfo, isLogin, role, isAdmin, setAuth, logout }
 }
