@@ -5,29 +5,42 @@
 
   <sql id="baseColumns">
     id,
-        parent_id AS parentId,
-        name,
-        path,
-        component,
-        icon,
-        menu_type AS menuType,
-        sort,
-        visible,
-        permission,
-        created_at AS createdAt,
-        updated_at AS updatedAt
+    parent_id AS parentId,
+    name,
+    path,
+    component,
+    icon,
+    menu_type AS menuType,
+    sort,
+    visible,
+    permission,
+    created_at AS createdAt,
+    updated_at AS updatedAt
   </sql>
 
-  <select id="listAll" resultType="com.xq.entity.SysMenu">
+  <sql id="voColumns">
+    id,
+    parent_id AS parentId,
+    name,
+    path,
+    component,
+    icon,
+    menu_type AS menuType,
+    sort,
+    visible,
+    permission
+  </sql>
+
+  <select id="listAll" resultType="com.xq.vo.MenuVO">
     SELECT
-    <include refid="baseColumns"/>
+    <include refid="voColumns"/>
     FROM sys_menu
     ORDER BY sort, id
   </select>
 
-  <select id="listByType" resultType="com.xq.entity.SysMenu">
+  <select id="listByType" resultType="com.xq.vo.MenuVO">
     SELECT
-    <include refid="baseColumns"/>
+    <include refid="voColumns"/>
     FROM sys_menu
     WHERE menu_type = #{menuType}
     ORDER BY sort, id

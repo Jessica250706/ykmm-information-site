@@ -26,8 +26,8 @@
             mode="horizontal"
             router
           >
-            <el-menu-item v-for="nav in userNav" :key="nav.to" :index="nav.to">
-              {{ nav.label }}
+            <el-menu-item v-for="nav in menuStore.userNavFlat" :key="nav.path" :index="nav.path">
+              {{ nav.name }}
             </el-menu-item>
           </el-menu>
 
@@ -72,20 +72,29 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, onMounted } from 'vue'
 import { RouterLink, RouterView, useRoute, useRouter } from 'vue-router'
-import { userNav } from '@/config/userNav'
+import { useMenuStore } from '@/stores/menu'
 import { useUserStore } from '@/stores/user'
 import ChangeColor from './components/ChangeColor.vue'
 
 const route = useRoute()
 const router = useRouter()
+const menuStore = useMenuStore()
 const { isAdmin } = useUserStore()
 
 const isActive = (path: string) => route.path === path || route.path.startsWith(`${path}/`)
 
 /** 把 isActive 逻辑适配给 el-menu 的 default-active */
-const activeMenu = computed(() => userNav.find((nav) => isActive(nav.to))?.to ?? '')
+const activeMenu = computed(
+  () => menuStore.userNavFlat.find((nav) => isActive(nav.path))?.path ?? '',
+)
+
+onMounted(() => {
+  if (!menuStore.userMenu.length) {
+    void menuStore.loadUserMenu()
+  }
+})
 </script>
 
 <style lang="scss" scoped>

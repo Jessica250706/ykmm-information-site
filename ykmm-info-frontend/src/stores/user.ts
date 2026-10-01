@@ -4,6 +4,7 @@ import { loginAPI } from '@/api/auth'
 import { ROLE } from '@/constants/index'
 import type { LoginRequest } from '@/types/auth'
 import type { UserInfo } from '@/types/user'
+import { useMenuStore } from './menu'
 
 export const useUserStore = defineStore(
   'user',
@@ -15,10 +16,16 @@ export const useUserStore = defineStore(
     const role = computed(() => userInfo.value?.role)
     const isAdmin = computed(() => role.value === ROLE.ADMIN)
 
+    const menuStore = useMenuStore()
+
     const login = async (data: LoginRequest) => {
       const res = await loginAPI(data)
       token.value = res.data.token ?? null
       userInfo.value = res.data.user ?? null
+
+      // 登录后立即拉菜单
+      await menuStore.loadAll()
+
       return res.data
     }
 
@@ -30,6 +37,9 @@ export const useUserStore = defineStore(
     function logout() {
       token.value = null
       userInfo.value = null
+
+      // 退出时清空菜单
+      menuStore.clear()
     }
 
     // 兼容旧调用

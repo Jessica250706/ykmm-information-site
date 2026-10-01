@@ -4,8 +4,8 @@ import type { AnyRow, PageParams, PageResult, UseTableReturn } from './types'
 export interface UseTableOptions<T extends AnyRow, P extends AnyRow = AnyRow> {
   /** 远程请求 */
   request?: (params: P & PageParams) => Promise<PageResult<T>>
-  /** 静态数据 */
-  data?: T[]
+  /** 静态数据：可传数组或 getter（getter 保留响应式） */
+  data?: T[] | (() => T[] | undefined)
   /** 默认附加参数 */
   defaultParams?: P
   /** 默认每页条数 */
@@ -26,7 +26,7 @@ export function useTable<T extends AnyRow, P extends AnyRow = AnyRow>(
 ): UseTableReturn<T> {
   const {
     request,
-    data,
+    data: dataSource,
     defaultParams = {} as P,
     defaultPageSize = 10,
     defaultPageNum = 1,
@@ -44,17 +44,26 @@ export function useTable<T extends AnyRow, P extends AnyRow = AnyRow>(
   /** 是否远程模式 */
   const isRemote = !!request
 
+  /** 统一取数据：兼容「数组」和「getter」两种写法 */
+  function getData(): T[] {
+    if (typeof dataSource === 'function') {
+      return (dataSource() ?? []) as T[]
+    }
+    return (dataSource ?? []) as T[]
+  }
+
   /** 拉取数据 */
   async function fetchData() {
     // 静态数据模式：只做本地分页
     if (!isRemote) {
-      const all = (data ?? []) as T[]
+      const all = getData()
       total.value = all.length
       const start = (currentPage.value - 1) * pageSize.value
       tableData.value = all.slice(start, start + pageSize.value)
       return
     }
 
+    // 远程模式
     loading.value = true
     try {
       const params = {
@@ -105,10 +114,10 @@ export function useTable<T extends AnyRow, P extends AnyRow = AnyRow>(
     total.value = t ?? list.length
   }
 
-  /** 静态数据变化时自动刷新 */
-  if (!isRemote && data) {
+  /** 静态数据变化时自动刷新（getter 形式能感知外部响应式变化） */
+  if (!isRemote) {
     watch(
-      () => data,
+      () => getData(),
       () => {
         void fetchData()
       },

@@ -15,6 +15,18 @@ export const adminRoutes: RouteRecordRaw = {
       meta: { title: '菜单管理' },
     },
     {
+      path: 'settings/menu/create',
+      name: 'AdminMenuCreate',
+      component: () => import('@/views/adminSettings/menuManage/components/EditMenu.vue'),
+      meta: { title: '新增菜单' },
+    },
+    {
+      path: 'settings/menu/edit/:id',
+      name: 'AdminMenuEdit',
+      component: () => import('@/views/adminSettings/menuManage/components/EditMenu.vue'),
+      meta: { title: '编辑菜单' },
+    },
+    {
       path: 'settings/user',
       name: 'AdminUserManage',
       component: () => import('@/views/adminSettings/userManage/Index.vue'),

@@ -1,3 +1,4 @@
 export * from './role'
 export * from './userStatus'
 export * from './theme'
+export * from './menu'

@@ -1,6 +1,7 @@
 package com.xq.mapper;
 
 import com.xq.entity.SysMenu;
+import com.xq.vo.MenuVO;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
@@ -12,12 +13,12 @@ public interface MenuMapper {
     /**
      * 查询全部菜单
      */
-    List<SysMenu> listAll();
+    List<MenuVO> listAll();
 
     /**
      * 按菜单类型查询
      */
-    List<SysMenu> listByType(@Param("menuType") Integer menuType);
+    List<MenuVO> listByType(@Param("menuType") Integer menuType);
 
     /**
      * 根据 id 查询

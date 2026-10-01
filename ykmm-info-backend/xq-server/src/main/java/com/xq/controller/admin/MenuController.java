@@ -1,9 +1,9 @@
 package com.xq.controller.admin;
 
 import com.xq.dto.MenuDTO;
-import com.xq.entity.SysMenu;
 import com.xq.result.Result;
 import com.xq.service.MenuService;
+import com.xq.vo.MenuVO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -26,7 +26,7 @@ public class MenuController {
      * menuType 可选：1管理端 2用户端，不传返回全部
      */
     @GetMapping
-    public Result<List<SysMenu>> tree(
+    public Result<List<MenuVO>> tree(
             @RequestParam(required = false) Integer menuType) {
         return Result.success(menuService.tree(menuType));
     }

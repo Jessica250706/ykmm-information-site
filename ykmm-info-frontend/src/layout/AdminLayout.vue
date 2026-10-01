@@ -19,7 +19,7 @@
 
       <el-scrollbar class="flex-1">
         <el-menu :default-active="route.path" class="admin-menu" router>
-          <AdminMenuItem v-for="item in adminMenu" :key="item.title" :item="item" />
+          <AdminMenuItem v-for="item in menuStore.adminMenu" :key="item.title" :item="item" />
         </el-menu>
       </el-scrollbar>
 
@@ -67,23 +67,30 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, onMounted } from 'vue'
 import { RouterLink, RouterView, useRoute, useRouter } from 'vue-router'
-import { adminMenu } from '@/config/adminMenu'
+import { useMenuStore } from '@/stores/menu'
 import { useUserStore } from '@/stores/user'
 import AdminMenuItem from './components/AdminMenuItem.vue'
-import ChangeColor from './components/ChangeColor.vue'
 
 const route = useRoute()
 const router = useRouter()
-const { logout } = useUserStore()
+const userStore = useUserStore()
+const menuStore = useMenuStore()
 
 const breadcrumbs = computed(() =>
   route.matched.map((r) => r.meta?.title).filter((t): t is string => !!t),
 )
 
+// 兜底：如果 store 里没菜单（比如刷新页面），主动拉一次
+onMounted(() => {
+  if (!menuStore.adminMenu.length) {
+    void menuStore.loadAdminMenu()
+  }
+})
+
 function handleLogout() {
-  logout()
+  userStore.logout()
   router.replace({ name: 'Login' })
 }
 </script>

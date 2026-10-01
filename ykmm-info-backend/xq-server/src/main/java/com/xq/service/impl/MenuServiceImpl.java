@@ -4,6 +4,7 @@ import com.xq.dto.MenuDTO;
 import com.xq.entity.SysMenu;
 import com.xq.mapper.MenuMapper;
 import com.xq.service.MenuService;
+import com.xq.vo.MenuVO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,8 +28,8 @@ public class MenuServiceImpl implements MenuService {
      * menuType 为 null 时返回全部
      */
     @Override
-    public List<SysMenu> tree(Integer menuType) {
-        List<SysMenu> all;
+    public List<MenuVO> tree(Integer menuType) {
+        List<MenuVO> all;
         if (menuType == null) {
             all = menuMapper.listAll();
         } else {
@@ -36,14 +37,14 @@ public class MenuServiceImpl implements MenuService {
         }
 
         // 内存中构建树形结构
-        Map<Long, SysMenu> idMap = new HashMap<>();
-        for (SysMenu m : all) {
+        Map<Long, MenuVO> idMap = new HashMap<>();
+        for (MenuVO m : all) {
             m.setChildren(new ArrayList<>());
             idMap.put(m.getId(), m);
         }
 
-        List<SysMenu> roots = new ArrayList<>();
-        for (SysMenu m : all) {
+        List<MenuVO> roots = new ArrayList<>();
+        for (MenuVO m : all) {
             Long pid = m.getParentId();
             if (pid == null || pid == 0L || !idMap.containsKey(pid)) {
                 roots.add(m);

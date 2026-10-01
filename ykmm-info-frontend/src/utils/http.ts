@@ -68,7 +68,7 @@ httpInstance.interceptors.response.use(
     // 统一错误提示
     ElMessage.error(e.response?.data?.msg ?? e.message ?? '请求失败')
     // 401 token 失效处理
-    if (e.response.status === 401) {
+    if (e?.response?.status === 401) {
       // 1. 清除本地用户数据
       const userStore = useUserStore()
       userStore.clearUserInfo()

@@ -123,7 +123,7 @@ const emit = defineEmits<{
 const { loading, tableData, total, currentPage, pageSize, refresh, search, reset, setData } =
   useTable<T, P>({
     request: props.request,
-    data: props.data,
+    data: () => props.data,
     defaultPageSize: props.defaultPageSize,
     defaultPageNum: props.defaultPageNum,
   })
