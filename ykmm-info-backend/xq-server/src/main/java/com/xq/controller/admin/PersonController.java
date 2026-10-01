@@ -22,7 +22,7 @@ public class PersonController {
     private PersonService personService;
 
     /**
-     * 分页查询
+     * 分页查询人物
      */
     @GetMapping
     public Result<PageResult<PersonVO>> page(PersonPageQueryDTO query) {
@@ -31,7 +31,7 @@ public class PersonController {
     }
 
     /**
-     * 详情
+     * 查询人物详情
      */
     @GetMapping("/{id}")
     public Result<PersonVO> detail(@PathVariable Long id) {
@@ -39,7 +39,7 @@ public class PersonController {
     }
 
     /**
-     * 新增
+     * 新增人物
      */
     @PostMapping
     public Result<Long> create(@RequestBody PersonDTO dto) {
@@ -47,7 +47,7 @@ public class PersonController {
     }
 
     /**
-     * 编辑
+     * 编辑人物
      */
     @PutMapping("/{id}")
     public Result<Void> update(@PathVariable Long id,
@@ -57,7 +57,7 @@ public class PersonController {
     }
 
     /**
-     * 删除
+     * 删除人物
      */
     @DeleteMapping("/{id}")
     public Result<Void> delete(@PathVariable Long id) {
