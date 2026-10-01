@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xq.mapper.AgencyMapper">
+
+  <sql id="baseColumns">
+    id,
+    name,
+    created_at AS createdAt
+  </sql>
+
+  <select id="listAll" resultType="com.xq.entity.Agency">
+    SELECT
+    <include refid="baseColumns"/>
+    FROM agency
+    ORDER BY id
+  </select>
+
+  <select id="getById" resultType="com.xq.entity.Agency">
+    SELECT
+    <include refid="baseColumns"/>
+    FROM agency
+    WHERE id = #{id}
+  </select>
+
+  <select id="getByName" resultType="com.xq.entity.Agency">
+    SELECT
+    <include refid="baseColumns"/>
+    FROM agency
+    WHERE name = #{name}
+  </select>
+
+  <insert id="insert" parameterType="com.xq.entity.Agency"
+          useGeneratedKeys="true" keyProperty="id">
+    INSERT INTO agency (name)
+    VALUES (#{name})
+  </insert>
+
+  <update id="update" parameterType="com.xq.entity.Agency">
+    UPDATE agency
+    <set>
+      <if test="name != null">name = #{name},</if>
+    </set>
+    WHERE id = #{id}
+  </update>
+
+  <delete id="deleteById">
+    DELETE
+    FROM agency
+    WHERE id = #{id}
+  </delete>
+
+  <select id="countGroupByAgencyId" resultType="int">
+    SELECT COUNT(*)
+    FROM idol_group
+    WHERE agency_id = #{agencyId}
+  </select>
+
+  <select id="countPersonByAgencyId" resultType="int">
+    SELECT COUNT(*)
+    FROM person_agency_rel
+    WHERE agency_id = #{agencyId}
+  </select>
+
+</mapper>

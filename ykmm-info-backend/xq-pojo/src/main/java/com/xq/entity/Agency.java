@@ -19,12 +19,18 @@ public class Agency implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    /** 主键 */
+    /**
+     * 主键
+     */
     private Long id;
 
-    /** 公司名 */
+    /**
+     * 公司名
+     */
     private String name;
 
-    /** 创建时间 */
+    /**
+     * 创建时间
+     */
     private LocalDateTime createdAt;
 }

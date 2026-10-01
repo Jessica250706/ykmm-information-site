@@ -1,23 +1,15 @@
-package com.xq.entity;
+package com.xq.vo;
 
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
-import java.time.LocalDateTime;
 
-/**
- * 偶像团体表
- */
 @Data
-@Builder
-@NoArgsConstructor
 @AllArgsConstructor
-public class IdolGroup implements Serializable {
-
-    private static final long serialVersionUID = 1L;
+@NoArgsConstructor
+public class IdolGroupVO implements Serializable {
 
     /**
      * 主键
@@ -35,7 +27,7 @@ public class IdolGroup implements Serializable {
     private Long agencyId;
 
     /**
-     * 创建时间
+     * 所属经纪公司名
      */
-    private LocalDateTime createdAt;
+    private String agencyName;
 }

@@ -35,7 +35,7 @@
     SELECT
     <include refid="voColumns"/>
     FROM sys_menu
-    ORDER BY sort, id
+    ORDER BY menu_type, sort, id
   </select>
 
   <select id="listByType" resultType="com.xq.vo.MenuVO">
@@ -43,7 +43,7 @@
     <include refid="voColumns"/>
     FROM sys_menu
     WHERE menu_type = #{menuType}
-    ORDER BY sort, id
+    ORDER BY menu_type, sort, id
   </select>
 
   <select id="getById" resultType="com.xq.entity.SysMenu">

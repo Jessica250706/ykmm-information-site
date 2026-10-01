@@ -51,7 +51,7 @@
         </el-form-item>
 
         <el-form-item label="排序" prop="sort">
-          <el-input-number v-model="form.sort" :max="9999" :min="0" />
+          <el-input-number v-model="form.sort" :max="9999" :min="0" :precision="0" />
         </el-form-item>
 
         <el-form-item label="显示状态" prop="visible">
@@ -60,12 +60,12 @@
             <el-radio :value="MENU_VISIBLE.HIDDEN">隐藏</el-radio>
           </el-radio-group>
         </el-form-item>
-
-        <el-form-item>
-          <el-button :loading="loading" type="primary" @click="handleSubmit">保存</el-button>
-          <el-button @click="handleBack">取消</el-button>
-        </el-form-item>
       </el-form>
+
+      <div class="flex justify-center">
+        <el-button :loading="loading" type="primary" @click="handleSubmit">保存</el-button>
+        <el-button @click="handleBack">取消</el-button>
+      </div>
     </el-card>
   </div>
 </template>
@@ -128,7 +128,7 @@ function filterSelfAndDescendants(tree: MenuVO[], excludeId: number): MenuVO[] {
     .filter((n) => n.id !== excludeId)
     .map((n) => ({
       ...n,
-      children: n.children ? filterSelfAndDescendants(n.children, excludeId) : null,
+      children: n.children ? filterSelfAndDescendants(n.children, excludeId) : undefined,
     }))
 }
 
