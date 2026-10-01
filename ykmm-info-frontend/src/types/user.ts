@@ -1,11 +1,12 @@
 import type { PageRequest } from './common'
+import type { UserStatusValue, RoleValue } from '@/constants/index.ts'
 
 /** 用户查询请求 */
 export interface UserRequest extends PageRequest {
   /** 关键字：邮箱 / 昵称 / uid */
   keyword?: string
   /** 状态：1正常 0禁用，null不限 */
-  status?: number
+  status?: UserStatusValue
   /** 允许扩展其他字段 */
   [property: string]: any
 }
@@ -28,8 +29,8 @@ export interface UserInfo {
   /**
    * 角色：1-管理员 2-普通用户
    */
-  role?: number
-  status?: number
+  role?: RoleValue
+  status?: UserStatusValue
   uid?: string
   [property: string]: any
 }
@@ -44,7 +45,7 @@ export interface UserEditDTO {
   /**
    * 1正常 0禁用
    */
-  status?: number
+  status?: UserStatusValue
   [property: string]: any
 }
 
@@ -55,6 +56,6 @@ export interface UserStatusDTO {
   /**
    * 1正常 0禁用
    */
-  status?: number
+  status?: UserStatusValue
   [property: string]: any
 }

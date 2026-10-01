@@ -1,7 +1,7 @@
 <template>
   <div class="user-manage flex h-full flex-col">
     <!-- 搜索区 -->
-    <el-card class="mb-4" shadow="never">
+    <el-card class="search mb-4" shadow="never">
       <el-form :model="query" inline @submit.prevent>
         <el-form-item label="关键词">
           <el-input
@@ -15,8 +15,14 @@
 
         <el-form-item label="状态">
           <el-select v-model="query.status" placeholder="全部" style="width: 140px" clearable>
-            <el-option :value="1" label="正常" />
-            <el-option :value="0" label="禁用" />
+            <el-option
+              :label="USER_STATUS_LABEL[USER_STATUS.ENABLED]"
+              :value="USER_STATUS.ENABLED"
+            />
+            <el-option
+              :label="USER_STATUS_LABEL[USER_STATUS.DISABLED]"
+              :value="USER_STATUS.DISABLED"
+            />
           </el-select>
         </el-form-item>
 
@@ -32,7 +38,7 @@
       <ProTable ref="tableRef" :columns="columns" :request="fetchList" row-key="id" stripe>
         <!-- 头像 -->
         <template #avatar="{ row }">
-          <el-avatar :size="32" :src="row.avatar">
+          <el-avatar :size="32" :src="row.avatar" class="leading-8">
             {{ row.nickname?.charAt(0) || 'U' }}
           </el-avatar>
         </template>
@@ -40,23 +46,30 @@
         <!-- 角色 -->
         <template #role="{ row }">
           <el-tag :type="row.role === ROLE.ADMIN ? 'danger' : 'info'" effect="plain">
-            {{ row.role === ROLE.ADMIN ? '管理员' : '普通用户' }}
+            {{ ROLE_LABEL[row.role as RoleValue] }}
           </el-tag>
         </template>
 
         <!-- 状态 -->
         <template #status="{ row }">
           <el-tag
-            :type="row.status === 1 ? 'success' : 'danger'"
+            :type="row.status === USER_STATUS.ENABLED ? 'success' : 'danger'"
             class="cursor-pointer"
-            @click="handleStatusToggle(row)"
           >
-            {{ row.status === 1 ? '启用' : '禁用' }}
+            {{ statusLabel(row.status) }}
           </el-tag>
         </template>
 
-        <!-- 操作 -->
+        <!-- 操作列 -->
         <template #action="{ row }">
+          <el-button
+            :type="row.status === USER_STATUS.ENABLED ? 'danger' : 'primary'"
+            size="small"
+            link
+            @click="handleStatusToggle(row)"
+          >
+            {{ USER_STATUS_ACTION_LABEL[row.status as UserStatusValue] }}
+          </el-button>
           <el-button size="small" type="primary" link @click="handleEdit(row)">编辑</el-button>
           <el-button size="small" type="danger" link @click="handleDelete(row)">删除</el-button>
         </template>
@@ -78,7 +91,15 @@ import {
   type ProTableColumn,
   type ProTableExpose,
 } from '@/components/ProTable'
-import { ROLE } from '@/constants/index.ts'
+import {
+  ROLE,
+  ROLE_LABEL,
+  type RoleValue,
+  USER_STATUS,
+  USER_STATUS_ACTION_LABEL,
+  USER_STATUS_LABEL,
+  type UserStatusValue,
+} from '@/constants/index.ts'
 import type { UserInfo, UserRequest } from '@/types/user'
 import UserEditDialog from './components/UserEditDialog.vue'
 
@@ -89,7 +110,7 @@ const tableRef = ref<TableInstance>()
 /* -------- 搜索参数 -------- */
 const query = reactive<{
   keyword?: string
-  status?: number
+  status?: UserStatusValue
 }>({
   keyword: '',
   status: undefined,
@@ -97,14 +118,20 @@ const query = reactive<{
 
 /* -------- 列配置 -------- */
 const columns: ProTableColumn<UserInfo>[] = [
-  { label: '头像', width: 80, align: 'center', slot: 'avatar' },
-  { prop: 'nickname', label: '昵称', minWidth: 120 },
-  { prop: 'email', label: '邮箱', minWidth: 200, showOverflowTooltip: true },
-  { prop: 'uid', label: 'UID', minWidth: 300, showOverflowTooltip: true },
-  { prop: 'role', label: '角色', width: 100, align: 'center', slot: 'role' },
-  { prop: 'status', label: '状态', width: 90, align: 'center', slot: 'status' },
-  { prop: 'lastLoginTime', label: '最后登录时间', width: 170, showOverflowTooltip: true },
-  { label: '操作', width: 130, align: 'center', fixed: 'right', slot: 'action' },
+  { label: '头像', minWidth: 80, align: 'center', slot: 'avatar' },
+  { prop: 'nickname', label: '昵称', minWidth: 120, align: 'center' },
+  { prop: 'email', label: '邮箱', minWidth: 200, align: 'center', showOverflowTooltip: true },
+  { prop: 'uid', label: 'UID', minWidth: 300, align: 'center', showOverflowTooltip: true },
+  { prop: 'role', label: '角色', minWidth: 120, align: 'center', slot: 'role' },
+  { prop: 'status', label: '状态', minWidth: 90, align: 'center', slot: 'status' },
+  {
+    prop: 'lastLoginTime',
+    label: '最后登录时间',
+    minWidth: 170,
+    align: 'center',
+    showOverflowTooltip: true,
+  },
+  { label: '操作', minWidth: 180, align: 'center', fixed: 'right', slot: 'action' },
 ]
 
 /* -------- 请求适配 -------- */
@@ -133,10 +160,16 @@ function handleReset() {
   tableRef.value?.reset()
 }
 
+/* -------- 状态文案 helper（收窄 row.status 的 any） -------- */
+function statusLabel(status?: number): string {
+  if (status == null) return '未知'
+  return USER_STATUS_LABEL[status as UserStatusValue] ?? '未知'
+}
+
 /* -------- 状态切换 -------- */
 async function handleStatusToggle(row: UserInfo) {
-  const nextStatus = row.status === 1 ? 0 : 1
-  const actionText = nextStatus === 1 ? '启用' : '禁用'
+  const nextStatus = row.status === USER_STATUS.ENABLED ? USER_STATUS.DISABLED : USER_STATUS.ENABLED
+  const actionText = USER_STATUS_LABEL[nextStatus]
 
   try {
     await ElMessageBox.confirm(`确定要${actionText}该用户吗？`, '提示', {

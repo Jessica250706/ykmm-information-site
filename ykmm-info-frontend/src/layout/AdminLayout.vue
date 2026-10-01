@@ -23,7 +23,7 @@
         </el-menu>
       </el-scrollbar>
 
-      <div :style="{ borderColor: 'var(--menu-border)' }" class="shrink-0 border-t p-3">
+      <div class="shrink-0 p-3">
         <RouterLink
           :style="{ backgroundColor: 'var(--menu-hover-bg)', color: 'var(--menu-text)' }"
           class="flex items-center justify-center gap-1 rounded-lg px-3 py-2 text-sm transition hover:brightness-95"
