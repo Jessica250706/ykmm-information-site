@@ -70,6 +70,7 @@
           >
             {{ USER_STATUS_ACTION_LABEL[row.status as UserStatusValue] }}
           </el-button>
+          <el-button size="small" type="primary" link @click="handleDetail(row)">详情</el-button>
           <el-button size="small" type="primary" link @click="handleEdit(row)">编辑</el-button>
           <el-button size="small" type="danger" link @click="handleDelete(row)">删除</el-button>
         </template>
@@ -131,7 +132,7 @@ const columns: ProTableColumn<UserInfo>[] = [
     align: 'center',
     showOverflowTooltip: true,
   },
-  { label: '操作', minWidth: 180, align: 'center', fixed: 'right', slot: 'action' },
+  { label: '操作', minWidth: 200, align: 'center', fixed: 'right', slot: 'action' },
 ]
 
 /* -------- 请求适配 -------- */
@@ -182,6 +183,12 @@ async function handleStatusToggle(row: UserInfo) {
   await updateUserStatusAPI(row.id!, { status: nextStatus })
   ElMessage.success(`${actionText}成功`)
   await tableRef.value?.refresh()
+}
+
+/* -------- 编辑：只留开关和当前行 -------- */
+
+function handleDetail(row: UserInfo) {
+  // TODO: 跳转到个人中心详情页
 }
 
 /* -------- 编辑：只留开关和当前行 -------- */

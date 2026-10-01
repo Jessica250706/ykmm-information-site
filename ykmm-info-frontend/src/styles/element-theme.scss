@@ -35,6 +35,31 @@
 @use "element-plus/theme-chalk/src/index.scss" as *;
 
 /* 全局样式 */
+// 搜索框的表单组件
 .search .el-form-item {
   margin-bottom: 0 !important;
+}
+
+// el-dialog 全局居中
+/* 让 el-dialog 垂直水平居中 */
+.el-overlay-dialog {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.el-overlay-dialog .el-dialog {
+  /* 去掉默认的 15vh 顶部间距 */
+  margin: 0 !important;
+
+  /* 防止超高时撑出屏幕，超出时内部滚动 */
+  max-height: calc(100vh - 40px);
+  display: flex;
+  flex-direction: column;
+}
+
+/* 让 dialog 内容区在超高时可滚动 */
+.el-overlay-dialog .el-dialog__body {
+  overflow: auto;
+  flex: 1;
 }

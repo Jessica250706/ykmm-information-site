@@ -9,9 +9,9 @@
       <el-form-item label="昵称" prop="nickname">
         <el-input v-model="form.nickname" />
       </el-form-item>
-      <el-form-item label="邮箱" prop="email">
+      <!-- <el-form-item label="邮箱" prop="email">
         <el-input v-model="form.email" />
-      </el-form-item>
+      </el-form-item> -->
       <el-form-item label="头像" prop="avatar">
         <el-input v-model="form.avatar" />
       </el-form-item>
