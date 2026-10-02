@@ -97,4 +97,14 @@
     ORDER BY category_type, sort, id
   </select>
 
+  <select id="listChildren" resultType="com.xq.entity.StoryCategory">
+    SELECT *
+    FROM story_category
+    WHERE parent_id = #{parentId}
+    <if test="categoryType != null">
+      AND category_type = #{categoryType}
+    </if>
+    ORDER BY category_type, sort, id
+  </select>
+
 </mapper>

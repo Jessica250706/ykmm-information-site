@@ -29,6 +29,11 @@ public class StoryCategoryVO implements Serializable {
     private Long parentId;
 
     /**
+     * 父分类名
+     */
+    private String parentName;
+
+    /**
      * 分类名
      */
     private String name;

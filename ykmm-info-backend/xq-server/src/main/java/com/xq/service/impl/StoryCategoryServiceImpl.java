@@ -83,7 +83,15 @@ public class StoryCategoryServiceImpl implements StoryCategoryService {
     public PageResult<StoryCategoryVO> pageTree(StoryCategoryPageQueryDTO query) {
         // 1. 用 PageHelper 对「根节点」分页
         PageHelper.startPage(query.getPageNum(), query.getPageSize());
-        List<StoryCategory> roots = storyCategoryMapper.listRoots(query.getCategoryType());
+
+        List<StoryCategory> roots;
+        if (query.getParentId() != null) {
+            // 分页某节点的直接子节点
+            roots = storyCategoryMapper.listChildren(query.getParentId(), query.getCategoryType());
+        } else {
+            // 分页根节点
+            roots = storyCategoryMapper.listRoots(query.getCategoryType());
+        }
         PageInfo<StoryCategory> pageInfo = new PageInfo<>(roots);
 
         if (roots.isEmpty()) {
@@ -256,6 +264,63 @@ public class StoryCategoryServiceImpl implements StoryCategoryService {
         }
         storyCategoryMapper.deleteById(id);
         log.info("删除剧情分类成功，id={}", id);
+    }
+
+    /**
+     * 查询分类详情（含完整子树）
+     *
+     * @param id 主键
+     * @return 带子树的 VO
+     */
+    @Override
+    public StoryCategoryVO getDetailTree(Long id) {
+        if (id == null) {
+            throw new RuntimeException("分类ID不能为空");
+        }
+        StoryCategory root = storyCategoryMapper.getById(id);
+        if (root == null) {
+            throw new RuntimeException("剧情分类不存在");
+        }
+
+        // 查子孙（复用已有的 listDescendants）
+        List<StoryCategory> descendants = storyCategoryMapper.listDescendants(List.of(id));
+
+        List<StoryCategory> all = new ArrayList<>();
+        all.add(root);
+        if (descendants != null && !descendants.isEmpty()) {
+            all.addAll(descendants);
+        }
+
+        // 转 VO
+        Map<Long, StoryCategoryVO> idMap = new HashMap<>(all.size());
+        for (StoryCategory c : all) {
+            StoryCategoryVO vo = toVO(c);
+            vo.setChildren(new ArrayList<>());
+            idMap.put(vo.getId(), vo);
+        }
+
+        // 挂子节点
+        for (StoryCategory c : all) {
+            StoryCategoryVO vo = idMap.get(c.getId());
+            Long pid = vo.getParentId();
+            if (pid == null || pid == StoryConstant.ROOT_PARENT_ID || !idMap.containsKey(pid)) {
+                continue;
+            }
+            idMap.get(pid).getChildren().add(vo);
+        }
+
+        StoryCategoryVO rootVo = idMap.get(id);
+        sortChildrenRecursively(rootVo.getChildren());
+
+        // 补上父分类名称
+        if (root.getParentId() != null
+                && !root.getParentId().equals(StoryConstant.ROOT_PARENT_ID)) {
+            StoryCategory parent = storyCategoryMapper.getById(root.getParentId());
+            if (parent != null) {
+                rootVo.setParentName(parent.getName());
+            }
+        }
+        return rootVo;
     }
 
     /**

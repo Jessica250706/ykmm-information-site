@@ -48,3 +48,10 @@ export const updateStoryCategoryAPI = (id: number, data: StoryCategoryDTO) => {
 export const deleteStoryCategoryAPI = (id: number) => {
   return request.delete(`/admin/story-category/${id}`)
 }
+
+/**
+ * @description: 查询分类详情（含完整子树）
+ */
+export const getStoryCategoryDetailTreeAPI = (id: number) => {
+  return request.get<StoryCategoryVO>(`/admin/story-category/${id}/tree`)
+}

@@ -153,6 +153,14 @@ async function handleSubmit() {
 }
 
 function handleBack() {
+  const { from, detailId } = route.query
+  if (from === 'detail' && detailId) {
+    router.push({
+      name: 'AdminStoryCategoryDetail',
+      params: { id: String(detailId) },
+    })
+    return
+  }
   router.push({ name: 'AdminStoryCategoryManage' })
 }
 

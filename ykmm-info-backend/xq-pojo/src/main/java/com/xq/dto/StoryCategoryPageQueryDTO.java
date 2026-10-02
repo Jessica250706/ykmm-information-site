@@ -14,4 +14,9 @@ public class StoryCategoryPageQueryDTO extends PageQueryDTO implements Serializa
      * 分类类型
      */
     Integer categoryType;
+
+    /**
+     * 父分类ID：有值时只分页该节点的直接子节点
+     */
+    private Long parentId;
 }

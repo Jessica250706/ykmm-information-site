@@ -92,4 +92,15 @@ public class StoryCategoryController {
         storyCategoryService.delete(id);
         return Result.success();
     }
+
+    /**
+     * 查询分类详情（含完整子树）
+     *
+     * @param id 主键
+     * @return 带子树的详情
+     */
+    @GetMapping("/{id}/tree")
+    public Result<StoryCategoryVO> detailTree(@PathVariable Long id) {
+        return Result.success(storyCategoryService.getDetailTree(id));
+    }
 }

@@ -84,4 +84,10 @@ public interface StoryCategoryMapper {
      * 根据根节点 ID 列表查询其所有子孙
      */
     List<StoryCategory> listDescendants(@Param("rootIds") List<Long> rootIds);
+
+    /**
+     * 分页某父节点的直接子节点
+     */
+    List<StoryCategory> listChildren(@Param("parentId") Long parentId,
+                                     @Param("categoryType") Integer categoryType);
 }

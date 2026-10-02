@@ -58,4 +58,12 @@ public interface StoryCategoryService {
      * @param id 主键
      */
     void delete(Long id);
+
+    /**
+     * 查询分类详情（含完整子树）
+     *
+     * @param id 主键
+     * @return 带子树的 VO
+     */
+    StoryCategoryVO getDetailTree(Long id);
 }

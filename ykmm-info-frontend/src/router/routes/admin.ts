@@ -130,5 +130,12 @@ export const adminRoutes: RouteRecordRaw = {
         import('@/views/adminContent/storyCategoryManage/components/EditStoryCategory.vue'),
       meta: { title: '编辑剧情分类' },
     },
+    {
+      path: 'story-category/detail/:id',
+      name: 'AdminStoryCategoryDetail',
+      component: () =>
+        import('@/views/adminContent/storyCategoryManage/components/DetailStoryCategory.vue'),
+      meta: { title: '剧情分类详情' },
+    },
   ],
 }

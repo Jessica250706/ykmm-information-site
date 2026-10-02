@@ -13,6 +13,10 @@ export interface StoryCategoryPageQueryDTO extends PageRequest {
    * 分类类型，可选
    */
   categoryType?: number
+  /**
+   * 父分类ID：有值时只分页该节点的直接子节点
+   */
+  parentId?: number
   [property: string]: any
 }
 
@@ -50,6 +54,10 @@ export interface StoryCategoryVO {
    * 父分类ID
    */
   parentId?: number
+  /**
+   * 父分类名
+   */
+  parentName?: string
   /**
    * 排序
    */

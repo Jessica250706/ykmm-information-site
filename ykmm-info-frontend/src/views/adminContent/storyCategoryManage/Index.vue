@@ -56,6 +56,7 @@
 
         <!-- 操作 -->
         <template #action="{ row }">
+          <el-button size="small" type="primary" link @click="handleDetail(row)">详情</el-button>
           <el-button size="small" type="primary" link @click="handleCreate(row)">
             新增子分类
           </el-button>
@@ -118,7 +119,7 @@ const columns: ProTableColumn<StoryCategoryVO>[] = [
     align: 'center',
     showOverflowTooltip: true,
   },
-  { label: '操作', width: 220, align: 'center', fixed: 'right', slot: 'action' },
+  { label: '操作', width: 260, align: 'center', fixed: 'right', slot: 'action' },
 ]
 
 /** 不同分类类型给不同 tag 颜色 */
@@ -163,7 +164,14 @@ function handleReset() {
   tableRef.value?.reset()
 }
 
-/* -------- 新增 / 编辑 -------- */
+/* -------- 详情 / 新增 / 编辑 -------- */
+function handleDetail(row: StoryCategoryVO) {
+  router.push({
+    name: 'AdminStoryCategoryDetail',
+    params: { id: String(row.id) },
+  })
+}
+
 function handleCreate(parent?: StoryCategoryVO) {
   router.push({
     name: 'AdminStoryCategoryCreate',
