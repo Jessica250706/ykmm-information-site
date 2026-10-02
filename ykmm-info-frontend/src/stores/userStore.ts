@@ -4,7 +4,7 @@ import { loginAPI } from '@/api/auth'
 import { ROLE } from '@/constants/index'
 import type { LoginRequest } from '@/types/auth'
 import type { UserInfo } from '@/types/user'
-import { useMenuStore } from './menu'
+import { useMenuStore } from './menuStore'
 
 export const useUserStore = defineStore(
   'user',

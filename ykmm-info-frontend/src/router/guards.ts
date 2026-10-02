@@ -1,4 +1,4 @@
-import { useUserStore } from '@/stores/user'
+import { useUserStore } from '@/stores/userStore'
 import type { Router } from 'vue-router'
 
 export function setupRouterGuards(router: Router) {

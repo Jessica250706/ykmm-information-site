@@ -65,7 +65,7 @@ import { Lock, Message } from '@element-plus/icons-vue'
 import { ElMessage, type FormInstance, type FormRules } from 'element-plus'
 import { useRoute, useRouter } from 'vue-router'
 import { ROLE } from '@/constants/index'
-import { useUserStore } from '@/stores/user'
+import { useUserStore } from '@/stores/userStore'
 import type { LoginRequest } from '@/types/auth'
 
 const route = useRoute()

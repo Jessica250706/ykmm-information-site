@@ -90,7 +90,7 @@ import {
   type MenuTypeValue,
   type MenuVisibleValue,
 } from '@/constants/menu'
-import { useMenuStore } from '@/stores/menu'
+import { useMenuStore } from '@/stores/menuStore'
 import type { MenuVO } from '@/types/menu'
 
 const router = useRouter()

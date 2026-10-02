@@ -74,8 +74,8 @@
 <script setup lang="ts">
 import { computed, onMounted } from 'vue'
 import { RouterLink, RouterView, useRoute, useRouter } from 'vue-router'
-import { useMenuStore } from '@/stores/menu'
-import { useUserStore } from '@/stores/user'
+import { useMenuStore } from '@/stores/menuStore.ts'
+import { useUserStore } from '@/stores/userStore.ts'
 import ChangeColor from './components/ChangeColor.vue'
 
 const route = useRoute()

@@ -69,8 +69,8 @@
 <script setup lang="ts">
 import { computed, onMounted } from 'vue'
 import { RouterLink, RouterView, useRoute, useRouter } from 'vue-router'
-import { useMenuStore } from '@/stores/menu'
-import { useUserStore } from '@/stores/user'
+import { useMenuStore } from '@/stores/menuStore.ts'
+import { useUserStore } from '@/stores/userStore.ts'
 import AdminMenuItem from './components/AdminMenuItem.vue'
 
 const route = useRoute()

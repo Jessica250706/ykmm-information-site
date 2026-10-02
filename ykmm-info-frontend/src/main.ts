@@ -11,6 +11,8 @@ import { useTheme } from '@/composables/useTheme'
 // import { componentPlugin } from '@/components/index.ts' // 引入全局组件插件
 // import { lazyPlugin } from '@/directives/lazy.ts' // 引入懒加载指令插件，并注册
 import router from '@/router'
+import { useAgencyStore } from '@/stores/agencyStore'
+import { useIdolGroupStore } from '@/stores/idolGroupStore'
 import App from './App.vue'
 import '@/styles/style.css'
 
@@ -19,6 +21,14 @@ const pinia = createPinia()
 const persist = createPersistedState()
 pinia.use(persist)
 app.use(pinia)
+
+// pinia 装好后就可以调用 store
+const agencyStore = useAgencyStore()
+const idolGroupStore = useIdolGroupStore()
+Promise.all([agencyStore.loadAll(), idolGroupStore.loadAll()]).catch((e) => {
+  console.error('初始化基础数据失败', e)
+})
+
 app.use(router)
 // app.use(componentPlugin)
 // app.use(lazyPlugin)

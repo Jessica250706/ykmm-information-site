@@ -76,7 +76,7 @@ import { ElMessage, type FormInstance, type FormRules } from 'element-plus'
 import { useRoute, useRouter } from 'vue-router'
 import { createMenuAPI, getMenuTreeAPI, updateMenuAPI } from '@/api/menu'
 import { MENU_TYPE, MENU_TYPE_OPTIONS, MENU_VISIBLE, type MenuTypeValue } from '@/constants/menu'
-import { useMenuStore } from '@/stores/menu'
+import { useMenuStore } from '@/stores/menuStore'
 import type { MenuDTO, MenuVO } from '@/types/menu'
 
 const route = useRoute()
