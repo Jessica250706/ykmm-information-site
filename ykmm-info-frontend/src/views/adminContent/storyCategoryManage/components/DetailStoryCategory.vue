@@ -5,6 +5,14 @@
         <div class="flex items-center justify-between">
           <span class="font-medium">剧情分类详情</span>
           <div>
+            <el-button
+              v-if="detail?.children?.length === 0"
+              type="primary"
+              @click="handleCreateStory()"
+            >
+              <el-icon><Plus /></el-icon>
+              新增剧情
+            </el-button>
             <el-button type="primary" @click="handleCreate()">
               <el-icon><Plus /></el-icon>
               新增子分类
@@ -64,6 +72,15 @@
             <el-button size="small" type="primary" link @click="handleCreate(row)">
               新增子分类
             </el-button>
+            <el-button
+              v-if="row.children.length === 0"
+              size="small"
+              type="primary"
+              link
+              @click="handleCreateStory(row)"
+            >
+              新增剧情
+            </el-button>
             <el-button size="small" type="primary" link @click="handleEdit(row)">编辑</el-button>
             <el-button size="small" type="danger" link @click="handleDelete(row)">删除</el-button>
           </template>
@@ -117,7 +134,7 @@ const columns: ProTableColumn<StoryCategoryVO>[] = [
     align: 'center',
     showOverflowTooltip: true,
   },
-  { label: '操作', width: 300, align: 'center', fixed: 'right', slot: 'action' },
+  { label: '操作', minWidth: 300, align: 'center', fixed: 'right', slot: 'action' },
 ]
 
 function categoryTypeTag(type?: number): 'primary' | 'success' | 'warning' | 'danger' | 'info' {
@@ -191,6 +208,19 @@ function handleEdit(row: StoryCategoryVO) {
     name: 'AdminStoryCategoryEdit',
     params: { id: String(row.id) },
     query: { from: 'detail', detailId: String(detailId.value) },
+  })
+}
+
+/** 从详情页跳去新增剧情，回来时回详情页 */
+function handleCreateStory(row?: StoryCategoryVO) {
+  router.push({
+    name: 'AdminStoryCreate',
+    query: {
+      categoryId: String(row?.id ?? detail.value?.id),
+      categoryType: String(row?.categoryType ?? detail.value?.categoryType),
+      from: 'storyCategoryDetail',
+      detailId: String(detailId.value),
+    },
   })
 }
 

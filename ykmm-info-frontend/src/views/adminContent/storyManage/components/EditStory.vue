@@ -156,12 +156,37 @@ async function handleSubmit() {
 }
 
 function handleBack() {
+  const { from, detailId } = route.query
+
+  if (from === 'storyCategoryDetail' && detailId) {
+    router.push({
+      name: 'AdminStoryCategoryDetail',
+      params: { id: String(detailId) },
+    })
+    return
+  }
+
+  if (from === 'storyCategory') {
+    router.push({ name: 'AdminStoryCategoryManage' })
+    return
+  }
+
+  // 默认回剧情管理列表
   router.push({ name: 'AdminStoryManage' })
 }
 
 onMounted(async () => {
   if (isEdit.value) {
     await loadDetail()
+  } else {
+    // 新增模式：从 query 读初始分类类型和分类 ID
+    const { categoryId, categoryType } = route.query
+    if (categoryType) {
+      categoryTypeFilter.value = Number(categoryType) as StoryCategoryTypeValue
+    }
+    if (categoryId) {
+      form.categoryId = Number(categoryId)
+    }
   }
   await loadCategories()
 })

@@ -48,6 +48,15 @@
           <el-button size="small" type="primary" link @click="handleCreate(row)">
             新增子分类
           </el-button>
+          <el-button
+            v-if="row.children.length === 0"
+            size="small"
+            type="primary"
+            link
+            @click="handleCreateStory(row)"
+          >
+            新增剧情
+          </el-button>
           <el-button size="small" type="primary" link @click="handleEdit(row)">编辑</el-button>
           <el-button size="small" type="danger" link @click="handleDelete(row)">删除</el-button>
         </template>
@@ -107,7 +116,7 @@ const columns: ProTableColumn<StoryCategoryVO>[] = [
     align: 'center',
     showOverflowTooltip: true,
   },
-  { label: '操作', width: 260, align: 'center', fixed: 'right', slot: 'action' },
+  { label: '操作', minWidth: 300, align: 'center', fixed: 'right', slot: 'action' },
 ]
 
 /** 不同分类类型给不同 tag 颜色 */
@@ -171,6 +180,18 @@ function handleEdit(row: StoryCategoryVO) {
   router.push({
     name: 'AdminStoryCategoryEdit',
     params: { id: String(row.id) },
+  })
+}
+
+/** 从分类直接跳去新增剧情 */
+function handleCreateStory(row: StoryCategoryVO) {
+  router.push({
+    name: 'AdminStoryCreate',
+    query: {
+      categoryId: String(row.id),
+      categoryType: String(row.categoryType ?? ''),
+      from: 'storyCategory',
+    },
   })
 }
 
