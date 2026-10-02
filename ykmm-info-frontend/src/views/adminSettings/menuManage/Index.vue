@@ -1,33 +1,25 @@
 <template>
   <div class="menu-manage flex h-full flex-col">
     <!-- 顶部操作栏 -->
-    <el-card class="search mb-4" shadow="never">
-      <div class="flex items-center justify-between">
-        <el-form :model="query" inline @submit.prevent>
-          <el-form-item label="菜单类型">
-            <el-select
-              v-model="query.menuType"
-              placeholder="全部"
-              style="width: 140px"
-              clearable
-              @change="loadData"
-            >
-              <el-option
-                v-for="opt in MENU_TYPE_OPTIONS"
-                :key="opt.value"
-                :label="opt.label"
-                :value="opt.value"
-              />
-            </el-select>
-          </el-form-item>
-        </el-form>
+    <TableToolbar :model="query" @reset="handleReset" @search="handleSearch">
+      <el-form-item label="菜单类型">
+        <el-select v-model="query.menuType" placeholder="全部" style="width: 140px" clearable>
+          <el-option
+            v-for="opt in MENU_TYPE_OPTIONS"
+            :key="opt.value"
+            :label="opt.label"
+            :value="opt.value"
+          />
+        </el-select>
+      </el-form-item>
 
+      <template #actions>
         <el-button type="primary" @click="handleCreate()">
           <el-icon><Plus /></el-icon>
           新增顶级菜单
         </el-button>
-      </div>
-    </el-card>
+      </template>
+    </TableToolbar>
 
     <!-- 树形表格 -->
     <el-card class="flex-1" shadow="never">
@@ -113,6 +105,16 @@ const columns: ProTableColumn<MenuVO>[] = [
   { prop: 'visible', label: '显示', width: 90, align: 'center', slot: 'visible' },
   { label: '操作', width: 220, align: 'center', fixed: 'right', slot: 'action' },
 ]
+
+/* -------- 搜索 / 重置 -------- */
+function handleSearch() {
+  void loadData()
+}
+
+function handleReset() {
+  query.menuType = undefined
+  void loadData()
+}
 
 async function loadData() {
   const res = await getMenuTreeAPI(query.menuType)

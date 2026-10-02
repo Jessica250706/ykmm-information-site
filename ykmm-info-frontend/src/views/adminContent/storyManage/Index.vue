@@ -1,78 +1,58 @@
 <template>
   <div class="story-manage flex h-full flex-col">
     <!-- 搜索区 -->
-    <el-card class="search mb-4" shadow="never">
-      <div class="flex items-start justify-between gap-4">
-        <el-form :model="query" inline @submit.prevent>
-          <el-form-item label="关键词">
-            <el-input
-              v-model="query.keyword"
-              placeholder="标题"
-              style="width: 200px"
-              clearable
-              @keyup.enter="handleSearch"
-            />
-          </el-form-item>
+    <TableToolbar :model="query" align="start" @reset="handleReset" @search="handleSearch">
+      <el-form-item label="关键词">
+        <el-input
+          v-model="query.keyword"
+          placeholder="标题"
+          style="width: 200px"
+          clearable
+          @keyup.enter="handleSearch"
+        />
+      </el-form-item>
 
-          <el-form-item label="分类类型">
-            <el-select
-              v-model="query.categoryType"
-              placeholder="全部"
-              style="width: 140px"
-              clearable
-              @change="handleSearch"
-            >
-              <el-option
-                v-for="opt in STORY_CATEGORY_TYPE_OPTIONS"
-                :key="opt.value"
-                :label="opt.label"
-                :value="opt.value"
-              />
-            </el-select>
-          </el-form-item>
+      <el-form-item label="分类类型">
+        <el-select v-model="query.categoryType" placeholder="全部" style="width: 140px" clearable>
+          <el-option
+            v-for="opt in STORY_CATEGORY_TYPE_OPTIONS"
+            :key="opt.value"
+            :label="opt.label"
+            :value="opt.value"
+          />
+        </el-select>
+      </el-form-item>
 
-          <el-form-item label="所属分类">
-            <el-tree-select
-              v-model="query.categoryId"
-              :data="categoryTree"
-              :props="{ label: 'name', value: 'id', children: 'children' }"
-              placeholder="全部"
-              style="width: 200px"
-              check-strictly
-              clearable
-              @change="handleSearch"
-            />
-          </el-form-item>
+      <el-form-item label="所属分类">
+        <el-tree-select
+          v-model="query.categoryId"
+          :data="categoryTree"
+          :props="{ label: 'name', value: 'id', children: 'children' }"
+          placeholder="全部"
+          style="width: 200px"
+          check-strictly
+          clearable
+        />
+      </el-form-item>
 
-          <el-form-item label="状态">
-            <el-select
-              v-model="query.status"
-              placeholder="全部"
-              style="width: 140px"
-              clearable
-              @change="handleSearch"
-            >
-              <el-option
-                v-for="opt in STORY_STATUS_OPTIONS"
-                :key="opt.value"
-                :label="opt.label"
-                :value="opt.value"
-              />
-            </el-select>
-          </el-form-item>
+      <el-form-item label="状态">
+        <el-select v-model="query.status" placeholder="全部" style="width: 140px" clearable>
+          <el-option
+            v-for="opt in STORY_STATUS_OPTIONS"
+            :key="opt.value"
+            :label="opt.label"
+            :value="opt.value"
+          />
+        </el-select>
+      </el-form-item>
 
-          <el-form-item>
-            <el-button type="primary" @click="handleSearch">搜索</el-button>
-            <el-button @click="handleReset">重置</el-button>
-          </el-form-item>
-        </el-form>
-
+      <template #actions>
         <el-button type="primary" @click="handleCreate">
           <el-icon><Plus /></el-icon>
           新增剧情
         </el-button>
-      </div>
-    </el-card>
+      </template>
+    </TableToolbar>
 
     <!-- 表格区 -->
     <el-card class="flex-1" shadow="never">

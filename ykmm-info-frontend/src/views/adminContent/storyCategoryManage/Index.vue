@@ -1,37 +1,25 @@
 <template>
   <div class="story-category-manage flex h-full flex-col">
     <!-- 顶部操作栏 -->
-    <el-card class="search mb-4" shadow="never">
-      <div class="flex items-center justify-between">
-        <el-form :model="query" inline @submit.prevent>
-          <el-form-item label="分类类型">
-            <el-select
-              v-model="query.categoryType"
-              placeholder="全部"
-              style="width: 160px"
-              clearable
-              @change="handleSearch"
-            >
-              <el-option
-                v-for="opt in STORY_CATEGORY_TYPE_OPTIONS"
-                :key="opt.value"
-                :label="opt.label"
-                :value="opt.value"
-              />
-            </el-select>
-          </el-form-item>
-          <el-form-item>
-            <el-button type="primary" @click="handleSearch">搜索</el-button>
-            <el-button @click="handleReset">重置</el-button>
-          </el-form-item>
-        </el-form>
+    <TableToolbar :model="query" @reset="handleReset" @search="handleSearch">
+      <el-form-item label="分类类型">
+        <el-select v-model="query.categoryType" placeholder="全部" style="width: 160px" clearable>
+          <el-option
+            v-for="opt in STORY_CATEGORY_TYPE_OPTIONS"
+            :key="opt.value"
+            :label="opt.label"
+            :value="opt.value"
+          />
+        </el-select>
+      </el-form-item>
 
+      <template #actions>
         <el-button type="primary" @click="handleCreate()">
           <el-icon><Plus /></el-icon>
           新增顶级分类
         </el-button>
-      </div>
-    </el-card>
+      </template>
+    </TableToolbar>
 
     <!-- 树形表格（分页） -->
     <el-card class="flex-1" shadow="never">

@@ -1,37 +1,27 @@
 <template>
   <div class="user-manage flex h-full flex-col">
     <!-- 搜索区 -->
-    <el-card class="search mb-4" shadow="never">
-      <el-form :model="query" inline @submit.prevent>
-        <el-form-item label="关键词">
-          <el-input
-            v-model="query.keyword"
-            placeholder="邮箱 / 昵称 / UID"
-            style="width: 220px"
-            clearable
-            @keyup.enter="handleSearch"
+    <TableToolbar :model="query" @reset="handleReset" @search="handleSearch">
+      <el-form-item label="关键词">
+        <el-input
+          v-model="query.keyword"
+          placeholder="邮箱 / 昵称 / UID"
+          style="width: 220px"
+          clearable
+          @keyup.enter="handleSearch"
+        />
+      </el-form-item>
+
+      <el-form-item label="状态">
+        <el-select v-model="query.status" placeholder="全部" style="width: 140px" clearable>
+          <el-option :label="USER_STATUS_LABEL[USER_STATUS.ENABLED]" :value="USER_STATUS.ENABLED" />
+          <el-option
+            :label="USER_STATUS_LABEL[USER_STATUS.DISABLED]"
+            :value="USER_STATUS.DISABLED"
           />
-        </el-form-item>
-
-        <el-form-item label="状态">
-          <el-select v-model="query.status" placeholder="全部" style="width: 140px" clearable>
-            <el-option
-              :label="USER_STATUS_LABEL[USER_STATUS.ENABLED]"
-              :value="USER_STATUS.ENABLED"
-            />
-            <el-option
-              :label="USER_STATUS_LABEL[USER_STATUS.DISABLED]"
-              :value="USER_STATUS.DISABLED"
-            />
-          </el-select>
-        </el-form-item>
-
-        <el-form-item>
-          <el-button type="primary" @click="handleSearch">搜索</el-button>
-          <el-button @click="handleReset">重置</el-button>
-        </el-form-item>
-      </el-form>
-    </el-card>
+        </el-select>
+      </el-form-item>
+    </TableToolbar>
 
     <!-- 表格区 -->
     <el-card class="flex-1" shadow="never">

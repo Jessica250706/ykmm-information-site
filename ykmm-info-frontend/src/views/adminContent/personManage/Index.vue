@@ -1,66 +1,47 @@
 <template>
   <div class="person-manage flex h-full flex-col">
-    <!-- 搜索区 -->
-    <el-card class="search mb-4" shadow="never">
-      <div class="flex items-start justify-between gap-4">
-        <el-form :model="query" inline @submit.prevent>
-          <el-form-item label="关键词">
-            <el-input
-              v-model="query.keyword"
-              placeholder="中文名 / 日文名 / 罗马音"
-              style="width: 220px"
-              clearable
-              @keyup.enter="handleSearch"
-            />
-          </el-form-item>
+    <!-- 搜索 + 操作栏 -->
+    <TableToolbar :model="query" align="start" @reset="handleReset" @search="handleSearch">
+      <el-form-item label="关键词">
+        <el-input
+          v-model="query.keyword"
+          placeholder="中文名 / 日文名 / 罗马音"
+          style="width: 220px"
+          clearable
+          @keyup.enter="handleSearch"
+        />
+      </el-form-item>
 
-          <el-form-item label="类型">
-            <el-select
-              v-model="query.personType"
-              placeholder="全部"
-              style="width: 140px"
-              clearable
-              @change="handleSearch"
-            >
-              <el-option
-                v-for="opt in PERSON_TYPE_OPTIONS"
-                :key="opt.value"
-                :label="opt.label"
-                :value="opt.value"
-              />
-            </el-select>
-          </el-form-item>
+      <el-form-item label="类型">
+        <el-select v-model="query.personType" placeholder="全部" style="width: 140px" clearable>
+          <el-option
+            v-for="opt in PERSON_TYPE_OPTIONS"
+            :key="opt.value"
+            :label="opt.label"
+            :value="opt.value"
+          />
+        </el-select>
+      </el-form-item>
 
-          <el-form-item label="经纪公司">
-            <el-select
-              v-model="query.agencyId"
-              placeholder="全部"
-              style="width: 180px"
-              clearable
-              filterable
-              @change="handleSearch"
-            >
-              <el-option
-                v-for="a in agencyStore.agencies"
-                :key="a.id"
-                :label="a.name"
-                :value="a.id!"
-              />
-            </el-select>
-          </el-form-item>
+      <el-form-item label="经纪公司">
+        <el-select
+          v-model="query.agencyId"
+          placeholder="全部"
+          style="width: 180px"
+          clearable
+          filterable
+        >
+          <el-option v-for="a in agencyStore.agencies" :key="a.id" :label="a.name" :value="a.id!" />
+        </el-select>
+      </el-form-item>
 
-          <el-form-item>
-            <el-button type="primary" @click="handleSearch">搜索</el-button>
-            <el-button @click="handleReset">重置</el-button>
-          </el-form-item>
-        </el-form>
-
+      <template #actions>
         <el-button type="primary" @click="handleCreate">
           <el-icon><Plus /></el-icon>
           新增人物
         </el-button>
-      </div>
-    </el-card>
+      </template>
+    </TableToolbar>
 
     <!-- 表格区 -->
     <el-card class="flex-1" shadow="never">

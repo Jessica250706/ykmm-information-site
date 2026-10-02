@@ -3,6 +3,7 @@ import type { App } from 'vue'
 import ImageUpload from './ImageUpload/Index.vue'
 import ImageView from './ImageView/Index.vue'
 import { ProTable } from './ProTable/index.ts'
+import TableToolbar from './TableToolbar/Index.vue'
 
 export const componentPlugin = {
   install(app: App) {
@@ -10,5 +11,6 @@ export const componentPlugin = {
     app.component('ImageView', ImageView)
     app.component('ProTable', ProTable)
     app.component('ImageUpload', ImageUpload)
+    app.component('TableToolbar', TableToolbar)
   },
 }
