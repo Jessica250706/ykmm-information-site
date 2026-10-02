@@ -40,6 +40,11 @@ public class PersonVO implements Serializable {
     private String nameRomaji;
 
     /**
+     * 声优
+     */
+    private String cv;
+
+    /**
      * 1偶像 2经纪人
      */
     private Integer personType;

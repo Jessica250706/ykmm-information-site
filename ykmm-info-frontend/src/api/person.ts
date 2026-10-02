@@ -6,7 +6,7 @@ import request from '@/utils/http'
  * @description: 分页查询人物
  */
 export const listPersonAPI = (params: PersonPageQueryDTO) => {
-  return request.get<PageResult<PersonVO[]>>('/admin/person', { params })
+  return request.get<PageResult<PersonVO>>('/admin/person', { params })
 }
 
 /**

@@ -62,11 +62,9 @@
   <insert id="insert" parameterType="com.xq.entity.SysMenu"
           useGeneratedKeys="true" keyProperty="id">
     INSERT INTO sys_menu (parent_id, name, path, component, icon,
-                          menu_type, sort, visible, permission,
-                          created_at, updated_at)
+                          menu_type, sort, visible, permission)
     VALUES (#{parentId}, #{name}, #{path}, #{component}, #{icon},
-            #{menuType}, #{sort}, #{visible}, #{permission},
-            CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+            #{menuType}, #{sort}, #{visible}, #{permission})
   </insert>
 
   <update id="update" parameterType="com.xq.entity.SysMenu">
@@ -80,8 +78,7 @@
       <if test="menuType != null">menu_type = #{menuType},</if>
       <if test="sort != null">sort = #{sort},</if>
       <if test="visible != null">visible = #{visible},</if>
-      <if test="permission != null">permission = #{permission},</if>
-      updated_at = CURRENT_TIMESTAMP
+      <if test="permission != null">permission = #{permission}</if>
     </set>
     WHERE id = #{id}
   </update>

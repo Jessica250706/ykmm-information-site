@@ -119,6 +119,10 @@ export interface PersonVO {
    * 体重
    */
   weight?: number
+  /**
+   * 声优
+   */
+  cv?: string
   [property: string]: any
 }
 
@@ -202,5 +206,9 @@ export interface PersonDTO {
    * 体重
    */
   weight?: number
+  /**
+   * 声优
+   */
+  cv?: string
   [property: string]: any
 }

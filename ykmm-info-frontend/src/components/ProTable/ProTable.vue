@@ -108,7 +108,7 @@ const props = withDefaults(defineProps<ProTableProps<T, P>>(), {
   columns: () => [],
   pagination: true,
   pageSizes: () => [10, 20, 50, 100],
-  defaultPageSize: 10,
+  defaultPageSize: 20,
   defaultPageNum: 1,
   paginationLayout: 'total, sizes, prev, pager, next, jumper',
   immediate: true,

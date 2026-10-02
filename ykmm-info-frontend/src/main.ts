@@ -7,9 +7,9 @@ import 'element-plus/theme-chalk/dark/css-vars.css'
 import { zhCn } from 'element-plus/es/locales.mjs'
 import { createPinia } from 'pinia'
 import { createPersistedState } from 'pinia-plugin-persistedstate'
+import { componentPlugin } from '@/components/index.ts' // 引入全局组件插件
 import { useTheme } from '@/composables/useTheme'
-// import { componentPlugin } from '@/components/index.ts' // 引入全局组件插件
-// import { lazyPlugin } from '@/directives/lazy.ts' // 引入懒加载指令插件，并注册
+import { lazyPlugin } from '@/directives/lazy.ts' // 引入懒加载指令插件，并注册
 import router from '@/router'
 import { useAgencyStore } from '@/stores/agencyStore'
 import { useIdolGroupStore } from '@/stores/idolGroupStore'
@@ -30,8 +30,8 @@ Promise.all([agencyStore.loadAll(), idolGroupStore.loadAll()]).catch((e) => {
 })
 
 app.use(router)
-// app.use(componentPlugin)
-// app.use(lazyPlugin)
+app.use(componentPlugin)
+app.use(lazyPlugin)
 app.use(ElementPlus, {
   locale: zhCn,
 })

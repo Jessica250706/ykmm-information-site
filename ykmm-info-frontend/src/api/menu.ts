@@ -13,19 +13,19 @@ export const getMenuTreeAPI = (menuType?: MenuTypeValue) => {
  * @description: 新增菜单
  */
 export const createMenuAPI = (data: MenuDTO) => {
-  return request.post('/admin/menus', { data })
+  return request.post('/admin/menus', data)
 }
 
 /**
  * @description: 编辑菜单
  */
-export const updateMenuAPI = (id: number, params: MenuDTO) => {
-  return request.put(`/menus/${id}`, { params })
+export const updateMenuAPI = (id: number, data: MenuDTO) => {
+  return request.put(`/admin/menus/${id}`, data)
 }
 
 /**
  * @description: 删除菜单
  */
 export const deleteMenuAPI = (id: number) => {
-  return request.delete(`/menus/${id}`)
+  return request.delete(`/admin/menus/${id}`)
 }

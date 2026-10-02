@@ -35,10 +35,22 @@ export const adminRoutes: RouteRecordRaw = {
 
     // ---------- 内容管理 ----------
     {
-      path: 'content/character',
-      name: 'AdminCharacterManage',
-      component: () => import('@/views/adminContent/characterManage/Index.vue'),
+      path: 'content/person',
+      name: 'AdminPersonManage',
+      component: () => import('@/views/adminContent/personManage/Index.vue'),
       meta: { title: '人物管理' },
+    },
+    {
+      path: 'content/person/create',
+      name: 'AdminPersonCreate',
+      component: () => import('@/views/adminContent/personManage/components/EditPerson.vue'),
+      meta: { title: '新增人物' },
+    },
+    {
+      path: 'content/person/edit/:id',
+      name: 'AdminPersonEdit',
+      component: () => import('@/views/adminContent/personManage/components/EditPerson.vue'),
+      meta: { title: '编辑人物' },
     },
     {
       path: 'content/role',

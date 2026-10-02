@@ -144,6 +144,10 @@ async function handleDelete(row: MenuVO) {
     return
   }
 
+  if (!row.id) {
+    ElMessage.error('所选菜单不存在')
+    return
+  }
   await deleteMenuAPI(row.id)
   ElMessage.success('删除成功')
   // 同步侧边栏

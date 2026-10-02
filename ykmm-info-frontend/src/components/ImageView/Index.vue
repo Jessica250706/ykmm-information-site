@@ -3,17 +3,16 @@
     <!-- 左侧大图-->
     <div
       ref="target"
-      class="middle"
       :style="{
         width: `${IMAGE_CONFIG.middleWidth}px`,
         height: `${IMAGE_CONFIG.middleHeight}px`,
       }"
+      class="middle"
     >
-      <img alt="" :src="imageList[activeIndex] as string" />
+      <img :src="imageList[activeIndex] as string" alt="" />
       <!-- 蒙层小滑块 -->
       <div
         v-show="!isOutside"
-        class="layer"
         :style="{
           width: `${layerWidth}px`,
           height: `${layerHeight}px`,
@@ -21,6 +20,7 @@
           top: `${top}px`,
           transform: 'translate(-50%, -50%)',
         }"
+        class="layer"
       ></div>
     </div>
     <!-- 小图列表 -->
@@ -31,13 +31,12 @@
         :class="{ active: index === activeIndex }"
         @mouseenter="handleEnter(index)"
       >
-        <img alt="" :src="img as string" />
+        <img :src="img as string" alt="" />
       </li>
     </ul>
     <!-- 放大镜大图 -->
     <div
       v-show="!isOutside"
-      class="large"
       :style="{
         backgroundImage: `url(${imageList[activeIndex]})`,
         backgroundSize: `${bgWidth}px ${bgHeight}px`,
@@ -46,6 +45,7 @@
         width: `${IMAGE_CONFIG.largeWidth}px`,
         height: `${IMAGE_CONFIG.largeHeight}px`,
       }"
+      class="large"
     ></div>
   </div>
 </template>
@@ -154,7 +154,7 @@ const handleEnter = (index: number) => {
 
       &:hover,
       &.active {
-        border: 2px solid $xtxColor;
+        border: 2px solid var(--menu-border-bg);
       }
     }
   }

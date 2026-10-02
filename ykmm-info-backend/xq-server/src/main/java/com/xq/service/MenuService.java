@@ -7,15 +7,23 @@ import java.util.List;
 
 public interface MenuService {
 
-    /** 查询菜单树 */
+    /**
+     * 查询菜单树
+     */
     List<MenuVO> tree(Integer menuType);
 
-    /** 新增菜单 */
+    /**
+     * 新增菜单
+     */
     void create(MenuDTO dto);
 
-    /** 编辑菜单 */
+    /**
+     * 编辑菜单
+     */
     void update(Long id, MenuDTO dto);
 
-    /** 删除菜单 */
+    /**
+     * 删除菜单
+     */
     void delete(Long id);
 }
