@@ -1,4 +1,4 @@
-package com.xq.enumeration;
+package com.xq.enums;
 
 import lombok.Getter;
 
@@ -25,5 +25,21 @@ public enum StoryCategoryTypeEnum {
 
     public static List<StoryCategoryTypeEnum> listAll() {
         return new ArrayList<>(Arrays.asList(values()));
+    }
+
+    public static boolean isValid(Integer value) {
+        if (value == null) return false;
+        for (StoryCategoryTypeEnum e : values()) {
+            if (e.value.equals(value)) return true;
+        }
+        return false;
+    }
+
+    public static String getLabel(Integer value) {
+        if (value == null) return null;
+        for (StoryCategoryTypeEnum e : values()) {
+            if (e.value.equals(value)) return e.label;
+        }
+        return null;
     }
 }

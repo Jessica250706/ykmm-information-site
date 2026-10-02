@@ -21,9 +21,9 @@ public class PageQueryDTO implements Serializable {
     private Integer pageNum = 1;
 
     /**
-     * 每页条数，默认 10，最大 100
+     * 每页条数，默认 20，最大 100
      */
-    private Integer pageSize = 10;
+    private Integer pageSize = 20;
 
     /**
      * 页码兜底：null 或 <1 时置为 1

@@ -1,25 +1,22 @@
-package com.xq.entity;
+package com.xq.vo;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.io.Serial;
 import java.io.Serializable;
 import java.time.LocalDateTime;
+import java.util.List;
 
 /**
- * 角色表
+ * 剧情分类返回
  */
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class Role implements Serializable {
-
-    @Serial
-    private static final long serialVersionUID = 1L;
+public class StoryCategoryVO implements Serializable {
 
     /**
      * 主键
@@ -27,19 +24,29 @@ public class Role implements Serializable {
     private Long id;
 
     /**
-     * 对应人物ID
+     * 父分类ID
      */
-    private Long personId;
+    private Long parentId;
 
     /**
-     * 角色名称
+     * 分类名
      */
     private String name;
 
     /**
-     * 角色简介
+     * 1主线 2彩虹城 3特别篇 4活动篇 5戏剧篇
      */
-    private String intro;
+    private Integer categoryType;
+
+    /**
+     * 分类类型标签
+     */
+    private String categoryTypeLabel;
+
+    /**
+     * 排序
+     */
+    private Integer sort;
 
     /**
      * 创建时间
@@ -50,4 +57,9 @@ public class Role implements Serializable {
      * 更新时间
      */
     private LocalDateTime updatedAt;
+
+    /**
+     * 子分类
+     */
+    private List<StoryCategoryVO> children;
 }

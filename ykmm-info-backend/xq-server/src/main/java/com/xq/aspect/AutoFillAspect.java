@@ -3,7 +3,7 @@ package com.xq.aspect;
 import com.xq.annotation.AutoFill;
 import com.xq.constant.AutoFillConstant;
 import com.xq.context.BaseContext;
-import com.xq.enumeration.OperationType;
+import com.xq.enums.OperationType;
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.Aspect;

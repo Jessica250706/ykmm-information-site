@@ -1,4 +1,4 @@
-package com.xq.enumeration;
+package com.xq.enums;
 
 /**
  * 数据库操作类型

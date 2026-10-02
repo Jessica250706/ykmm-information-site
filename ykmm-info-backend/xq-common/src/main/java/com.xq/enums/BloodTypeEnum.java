@@ -1,17 +1,20 @@
-package com.xq.enumeration;
+package com.xq.enums;
 
 import lombok.Getter;
 
 @Getter
-public enum PersonTypeEnum {
+public enum BloodTypeEnum {
 
-    IDOL(1, "偶像"),
-    MANAGER(2, "经纪人");
+    A(1, "A"),
+    B(2, "B"),
+    O(3, "O"),
+    AB(4, "AB"),
+    OTHER(5, "其他");
 
     private final Integer value;
     private final String label;
 
-    PersonTypeEnum(Integer value, String label) {
+    BloodTypeEnum(Integer value, String label) {
         this.value = value;
         this.label = label;
     }
@@ -20,7 +23,7 @@ public enum PersonTypeEnum {
         if (value == null) {
             return false;
         }
-        for (PersonTypeEnum e : values()) {
+        for (BloodTypeEnum e : values()) {
             if (e.value.equals(value)) {
                 return true;
             }
@@ -32,7 +35,7 @@ public enum PersonTypeEnum {
         if (value == null) {
             return null;
         }
-        for (PersonTypeEnum e : values()) {
+        for (BloodTypeEnum e : values()) {
             if (e.value.equals(value)) {
                 return e.label;
             }

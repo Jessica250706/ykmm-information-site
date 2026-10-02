@@ -1,4 +1,4 @@
-package com.xq.enumeration;
+package com.xq.enums;
 
 import lombok.Getter;
 
@@ -7,20 +7,21 @@ import java.util.Arrays;
 import java.util.List;
 
 @Getter
-public enum RarityEnum {
+public enum AttributeEnum {
 
-    SSR(1, "SSR"),
-    UR(2, "UR");
+    SHOUT(1, "Shout"),
+    BEAT(2, "Beat"),
+    MELODY(3, "Melody");
 
     private final Integer value;
     private final String label;
 
-    RarityEnum(Integer value, String label) {
+    AttributeEnum(Integer value, String label) {
         this.value = value;
         this.label = label;
     }
 
-    public static List<RarityEnum> listAll() {
+    public static List<AttributeEnum> listAll() {
         return new ArrayList<>(Arrays.asList(values()));
     }
 }

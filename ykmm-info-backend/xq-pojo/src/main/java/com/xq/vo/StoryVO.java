@@ -1,4 +1,4 @@
-package com.xq.entity;
+package com.xq.vo;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -9,15 +9,13 @@ import java.io.Serializable;
 import java.time.LocalDateTime;
 
 /**
- * 剧情表（话）
+ * 剧情返回
  */
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class Story implements Serializable {
-
-    private static final long serialVersionUID = 1L;
+public class StoryVO implements Serializable {
 
     /**
      * 主键
@@ -28,6 +26,21 @@ public class Story implements Serializable {
      * 所属分类节点
      */
     private Long categoryId;
+
+    /**
+     * 所属分类名
+     */
+    private String categoryName;
+
+    /**
+     * 分类类型
+     */
+    private Integer categoryType;
+
+    /**
+     * 分类类型标签
+     */
+    private String categoryTypeLabel;
 
     /**
      * 话标题
@@ -45,19 +58,14 @@ public class Story implements Serializable {
     private Integer sort;
 
     /**
-     * 创建时间
-     */
-    private LocalDateTime createdAt;
-
-    /**
-     * 更新时间
-     */
-    private LocalDateTime updatedAt;
-
-    /**
-     * 1已发布 2待审核 3已拒绝
+     * 审核状态
      */
     private Integer status;
+
+    /**
+     * 审核状态标签
+     */
+    private String statusLabel;
 
     /**
      * 创建者用户ID
@@ -78,4 +86,14 @@ public class Story implements Serializable {
      * 审核备注
      */
     private String reviewRemark;
+
+    /**
+     * 创建时间
+     */
+    private LocalDateTime createdAt;
+
+    /**
+     * 更新时间
+     */
+    private LocalDateTime updatedAt;
 }

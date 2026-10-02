@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xq.mapper.StoryMapper">
+
+  <sql id="baseColumns">
+    s.id,
+    s.category_id      AS categoryId,
+    s.title,
+    s.description,
+    s.sort,
+    s.created_at       AS createdAt,
+    s.updated_at       AS updatedAt,
+    s.status,
+    s.creator_id       AS creatorId,
+    s.reviewer_id      AS reviewerId,
+    s.review_time      AS reviewTime,
+    s.review_remark    AS reviewRemark
+  </sql>
+
+  <select id="pageQuery" resultType="com.xq.entity.Story">
+    SELECT
+    <include refid="baseColumns"/>
+    FROM story s
+    LEFT JOIN story_category c ON s.category_id = c.id
+    <where>
+      <if test="query.keyword != null and query.keyword != ''">
+        AND s.title LIKE CONCAT('%', #{query.keyword}, '%')
+      </if>
+      <if test="query.categoryId != null">
+        AND s.category_id = #{query.categoryId}
+      </if>
+      <if test="query.categoryType != null">
+        AND c.category_type = #{query.categoryType}
+      </if>
+      <if test="query.status != null">
+        AND s.status = #{query.status}
+      </if>
+    </where>
+    ORDER BY s.sort, s.id
+  </select>
+
+  <select id="getById" resultType="com.xq.entity.Story">
+    SELECT
+    <include refid="baseColumns"/>
+    FROM story s
+    WHERE s.id = #{id}
+  </select>
+
+  <insert id="insert" parameterType="com.xq.entity.Story"
+          useGeneratedKeys="true" keyProperty="id">
+    INSERT INTO story (category_id, title, description, sort,
+                       status, creator_id, reviewer_id, review_time, review_remark)
+    VALUES (#{categoryId}, #{title}, #{description}, #{sort},
+            #{status}, #{creatorId}, #{reviewerId}, #{reviewTime}, #{reviewRemark})
+  </insert>
+
+  <update id="update" parameterType="com.xq.entity.Story">
+    UPDATE story
+    <set>
+      <if test="categoryId != null">category_id = #{categoryId},</if>
+      <if test="title != null">title = #{title},</if>
+      <if test="description != null">description = #{description},</if>
+      <if test="sort != null">sort = #{sort}</if>
+    </set>
+    WHERE id = #{id}
+  </update>
+
+  <update id="updateStatus" parameterType="com.xq.entity.Story">
+    UPDATE story
+    <set>
+      <if test="status != null">status = #{status},</if>
+      <if test="reviewerId != null">reviewer_id = #{reviewerId},</if>
+      <if test="reviewTime != null">review_time = #{reviewTime},</if>
+      <if test="reviewRemark != null">review_remark = #{reviewRemark}</if>
+    </set>
+    WHERE id = #{id}
+  </update>
+
+  <delete id="deleteById">
+    DELETE
+    FROM story
+    WHERE id = #{id}
+  </delete>
+
+  <select id="countByCategoryId" resultType="int">
+    SELECT COUNT(*)
+    FROM story
+    WHERE category_id = #{categoryId}
+  </select>
+
+</mapper>

@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xq.mapper.StoryCategoryMapper">
+
+  <sql id="baseColumns">
+    id,
+    parent_id      AS parentId,
+    name,
+    category_type  AS categoryType,
+    sort,
+    created_at     AS createdAt,
+    updated_at     AS updatedAt
+  </sql>
+
+  <select id="listAll" resultType="com.xq.entity.StoryCategory">
+    SELECT
+    <include refid="baseColumns"/>
+    FROM story_category
+    ORDER BY sort, id
+  </select>
+
+  <select id="listByType" resultType="com.xq.entity.StoryCategory">
+    SELECT
+    <include refid="baseColumns"/>
+    FROM story_category
+    WHERE category_type = #{categoryType}
+    ORDER BY sort, id
+  </select>
+
+  <select id="getById" resultType="com.xq.entity.StoryCategory">
+    SELECT
+    <include refid="baseColumns"/>
+    FROM story_category
+    WHERE id = #{id}
+  </select>
+
+  <select id="countChildren" resultType="int">
+    SELECT COUNT(*)
+    FROM story_category
+    WHERE parent_id = #{parentId}
+  </select>
+
+  <select id="countStoryByCategoryId" resultType="int">
+    SELECT COUNT(*)
+    FROM story
+    WHERE category_id = #{categoryId}
+  </select>
+
+  <insert id="insert" parameterType="com.xq.entity.StoryCategory"
+          useGeneratedKeys="true" keyProperty="id">
+    INSERT INTO story_category (parent_id, name, category_type, sort)
+    VALUES (#{parentId}, #{name}, #{categoryType}, #{sort})
+  </insert>
+
+  <update id="update" parameterType="com.xq.entity.StoryCategory">
+    UPDATE story_category
+    <set>
+      <if test="parentId != null">parent_id = #{parentId},</if>
+      <if test="name != null">name = #{name},</if>
+      <if test="categoryType != null">category_type = #{categoryType},</if>
+      <if test="sort != null">sort = #{sort}</if>
+    </set>
+    WHERE id = #{id}
+  </update>
+
+  <delete id="deleteById">
+    DELETE
+    FROM story_category
+    WHERE id = #{id}
+  </delete>
+
+</mapper>
