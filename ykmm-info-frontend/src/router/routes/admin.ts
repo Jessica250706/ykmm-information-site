@@ -4,7 +4,7 @@ import type { RouteRecordRaw } from 'vue-router'
 export const adminRoutes: RouteRecordRaw = {
   path: '/admin',
   component: () => import('@/layout/AdminLayout.vue'),
-  redirect: '/admin/content/character',
+  redirect: '/admin/content/person',
   meta: { title: '管理端', requiresAuth: true, roles: [ROLE.ADMIN] },
   children: [
     // ---------- 基础设定 ----------

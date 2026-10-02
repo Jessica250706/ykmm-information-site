@@ -72,6 +72,7 @@ import { RouterLink, RouterView, useRoute, useRouter } from 'vue-router'
 import { useMenuStore } from '@/stores/menuStore.ts'
 import { useUserStore } from '@/stores/userStore.ts'
 import AdminMenuItem from './components/AdminMenuItem.vue'
+import ChangeColor from './components/ChangeColor.vue'
 
 const route = useRoute()
 const router = useRouter()

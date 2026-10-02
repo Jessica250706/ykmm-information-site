@@ -69,7 +69,7 @@ import { computed, onMounted, reactive, ref } from 'vue'
 import { ElMessage, type FormInstance, type FormRules } from 'element-plus'
 import { useRoute, useRouter } from 'vue-router'
 import { createStoryAPI, getStoryDetailAPI, updateStoryAPI } from '@/api/story'
-import { listStoryCategoryAPI } from '@/api/storyCategory'
+import { listStoryCategoryTreeAPI } from '@/api/storyCategory'
 import {
   STORY_CATEGORY_TYPE,
   STORY_CATEGORY_TYPE_OPTIONS,
@@ -105,7 +105,7 @@ const rules: FormRules<StoryDTO> = {
 const categoryTree = ref<StoryCategoryVO[]>([])
 
 async function loadCategories() {
-  const res = await listStoryCategoryAPI({ categoryType: categoryTypeFilter.value })
+  const res = await listStoryCategoryTreeAPI({ categoryType: categoryTypeFilter.value })
   categoryTree.value = res.data ?? []
 }
 

@@ -136,7 +136,7 @@ import { Plus } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { useRouter } from 'vue-router'
 import { deleteStoryAPI, listStoryAPI } from '@/api/story'
-import { listStoryCategoryAPI } from '@/api/storyCategory'
+import { listStoryCategoryTreeAPI } from '@/api/storyCategory'
 import {
   type PageResult,
   ProTable,
@@ -145,7 +145,6 @@ import {
 } from '@/components/ProTable'
 import {
   STORY_CATEGORY_TYPE,
-  STORY_CATEGORY_TYPE_LABEL,
   STORY_CATEGORY_TYPE_OPTIONS,
   STORY_STATUS,
   STORY_STATUS_LABEL,
@@ -278,7 +277,7 @@ function handleAuditSuccess() {
 
 /* -------- 初始化 -------- */
 onMounted(async () => {
-  const res = await listStoryCategoryAPI({})
+  const res = await listStoryCategoryTreeAPI({})
   categoryTree.value = res.data ?? []
 })
 </script>
