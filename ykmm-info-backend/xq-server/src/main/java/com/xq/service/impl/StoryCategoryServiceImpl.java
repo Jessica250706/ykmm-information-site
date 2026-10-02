@@ -1,22 +1,24 @@
 package com.xq.service.impl;
 
+import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
 import com.xq.constant.StoryConstant;
 import com.xq.dto.StoryCategoryDTO;
+import com.xq.dto.StoryCategoryPageQueryDTO;
 import com.xq.entity.StoryCategory;
 import com.xq.enums.StoryCategoryTypeEnum;
 import com.xq.mapper.StoryCategoryMapper;
+import com.xq.result.PageResult;
 import com.xq.service.StoryCategoryService;
 import com.xq.vo.StoryCategoryVO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * 剧情分类服务实现
@@ -35,7 +37,7 @@ public class StoryCategoryServiceImpl implements StoryCategoryService {
      * @return 分类树
      */
     @Override
-    public List<StoryCategoryVO> tree(Integer categoryType) {
+    public List<StoryCategoryVO> listTree(Integer categoryType) {
         List<StoryCategory> all;
         if (categoryType == null) {
             all = storyCategoryMapper.listAll();
@@ -69,6 +71,63 @@ public class StoryCategoryServiceImpl implements StoryCategoryService {
             }
         }
         return roots;
+    }
+
+    /**
+     * 分页查询剧情分类树
+     *
+     * @param query 查询条件
+     * @return 分类树
+     */
+    @Override
+    public PageResult<StoryCategoryVO> pageTree(StoryCategoryPageQueryDTO query) {
+        // 1. 用 PageHelper 对「根节点」分页
+        PageHelper.startPage(query.getPageNum(), query.getPageSize());
+        List<StoryCategory> roots = storyCategoryMapper.listRoots(query.getCategoryType());
+        PageInfo<StoryCategory> pageInfo = new PageInfo<>(roots);
+
+        if (roots.isEmpty()) {
+            return PageResult.empty(pageInfo.getTotal());
+        }
+
+        // 2. 查出这些根节点的全部子孙
+        List<Long> rootIds = roots.stream().map(StoryCategory::getId).toList();
+        List<StoryCategory> descendants = storyCategoryMapper.listDescendants(rootIds);
+
+        // 3. 合并 + 转 VO
+        List<StoryCategory> all = new ArrayList<>(roots.size() + descendants.size());
+        all.addAll(roots);
+        all.addAll(descendants);
+
+        // 1. 转 VO，用 LinkedHashMap 也行，但关键不在这
+        Map<Long, StoryCategoryVO> idMap = new HashMap<>(all.size());
+        for (StoryCategory c : all) {
+            StoryCategoryVO vo = toVO(c);
+            vo.setChildren(new ArrayList<>());
+            idMap.put(vo.getId(), vo);
+        }
+
+        // 2. 挂子节点（顺序不影响，后面会排序）
+        for (StoryCategory c : all) {
+            StoryCategoryVO vo = idMap.get(c.getId());
+            Long pid = vo.getParentId();
+            if (pid == null || pid == StoryConstant.ROOT_PARENT_ID || !idMap.containsKey(pid)) {
+                continue;
+            }
+            idMap.get(pid).getChildren().add(vo);
+        }
+
+        // 3. 按 roots 的顺序输出根节点
+        List<StoryCategoryVO> result = new ArrayList<>(roots.size());
+        for (StoryCategory root : roots) {
+            StoryCategoryVO vo = idMap.get(root.getId());
+            if (vo != null) result.add(vo);
+        }
+
+        // 4. 对每个节点的 children 排序，保证子节点也按 categoryType, sort, id
+        sortChildrenRecursively(result);
+
+        return new PageResult<>(result, pageInfo.getTotal());
     }
 
     /**
@@ -214,5 +273,20 @@ public class StoryCategoryServiceImpl implements StoryCategoryService {
         vo.setCategoryTypeLabel(
                 StoryCategoryTypeEnum.getLabel(category.getCategoryType()));
         return vo;
+    }
+
+    /**
+     * 排序
+     */
+    private void sortChildrenRecursively(List<StoryCategoryVO> list) {
+        list.sort(Comparator
+                .comparing(StoryCategoryVO::getCategoryType, Comparator.nullsLast(Integer::compareTo))
+                .thenComparing(StoryCategoryVO::getSort, Comparator.nullsLast(Integer::compareTo))
+                .thenComparing(StoryCategoryVO::getId, Comparator.nullsLast(Long::compareTo)));
+        for (StoryCategoryVO vo : list) {
+            if (vo.getChildren() != null && !vo.getChildren().isEmpty()) {
+                sortChildrenRecursively(vo.getChildren());
+            }
+        }
     }
 }

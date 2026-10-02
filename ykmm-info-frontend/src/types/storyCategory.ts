@@ -1,4 +1,14 @@
-export interface StoryCategoryPageQueryDTO {
+import type { PageRequest } from './common'
+
+export interface StoryCategoryQueryDTO {
+  /**
+   * 分类类型，可选
+   */
+  categoryType?: number
+  [property: string]: any
+}
+
+export interface StoryCategoryPageQueryDTO extends PageRequest {
   /**
    * 分类类型，可选
    */

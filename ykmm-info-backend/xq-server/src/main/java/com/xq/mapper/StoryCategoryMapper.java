@@ -74,4 +74,14 @@ public interface StoryCategoryMapper {
      * @return 影响行数
      */
     int deleteById(@Param("id") Long id);
+
+    /**
+     * 查询根节点（PageHelper 分页）
+     */
+    List<StoryCategory> listRoots(@Param("categoryType") Integer categoryType);
+
+    /**
+     * 根据根节点 ID 列表查询其所有子孙
+     */
+    List<StoryCategory> listDescendants(@Param("rootIds") List<Long> rootIds);
 }

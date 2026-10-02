@@ -1,6 +1,8 @@
 package com.xq.service;
 
 import com.xq.dto.StoryCategoryDTO;
+import com.xq.dto.StoryCategoryPageQueryDTO;
+import com.xq.result.PageResult;
 import com.xq.vo.StoryCategoryVO;
 
 import java.util.List;
@@ -16,7 +18,15 @@ public interface StoryCategoryService {
      * @param categoryType 分类类型，null 返回全部
      * @return 分类树
      */
-    List<StoryCategoryVO> tree(Integer categoryType);
+    List<StoryCategoryVO> listTree(Integer categoryType);
+
+    /**
+     * 分页查询剧情分类树
+     *
+     * @param query 查询条件
+     * @return 分类树
+     */
+    PageResult<StoryCategoryVO> pageTree(StoryCategoryPageQueryDTO query);
 
     /**
      * 查询分类详情

@@ -17,7 +17,7 @@
     SELECT
     <include refid="baseColumns"/>
     FROM story_category
-    ORDER BY sort, id
+    ORDER BY category_type, sort, id
   </select>
 
   <select id="listByType" resultType="com.xq.entity.StoryCategory">
@@ -69,5 +69,32 @@
     FROM story_category
     WHERE id = #{id}
   </delete>
+
+  <!-- 根节点：parent_id = 0 -->
+  <select id="listRoots" resultType="com.xq.entity.StoryCategory">
+    SELECT *
+    FROM story_category
+    WHERE parent_id = 0
+    <if test="categoryType != null">
+      AND category_type = #{categoryType}
+    </if>
+    ORDER BY category_type, sort, id
+  </select>
+
+  <!-- 子孙节点：一次查完，再内存组树 -->
+  <select id="listDescendants" resultType="com.xq.entity.StoryCategory">
+    WITH RECURSIVE sub AS (
+    SELECT * FROM story_category
+    WHERE parent_id IN
+    <foreach collection="rootIds" item="id" open="(" separator="," close=")">
+      #{id}
+    </foreach>
+    UNION ALL
+    SELECT c.* FROM story_category c
+    INNER JOIN sub s ON c.parent_id = s.id
+    )
+    SELECT * FROM sub
+    ORDER BY category_type, sort, id
+  </select>
 
 </mapper>

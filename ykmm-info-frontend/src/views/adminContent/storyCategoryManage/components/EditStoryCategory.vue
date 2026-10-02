@@ -58,7 +58,7 @@ import { useRoute, useRouter } from 'vue-router'
 import {
   createStoryCategoryAPI,
   getStoryCategoryDetailAPI,
-  listStoryCategoryAPI,
+  listStoryCategoryTreeAPI,
   updateStoryCategoryAPI,
 } from '@/api/storyCategory'
 import {
@@ -92,7 +92,7 @@ const rules: FormRules<StoryCategoryDTO> = {
 const parentTreeOptions = ref<StoryCategoryVO[]>([])
 
 async function loadParentOptions() {
-  const res = await listStoryCategoryAPI({ categoryType: form.categoryType })
+  const res = await listStoryCategoryTreeAPI({ categoryType: form.categoryType })
   let tree = res.data ?? []
 
   if (isEdit.value && editId.value != null) {

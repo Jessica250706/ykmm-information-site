@@ -10,7 +10,7 @@
               placeholder="全部"
               style="width: 160px"
               clearable
-              @change="loadData"
+              @change="handleSearch"
             >
               <el-option
                 v-for="opt in STORY_CATEGORY_TYPE_OPTIONS"
@@ -19,6 +19,10 @@
                 :value="opt.value"
               />
             </el-select>
+          </el-form-item>
+          <el-form-item>
+            <el-button type="primary" @click="handleSearch">搜索</el-button>
+            <el-button @click="handleReset">重置</el-button>
           </el-form-item>
         </el-form>
 
@@ -29,16 +33,14 @@
       </div>
     </el-card>
 
-    <!-- 树形表格 -->
+    <!-- 树形表格（分页） -->
     <el-card class="flex-1" shadow="never">
       <ProTable
         ref="tableRef"
         :columns="columns"
-        :data="categoryTree"
-        :pagination="false"
+        :request="fetchList"
         :tree-props="{ children: 'children' }"
         row-key="id"
-        default-expand-all
       >
         <!-- 分类名 -->
         <template #name="{ row }">
@@ -66,34 +68,48 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, reactive, ref } from 'vue'
+import { reactive, ref } from 'vue'
 import { Plus } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { useRouter } from 'vue-router'
-import { deleteStoryCategoryAPI, listStoryCategoryAPI } from '@/api/storyCategory'
-import { ProTable, type ProTableColumn } from '@/components/ProTable'
+import { deleteStoryCategoryAPI, pageStoryCategoryTreeAPI } from '@/api/storyCategory'
+import {
+  type PageResult,
+  ProTable,
+  type ProTableColumn,
+  type ProTableExpose,
+} from '@/components/ProTable'
 import {
   STORY_CATEGORY_TYPE,
   STORY_CATEGORY_TYPE_LABEL,
   STORY_CATEGORY_TYPE_OPTIONS,
   type StoryCategoryTypeValue,
 } from '@/constants/story'
-import type { StoryCategoryVO } from '@/types/storyCategory'
+import type { StoryCategoryPageQueryDTO, StoryCategoryVO } from '@/types/storyCategory'
 
 const router = useRouter()
 
+/* -------- 表格 ref -------- */
+type TableInstance = ProTableExpose<StoryCategoryVO>
+const tableRef = ref<TableInstance>()
+
+/* -------- 搜索参数 -------- */
 const query = reactive<{
   categoryType?: StoryCategoryTypeValue
 }>({
   categoryType: undefined,
 })
 
-const categoryTree = ref<StoryCategoryVO[]>([])
-const tableRef = ref()
-
+/* -------- 列配置 -------- */
 const columns: ProTableColumn<StoryCategoryVO>[] = [
   { prop: 'name', label: '分类名', minWidth: 240, slot: 'name' },
-  { prop: 'categoryType', label: '分类类型', minWidth: 140, align: 'center', slot: 'categoryType' },
+  {
+    prop: 'categoryType',
+    label: '分类类型',
+    minWidth: 140,
+    align: 'center',
+    slot: 'categoryType',
+  },
   { prop: 'sort', label: '排序', width: 100, align: 'center' },
   {
     prop: 'createdAt',
@@ -123,11 +139,31 @@ function categoryTypeTag(type?: number): 'primary' | 'success' | 'warning' | 'da
   }
 }
 
-async function loadData() {
-  const res = await listStoryCategoryAPI({ categoryType: query.categoryType })
-  categoryTree.value = res.data ?? []
+/* -------- 请求适配 -------- */
+async function fetchList(
+  params: StoryCategoryPageQueryDTO & { pageNum: number; pageSize: number },
+): Promise<PageResult<StoryCategoryVO>> {
+  const res = await pageStoryCategoryTreeAPI(params)
+
+  return {
+    records: res.data.records ?? [],
+    total: res.data.total ?? 0,
+  }
 }
 
+/* -------- 搜索 / 重置 -------- */
+function handleSearch() {
+  tableRef.value?.search({
+    categoryType: query.categoryType ?? undefined,
+  })
+}
+
+function handleReset() {
+  query.categoryType = undefined
+  tableRef.value?.reset()
+}
+
+/* -------- 新增 / 编辑 -------- */
 function handleCreate(parent?: StoryCategoryVO) {
   router.push({
     name: 'AdminStoryCategoryCreate',
@@ -142,6 +178,7 @@ function handleEdit(row: StoryCategoryVO) {
   })
 }
 
+/* -------- 删除 -------- */
 async function handleDelete(row: StoryCategoryVO) {
   try {
     await ElMessageBox.confirm(`确定要删除分类「${row.name}」吗？`, '删除确认', {
@@ -155,8 +192,6 @@ async function handleDelete(row: StoryCategoryVO) {
 
   await deleteStoryCategoryAPI(row.id!)
   ElMessage.success('删除成功')
-  await loadData()
+  await tableRef.value?.refresh()
 }
-
-onMounted(loadData)
 </script>

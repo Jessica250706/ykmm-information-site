@@ -2,15 +2,23 @@ import type { PageResult } from '@/types/common'
 import type {
   StoryCategoryDTO,
   StoryCategoryPageQueryDTO,
+  StoryCategoryQueryDTO,
   StoryCategoryVO,
 } from '@/types/storyCategory'
 import request from '@/utils/http'
 
 /**
- * @description: 查询剧情分类树
+ * @description: 查询所有剧情分类树（不分页）
  */
-export const listStoryCategoryAPI = (params: StoryCategoryPageQueryDTO) => {
-  return request.get<StoryCategoryVO[]>('/admin/story-category', { params })
+export const listStoryCategoryTreeAPI = (params: StoryCategoryQueryDTO) => {
+  return request.get<StoryCategoryVO[]>('/admin/story-category/tree', { params })
+}
+
+/**
+ * @description: 分页查询剧情分类树
+ */
+export const pageStoryCategoryTreeAPI = (params: StoryCategoryPageQueryDTO) => {
+  return request.get<PageResult<StoryCategoryVO>>('/admin/story-category/page', { params })
 }
 
 /**

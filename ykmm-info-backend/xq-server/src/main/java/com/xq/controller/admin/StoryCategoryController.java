@@ -1,6 +1,8 @@
 package com.xq.controller.admin;
 
 import com.xq.dto.StoryCategoryDTO;
+import com.xq.dto.StoryCategoryPageQueryDTO;
+import com.xq.result.PageResult;
 import com.xq.result.Result;
 import com.xq.service.StoryCategoryService;
 import com.xq.vo.StoryCategoryVO;
@@ -22,15 +24,25 @@ public class StoryCategoryController {
     private StoryCategoryService storyCategoryService;
 
     /**
-     * 查询剧情分类树
+     * 查询所有剧情分类树（不分页）
      *
      * @param categoryType 分类类型，可选
      * @return 分类树
      */
-    @GetMapping
-    public Result<List<StoryCategoryVO>> tree(
-            @RequestParam(required = false) Integer categoryType) {
-        return Result.success(storyCategoryService.tree(categoryType));
+    @GetMapping("/tree")
+    public Result<List<StoryCategoryVO>> listTree(@RequestParam(required = false) Integer categoryType) {
+        return Result.success(storyCategoryService.listTree(categoryType));
+    }
+
+    /**
+     * 分页查询剧情分类树
+     *
+     * @param query 查询条件
+     * @return 分页后的分类树
+     */
+    @GetMapping("/page")
+    public Result<PageResult<StoryCategoryVO>> pageTree(StoryCategoryPageQueryDTO query) {
+        return Result.success(storyCategoryService.pageTree(query));
     }
 
     /**
