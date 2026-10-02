@@ -1,25 +1,22 @@
-package com.xq.entity;
+package com.xq.vo;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.io.Serial;
 import java.io.Serializable;
 import java.time.LocalDateTime;
+import java.util.List;
 
 /**
- * 角色表
+ * 角色返回
  */
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class Role implements Serializable {
-
-    @Serial
-    private static final long serialVersionUID = 1L;
+public class RoleVO implements Serializable {
 
     /**
      * 主键
@@ -27,9 +24,14 @@ public class Role implements Serializable {
     private Long id;
 
     /**
-     * 对应人物ID，可为空（如路人甲）
+     * 对应人物ID，可为空
      */
     private Long personId;
+
+    /**
+     * 对应人物中文名，可为空
+     */
+    private String personNameCn;
 
     /**
      * 角色名称
@@ -40,6 +42,11 @@ public class Role implements Serializable {
      * 角色简介
      */
     private String intro;
+
+    /**
+     * 所属剧情分类根节点
+     */
+    private List<StoryCategoryVO> storyCategories;
 
     /**
      * 创建时间

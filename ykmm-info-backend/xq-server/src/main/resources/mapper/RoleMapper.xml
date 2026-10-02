@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xq.mapper.RoleMapper">
+
+  <sql id="baseColumns">
+    id,
+        person_id   AS personId,
+        name,
+        intro,
+        created_at  AS createdAt,
+        updated_at  AS updatedAt
+  </sql>
+
+  <select id="pageQuery" resultType="com.xq.entity.Role">
+    SELECT <include refid="baseColumns"/>
+    FROM role
+    <where>
+      <if test="query.keyword != null and query.keyword != ''">
+        AND name LIKE CONCAT('%', #{query.keyword}, '%')
+      </if>
+      <if test="query.personId != null">
+        AND person_id = #{query.personId}
+      </if>
+      <if test="query.storyCategoryId != null">
+        AND id IN (
+        SELECT role_id FROM role_story_category_rel
+        WHERE story_category_id = #{query.storyCategoryId}
+        )
+      </if>
+    </where>
+    ORDER BY id ASC
+  </select>
+
+  <select id="getById" resultType="com.xq.entity.Role">
+    SELECT <include refid="baseColumns"/>
+    FROM role
+    WHERE id = #{id}
+  </select>
+
+  <insert id="insert" parameterType="com.xq.entity.Role"
+          useGeneratedKeys="true" keyProperty="id">
+    INSERT INTO role (
+      person_id, name, intro,
+      created_at, updated_at
+    ) VALUES (
+               #{personId}, #{name}, #{intro},
+               CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
+             )
+  </insert>
+
+  <update id="update" parameterType="com.xq.entity.Role">
+    UPDATE role
+    <set>
+      <if test="personId != null">person_id = #{personId},</if>
+      <if test="name != null">name = #{name},</if>
+      <if test="intro != null">intro = #{intro},</if>
+      updated_at = CURRENT_TIMESTAMP
+    </set>
+    WHERE id = #{id}
+  </update>
+
+  <delete id="deleteById">
+    DELETE FROM role WHERE id = #{id}
+  </delete>
+
+  <select id="countByPersonId" resultType="int">
+    SELECT COUNT(*) FROM role WHERE person_id = #{personId}
+  </select>
+
+  <select id="listCategoryIdsByRoleId" resultType="long">
+    SELECT story_category_id
+    FROM role_story_category_rel
+    WHERE role_id = #{roleId}
+  </select>
+
+  <delete id="deleteCategoryRel">
+    DELETE FROM role_story_category_rel WHERE role_id = #{roleId}
+  </delete>
+
+  <insert id="insertCategoryRel">
+    INSERT INTO role_story_category_rel (role_id, story_category_id) VALUES
+    <foreach collection="categoryIds" item="categoryId" separator=",">
+      (#{roleId}, #{categoryId})
+    </foreach>
+  </insert>
+
+  <select id="listCategoriesByRoleId"
+          resultType="com.xq.dto.StoryCategorySimpleDTO">
+    SELECT c.id,
+           c.name,
+           c.category_type AS categoryType
+    FROM story_category c
+           JOIN role_story_category_rel r ON c.id = r.story_category_id
+    WHERE r.role_id = #{roleId}
+    ORDER BY c.sort ASC, c.id ASC
+  </select>
+
+</mapper>
