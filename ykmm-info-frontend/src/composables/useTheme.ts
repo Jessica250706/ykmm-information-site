@@ -1,5 +1,11 @@
 import { readonly, ref } from 'vue'
-import { DEFAULT_THEME, type ThemeConfig, type ThemeName, THEMES } from '@/constants/theme'
+import {
+  DEFAULT_THEME,
+  PALETTE_KEYS,
+  type ThemeConfig,
+  type ThemeName,
+  THEMES,
+} from '@/constants/theme'
 import { generateColorScale } from '@/utils/color'
 
 const STORAGE_KEY = 'app-theme'
@@ -50,6 +56,11 @@ function applyTheme(theme: ThemeConfig) {
   applyColor('danger', theme.danger)
   applyColor('error', theme.danger)
   applyColor('info', theme.info)
+
+  // 4. 基础配色
+  PALETTE_KEYS.forEach((key) => {
+    root.style.setProperty(`--color-${key}`, theme.palette[key])
+  })
 
   // 2. 暗色模式开关
   if (theme.dark) {

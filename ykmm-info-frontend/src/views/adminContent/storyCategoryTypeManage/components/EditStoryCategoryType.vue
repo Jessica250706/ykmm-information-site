@@ -23,13 +23,31 @@
 
         <el-form-item label="标签颜色" prop="color">
           <el-select v-model="form.color" placeholder="请选择" style="width: 200px" clearable>
+            <template #label="{ label, value }">
+              <span
+                :style="{
+                  color: `var(--color-${value})`,
+                }"
+              >
+                {{ label }}
+              </span>
+            </template>
             <el-option
-              v-for="opt in COLOR_OPTIONS"
+              v-for="opt in PALETTE_COLOR_OPTIONS"
               :key="opt.value"
               :label="opt.label"
               :value="opt.value"
             >
-              <el-tag :type="opt.value as any" effect="plain">{{ opt.label }}</el-tag>
+              <el-tag
+                :style="{
+                  borderColor: `var(--color-${opt.value})`,
+                  color: `var(--color-${opt.value})`,
+                }"
+                :type="opt.value as any"
+                effect="plain"
+              >
+                {{ opt.label }}
+              </el-tag>
             </el-option>
           </el-select>
         </el-form-item>
@@ -52,6 +70,7 @@ import { computed, onMounted, reactive, ref } from 'vue'
 import { ElMessage, type FormInstance, type FormRules } from 'element-plus'
 import { useRoute, useRouter } from 'vue-router'
 import { getStoryCategoryTypeDetailAPI, updateStoryCategoryTypeAPI } from '@/api/storyCategoryType'
+import { PALETTE_COLOR_OPTIONS } from '@/constants/index'
 import type { StoryCategoryTypeDTO } from '@/types/storyCategoryType'
 
 const route = useRoute()
@@ -72,14 +91,6 @@ const form = reactive<StoryCategoryTypeDTO>({
 const rules: FormRules<StoryCategoryTypeDTO> = {
   name: [{ required: true, message: '请输入名称', trigger: 'blur' }],
 }
-
-const COLOR_OPTIONS = [
-  { label: '默认', value: 'primary' },
-  { label: '成功', value: 'success' },
-  { label: '警告', value: 'warning' },
-  { label: '危险', value: 'danger' },
-  { label: '信息', value: 'info' },
-]
 
 async function loadDetail() {
   if (!editId.value) return

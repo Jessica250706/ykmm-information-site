@@ -7,9 +7,10 @@
         v-for="type in storyCategoryTypeStore.types"
         :key="type.id"
         :style="{
-          backgroundColor: `color-mix(in srgb, var(--el-color-${type.color}) 40%, var(--el-bg-color))`,
+          borderColor: `var(--color-${type.color})`,
+          backgroundColor: `color-mix(in srgb, var(--color-${type.color}) 7%, var(--el-bg-color))`,
         }"
-        class="cursor-pointer rounded-xl bg-white p-6 shadow-sm transition hover:shadow-md"
+        class="cursor-pointer rounded-xl bg-white p-6 shadow-sm transition hover:shadow-md border-2"
         @click="goType(type.id as StoryCategoryTypeValue)"
       >
         <div class="mb-2 flex items-center gap-3">

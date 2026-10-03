@@ -94,7 +94,7 @@
           <el-input-number v-model="form.weight" :max="500" :min="0" :precision="1" />
         </el-form-item>
 
-        <el-form-item label="鞋码" prop="shoeSize">
+        <el-form-item label="足长(cm)" prop="shoeSize">
           <el-input-number v-model="form.shoeSize" :max="100" :min="0" :precision="1" />
         </el-form-item>
 

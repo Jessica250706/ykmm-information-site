@@ -34,6 +34,16 @@
 // 需要取消下面这行的注释，让覆盖后的变量重新生成所有组件样式：
 @use "element-plus/theme-chalk/src/index.scss" as *;
 
+:root {
+  --color-red: #e05c5c;
+  --color-orange: #e69a3c;
+  --color-yellow: #d4b840;
+  --color-green: #3da35d;
+  --color-cyan: #4ba3a3;
+  --color-blue: #4a7fc4;
+  --color-purple: #8a6bc4;
+}
+
 /* 全局样式 */
 html,
 body,

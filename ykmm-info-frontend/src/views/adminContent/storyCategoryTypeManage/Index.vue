@@ -10,7 +10,13 @@
         row-key="id"
       >
         <template #name="{ row }">
-          <el-tag :type="tagType(row.color)" effect="plain">
+          <el-tag
+            :style="{
+              borderColor: `var(--color-${row.color})`,
+              color: `var(--color-${row.color})`,
+            }"
+            effect="plain"
+          >
             {{ row.name }}
           </el-tag>
         </template>
@@ -52,13 +58,6 @@ const columns: ProTableColumn<StoryCategoryTypeVO>[] = [
   { prop: 'createdAt', label: '创建时间', minWidth: 180, align: 'center', slot: 'createdAt' },
   { label: '操作', width: 120, align: 'center', fixed: 'right', slot: 'action' },
 ]
-
-/** 颜色字符串 -> el-tag 合法类型 */
-function tagType(color?: string): 'primary' | 'success' | 'warning' | 'danger' | 'info' {
-  const valid = ['primary', 'success', 'warning', 'danger', 'info']
-  return (color && valid.includes(color) ? color : 'info') as
-    'primary' | 'success' | 'warning' | 'danger' | 'info'
-}
 
 async function loadList() {
   loading.value = true

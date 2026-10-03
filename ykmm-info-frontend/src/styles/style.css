@@ -7,4 +7,17 @@
   --color-primary-lighter: var(--el-color-primary-light-5);
   --color-primary-lightest: var(--el-color-primary-light-7);
   --color-primary-dark: var(--el-color-primary-dark-2);
+  /* 7 → 12 色调色板，默认值取 spring */
+  --color-c-red: #e05c5c;
+  --color-c-orange: #e69a3c;
+  --color-c-amber: #d4a840;
+  --color-c-yellow: #d4b840;
+  --color-c-lime: #8cbf4a;
+  --color-c-green: #3da35d;
+  --color-c-teal: #4ba38c;
+  --color-c-cyan: #4ba3a3;
+  --color-c-blue: #4a7fc4;
+  --color-c-indigo: #5c6bc4;
+  --color-c-purple: #8a6bc4;
+  --color-c-pink: #d46ba8;
 }

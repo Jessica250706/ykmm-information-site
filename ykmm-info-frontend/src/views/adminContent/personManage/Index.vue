@@ -165,6 +165,7 @@ const columns: ProTableColumn<PersonVO>[] = [
   { prop: 'birthday', label: '生日', minWidth: 80, align: 'center' },
   { prop: 'height', label: '身高(cm)', minWidth: 90, align: 'center' },
   { prop: 'weight', label: '体重(kg)', minWidth: 90, align: 'center' },
+  { prop: 'shoeSize', label: '足长(cm)', minWidth: 90, align: 'center' },
   { prop: 'bloodTypeLabel', label: '血型', minWidth: 80, align: 'center' },
   { prop: 'personType', label: '类型', minWidth: 100, align: 'center', slot: 'personType' },
   { label: '应援色', minWidth: 180, align: 'center', slot: 'themeColor' },
