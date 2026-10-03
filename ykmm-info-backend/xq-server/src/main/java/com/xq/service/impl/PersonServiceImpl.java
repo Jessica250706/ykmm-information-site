@@ -13,6 +13,7 @@ import com.xq.result.PageResult;
 import com.xq.service.PersonService;
 import com.xq.vo.AgencyVO;
 import com.xq.vo.PersonIdolGroupVO;
+import com.xq.vo.PersonOptionVO;
 import com.xq.vo.PersonVO;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -50,6 +51,14 @@ public class PersonServiceImpl implements PersonService {
                 .collect(Collectors.toList());
 
         return new PageResult(page.getTotal(), voList);
+    }
+
+    // ---------------------------------------------------
+    // 查询所有
+    // ---------------------------------------------------
+    @Override
+    public List<PersonOptionVO> listOptions() {
+        return personMapper.listOptions();
     }
 
     // ---------------------------------------------------

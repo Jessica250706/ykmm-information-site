@@ -5,6 +5,7 @@ import com.xq.entity.Person;
 import com.xq.vo.AgencyVO;
 import com.xq.vo.IdolGroupVO;
 import com.xq.vo.PersonIdolGroupVO;
+import com.xq.vo.PersonOptionVO;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
@@ -17,6 +18,11 @@ public interface PersonMapper {
      * 分页查询
      */
     List<Person> pageQuery(@Param("query") PersonPageQueryDTO query);
+
+    /**
+     * 查询全部人物
+     */
+    List<PersonOptionVO> listOptions();
 
     /**
      * 统计总数

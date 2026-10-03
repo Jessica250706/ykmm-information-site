@@ -5,10 +5,13 @@ import com.xq.dto.PersonPageQueryDTO;
 import com.xq.result.PageResult;
 import com.xq.result.Result;
 import com.xq.service.PersonService;
+import com.xq.vo.PersonOptionVO;
 import com.xq.vo.PersonVO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 /**
  * 人物管理
@@ -28,6 +31,14 @@ public class PersonController {
     public Result<PageResult<PersonVO>> page(PersonPageQueryDTO query) {
         log.info("管理端查询人物列表：{}", query);
         return Result.success(personService.pageQuery(query));
+    }
+
+    /**
+     * 查询所有人物
+     */
+    @GetMapping("/options")
+    public Result<List<PersonOptionVO>> options() {
+        return Result.success(personService.listOptions());
     }
 
     /**

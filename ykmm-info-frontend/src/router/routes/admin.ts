@@ -62,6 +62,18 @@ export const adminRoutes: RouteRecordRaw = {
       component: () => import('@/views/adminContent/roleManage/Index.vue'),
       meta: { title: '角色管理' },
     },
+    {
+      path: 'content/role/create',
+      name: 'AdminRoleCreate',
+      component: () => import('@/views/adminContent/roleManage/components/EditRole.vue'),
+      meta: { title: '新增角色' },
+    },
+    {
+      path: 'content/role/edit/:id',
+      name: 'AdminRoleEdit',
+      component: () => import('@/views/adminContent/roleManage/components/EditRole.vue'),
+      meta: { title: '编辑角色' },
+    },
     // ---------- 卡面管理 ----------
     {
       path: 'content/card',

@@ -59,6 +59,13 @@
     ORDER BY id ASC
   </select>
 
+  <!-- 查询全部 -->
+  <select id="listOptions" resultType="com.xq.vo.PersonOptionVO">
+    SELECT id, name_cn, name_jp, name_romaji
+    FROM person
+    ORDER BY id
+  </select>
+
   <!-- 统计总数 -->
   <select id="countByQuery" resultType="long">
     SELECT COUNT(*)

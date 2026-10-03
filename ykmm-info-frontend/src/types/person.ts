@@ -212,3 +212,26 @@ export interface PersonDTO {
   cv?: string
   [property: string]: any
 }
+
+/**
+ * 人物全部返回
+ */
+export interface PersonOptionVO {
+  /**
+   * 主键
+   */
+  id?: number
+  /**
+   * 中文名
+   */
+  nameCn?: string
+  /**
+   * 日文名
+   */
+  nameJp?: string
+  /**
+   * 罗马音
+   */
+  nameRomaji?: string
+  [property: string]: any
+}

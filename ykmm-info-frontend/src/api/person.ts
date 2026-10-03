@@ -1,5 +1,5 @@
 import type { PageResult } from '@/types/common'
-import type { PersonDTO, PersonPageQueryDTO, PersonVO } from '@/types/person'
+import type { PersonDTO, PersonOptionVO, PersonPageQueryDTO, PersonVO } from '@/types/person'
 import request from '@/utils/http'
 
 /**
@@ -7,6 +7,13 @@ import request from '@/utils/http'
  */
 export const listPersonAPI = (params: PersonPageQueryDTO) => {
   return request.get<PageResult<PersonVO>>('/admin/person', { params })
+}
+
+/**
+ * @description: 查询所有人物
+ */
+export const listPersonOptionsAPI = () => {
+  return request.get<PersonOptionVO[]>('/admin/person/options')
 }
 
 /**
