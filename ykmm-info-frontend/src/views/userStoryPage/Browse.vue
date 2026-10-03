@@ -12,13 +12,18 @@
 
     <!-- 中间：内容 -->
     <BrowseCenter
-      :color="storyCategoryTypeStore.getTypeColor(currentCategory?.categoryType)"
+      :color="
+        storyCategoryTypeStore.getTypeColor(
+          currentCategory ? currentCategory?.categoryType : storyDetail?.categoryType,
+        )
+      "
       :current-category="currentCategory"
       :loading-content="loadingContent"
       :loading-stories="loadingStories"
       :stories="stories"
       :story-detail="storyDetail"
       :type-label="typeLabel"
+      @go-back="goBack"
       @go-category="goCategory"
       @go-story="goStory"
     />
@@ -142,6 +147,10 @@ async function loadCurrent() {
 /* -------- 交互 -------- */
 function handleNodeClick(data: StoryCategoryVO) {
   goCategory(data.id!)
+}
+
+function goBack() {
+  router.back()
 }
 
 function goCategory(id: number) {

@@ -1,16 +1,5 @@
 <template>
   <div class="dialogue-view">
-    <div class="mb-4 rounded-lg bg-white p-4 shadow-sm">
-      <h2 class="text-lg font-semibold">{{ detail.title || `剧情 #${detail.id}` }}</h2>
-      <div class="mt-1 flex flex-wrap items-center gap-2 text-xs text-slate-400">
-        <el-tag effect="plain" size="small">{{ detail.categoryTypeLabel }}</el-tag>
-        <span>{{ detail.categoryName }}</span>
-      </div>
-      <p v-if="detail.description" class="mt-3 whitespace-pre-line text-sm text-slate-600">
-        {{ detail.description }}
-      </p>
-    </div>
-
     <el-empty v-if="!detail.versions?.length" description="暂无对话内容" />
 
     <el-tabs v-else v-model="activeVersionId" type="border-card">

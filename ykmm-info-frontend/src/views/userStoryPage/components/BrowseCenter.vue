@@ -3,12 +3,46 @@
     <el-skeleton v-if="loadingContent" :rows="6" animated />
 
     <!-- Story 详情 -->
-    <DialogueView v-else-if="storyDetail" :detail="storyDetail" />
+    <template v-else-if="storyDetail">
+      <!-- 详情头部 -->
+      <div class="mb-4">
+        <div class="flex justify-between items-center">
+          <h2 class="text-lg font-semibold">
+            {{ storyDetail.title || `剧情 #${storyDetail.id}` }}
+          </h2>
+          <el-button @click="emit('goBack')">← 返回</el-button>
+        </div>
+        <div class="mt-1 flex flex-wrap items-center gap-2 text-xs text-slate-400">
+          <el-tag
+            :style="{
+              borderColor: `var(--color-${color})`,
+              color: `var(--color-${color})`,
+            }"
+            effect="plain"
+            size="small"
+          >
+            {{ storyDetail.categoryTypeLabel }}
+          </el-tag>
+          <span>{{ storyDetail.categoryName }}</span>
+        </div>
+        <p v-if="storyDetail.description" class="mt-3 whitespace-pre-line text-sm text-slate-600">
+          {{ storyDetail.description }}
+        </p>
+      </div>
+
+      <!-- 对话内容 -->
+      <DialogueView :detail="storyDetail" />
+    </template>
 
     <!-- 分类：子分类 + 剧情列表 -->
     <template v-else-if="currentCategory">
       <div class="mb-4">
-        <h2 class="text-lg font-semibold">{{ currentCategory.name }}</h2>
+        <div class="flex justify-between items-center">
+          <h2 class="text-lg font-semibold">{{ currentCategory.name }}</h2>
+          <el-button v-if="currentCategory.parentId !== 0" @click="emit('goBack')">
+            ← 返回
+          </el-button>
+        </div>
         <div class="mt-2 flex items-center gap-2 text-xs text-slate-400">
           <el-tag
             :style="{
@@ -53,8 +87,8 @@
               @click="emit('goStory', s.id!)"
             >
               <div class="font-medium">{{ s.title || `剧情 #${s.id}` }}</div>
-              <div class="mt-0.5 line-clamp-1 text-sm text-slate-500">
-                {{ s.description || '暂无描述' }}
+              <div v-if="s.description" class="mt-0.5 line-clamp-1 text-sm text-slate-500">
+                {{ s.description }}
               </div>
             </div>
           </div>
@@ -94,5 +128,7 @@ const emit = defineEmits<{
   goCategory: [id: number]
   /** 点击剧情 */
   goStory: [id: number]
+  /** 返回 */
+  goBack: []
 }>()
 </script>
