@@ -143,11 +143,25 @@ export const adminRoutes: RouteRecordRaw = {
       meta: { title: '编辑剧情分类' },
     },
     {
-      path: 'story-category/detail/:id',
+      path: 'content/story-category/detail/:id',
       name: 'AdminStoryCategoryDetail',
       component: () =>
         import('@/views/adminContent/storyCategoryManage/components/DetailStoryCategory.vue'),
       meta: { title: '剧情分类详情' },
+    },
+    // ---------- 剧情分类类型管理 ----------
+    {
+      path: 'settings/story-category-type',
+      name: 'AdminStoryCategoryTypeManage',
+      component: () => import('@/views/adminContent/storyCategoryTypeManage/Index.vue'),
+      meta: { title: '剧情分类类型' },
+    },
+    {
+      path: 'settings/story-category-type/edit/:id',
+      name: 'AdminStoryCategoryTypeEdit',
+      component: () =>
+        import('@/views/adminContent/storyCategoryTypeManage/components/EditStoryCategoryType.vue'),
+      meta: { title: '编辑剧情分类类型' },
     },
   ],
 }

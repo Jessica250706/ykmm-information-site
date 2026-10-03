@@ -35,6 +35,14 @@
 @use "element-plus/theme-chalk/src/index.scss" as *;
 
 /* 全局样式 */
+html,
+body,
+#app {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
 // 搜索框的表单组件
 .search .el-form-item {
   margin-bottom: 0 !important;

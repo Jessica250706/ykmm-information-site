@@ -12,8 +12,8 @@ export const userRoutes: RouteRecordRaw = {
       meta: { title: '卡面' },
     },
     {
-      path: 'stories',
-      name: 'UserStories',
+      path: 'story',
+      name: 'UserStory',
       component: () => import('@/views/userStoryPage/Index.vue'),
       meta: { title: '剧情' },
     },

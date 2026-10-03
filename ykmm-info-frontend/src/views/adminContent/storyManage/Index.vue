@@ -15,10 +15,10 @@
       <el-form-item label="分类类型">
         <el-select v-model="query.categoryType" placeholder="全部" style="width: 140px" clearable>
           <el-option
-            v-for="opt in STORY_CATEGORY_TYPE_OPTIONS"
-            :key="opt.value"
-            :label="opt.label"
-            :value="opt.value"
+            v-for="opt in storyCategoryTypeStore.types"
+            :key="opt.id"
+            :label="opt.name"
+            :value="opt.id"
           />
         </el-select>
       </el-form-item>
@@ -125,7 +125,6 @@ import {
 } from '@/components/ProTable'
 import {
   STORY_CATEGORY_TYPE,
-  STORY_CATEGORY_TYPE_OPTIONS,
   STORY_STATUS,
   STORY_STATUS_LABEL,
   STORY_STATUS_OPTIONS,
@@ -133,11 +132,13 @@ import {
   type StoryCategoryTypeValue,
   type StoryStatusValue,
 } from '@/constants/story'
+import { useStoryCategoryTypeStore } from '@/stores/storyCategoryTypeStore'
 import type { StoryPageQueryDTO, StoryVO } from '@/types/story'
 import type { StoryCategoryVO } from '@/types/storyCategory'
 import AuditDialog from './components/AuditDialog.vue'
 
 const router = useRouter()
+const storyCategoryTypeStore = useStoryCategoryTypeStore()
 
 type TableInstance = ProTableExpose<StoryVO>
 const tableRef = ref<TableInstance>()
@@ -157,8 +158,8 @@ const query = reactive<{
 const categoryTree = ref<StoryCategoryVO[]>([])
 
 const columns: ProTableColumn<StoryVO>[] = [
-  { label: '标题', minWidth: 240, slot: 'title' },
-  { label: '所属分类', minWidth: 140, align: 'center', slot: 'category' },
+  { label: '标题', minWidth: 200, slot: 'title' },
+  { label: '所属分类', minWidth: 240, align: 'center', slot: 'category' },
   { label: '分类类型', minWidth: 120, align: 'center', slot: 'categoryType' },
   { prop: 'sort', label: '排序', width: 80, align: 'center' },
   { label: '状态', width: 100, align: 'center', slot: 'status' },

@@ -17,10 +17,10 @@
             @change="handleCategoryTypeChange"
           >
             <el-option
-              v-for="opt in STORY_CATEGORY_TYPE_OPTIONS"
-              :key="opt.value"
-              :label="opt.label"
-              :value="opt.value"
+              v-for="opt in storyCategoryTypeStore.types"
+              :key="opt.id"
+              :label="opt.name"
+              :value="opt.id"
             />
           </el-select>
         </el-form-item>
@@ -70,16 +70,14 @@ import { ElMessage, type FormInstance, type FormRules } from 'element-plus'
 import { useRoute, useRouter } from 'vue-router'
 import { createStoryAPI, getStoryDetailAPI, updateStoryAPI } from '@/api/story'
 import { listStoryCategoryTreeAPI } from '@/api/storyCategory'
-import {
-  STORY_CATEGORY_TYPE,
-  STORY_CATEGORY_TYPE_OPTIONS,
-  type StoryCategoryTypeValue,
-} from '@/constants/story'
+import { STORY_CATEGORY_TYPE, type StoryCategoryTypeValue } from '@/constants/story'
+import { useStoryCategoryTypeStore } from '@/stores/storyCategoryTypeStore'
 import type { StoryDTO } from '@/types/story'
 import type { StoryCategoryVO } from '@/types/storyCategory'
 
 const route = useRoute()
 const router = useRouter()
+const storyCategoryTypeStore = useStoryCategoryTypeStore()
 
 const isEdit = computed(() => !!route.params.id)
 const editId = computed(() => (route.params.id ? Number(route.params.id) : null))

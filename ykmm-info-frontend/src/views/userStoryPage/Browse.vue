@@ -1,13 +1,14 @@
 <template>
-  <div class="story-browse flex h-full">
+  <!-- 主体 -->
+  <div class="story-browse flex h-full gap-4">
     <!-- 左侧：分类树 -->
-    <aside class="flex w-64 shrink-0 flex-col border-r bg-white">
+    <el-card class="flex w-64 shrink-0 flex-col border-r bg-white" shadow="never">
       <div class="flex items-center justify-between border-b px-4 py-3">
         <div>
           <div class="text-xs text-slate-400">剧情类型</div>
           <div class="font-medium">{{ typeLabel }}</div>
         </div>
-        <el-button link @click="goIndex">切换</el-button>
+        <el-button @click="goIndex">切换</el-button>
       </div>
 
       <div class="flex-1 overflow-auto p-2">
@@ -24,17 +25,14 @@
           <template #default="{ data }">
             <span class="flex items-center gap-2">
               <span>{{ data.name }}</span>
-              <el-tag v-if="data.children?.length" effect="plain" size="small" type="info">
-                {{ data.children.length }}
-              </el-tag>
             </span>
           </template>
         </el-tree>
       </div>
-    </aside>
+    </el-card>
 
     <!-- 中间：内容 -->
-    <main class="min-w-0 flex-1 overflow-auto bg-slate-50 p-5">
+    <el-card class="min-w-0 flex-1 overflow-auto bg-slate-50 p-5" shadow="never">
       <el-skeleton v-if="loadingContent" :rows="6" animated />
 
       <!-- Story 详情 -->
@@ -94,12 +92,12 @@
 
       <!-- 未选节点 -->
       <el-empty v-else description="请从左侧选择一个分类" />
-    </main>
+    </el-card>
 
     <!-- 右侧：编辑区（占位） -->
-    <aside class="w-80 shrink-0 border-l bg-white p-4">
+    <el-card class="w-80 shrink-0 border-l bg-white p-4" shadow="never">
       <div class="text-xs text-slate-400">编辑区（开发中）</div>
-    </aside>
+    </el-card>
   </div>
 </template>
 

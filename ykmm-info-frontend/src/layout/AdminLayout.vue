@@ -18,7 +18,7 @@
       </div>
 
       <el-scrollbar class="flex-1">
-        <el-menu :default-active="route.path" class="admin-menu" router>
+        <el-menu :default-active="defaultActiveMenu" class="admin-menu" router>
           <AdminMenuItem v-for="item in menuStore.adminMenu" :key="item.title" :item="item" />
         </el-menu>
       </el-scrollbar>
@@ -78,6 +78,28 @@ const route = useRoute()
 const router = useRouter()
 const userStore = useUserStore()
 const menuStore = useMenuStore()
+
+const isMenuActive = (path: string) => {
+  return route.path === path || route.path.startsWith(`${path}/`)
+}
+
+const defaultActiveMenu = computed(() => {
+  // 递归查找菜单，支持多级子菜单，找到匹配的主菜单path
+  function findMatch(items: typeof menuStore.adminMenu): string {
+    for (const item of items) {
+      if (item.path && isMenuActive(item.path)) {
+        return item.path
+      }
+      // 如果有子菜单，递归
+      if (item.children?.length) {
+        const childResult = findMatch(item.children)
+        if (childResult) return childResult
+      }
+    }
+    return ''
+  }
+  return findMatch(menuStore.adminMenu)
+})
 
 const breadcrumbs = computed(() =>
   route.matched.map((r) => r.meta?.title).filter((t): t is string => !!t),

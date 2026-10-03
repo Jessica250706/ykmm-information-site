@@ -86,9 +86,13 @@ const { isAdmin } = useUserStore()
 const isActive = (path: string) => route.path === path || route.path.startsWith(`${path}/`)
 
 /** 把 isActive 逻辑适配给 el-menu 的 default-active */
-const activeMenu = computed(
-  () => menuStore.userNavFlat.find((nav) => isActive(nav.path))?.path ?? '',
-)
+const activeMenu = computed(() => {
+  const matchedNav = menuStore.userNavFlat.find((nav) => {
+    const p = nav.path
+    return route.path === p || route.path.startsWith(`${p}/`)
+  })
+  return matchedNav?.path ?? ''
+})
 
 onMounted(() => {
   if (!menuStore.userMenu.length) {

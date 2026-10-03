@@ -11,12 +11,8 @@
       <el-form ref="formRef" :model="form" :rules="rules" class="max-w-2xl" label-width="100px">
         <el-form-item label="分类类型" prop="categoryType">
           <el-radio-group v-model="form.categoryType" @change="handleCategoryTypeChange">
-            <el-radio
-              v-for="opt in STORY_CATEGORY_TYPE_OPTIONS"
-              :key="opt.value"
-              :value="opt.value"
-            >
-              {{ opt.label }}
+            <el-radio v-for="opt in storyCategoryTypeStore.types" :key="opt.id" :value="opt.id">
+              {{ opt.name }}
             </el-radio>
           </el-radio-group>
         </el-form-item>
@@ -61,15 +57,13 @@ import {
   listStoryCategoryTreeAPI,
   updateStoryCategoryAPI,
 } from '@/api/storyCategory'
-import {
-  STORY_CATEGORY_TYPE,
-  STORY_CATEGORY_TYPE_OPTIONS,
-  type StoryCategoryTypeValue,
-} from '@/constants/story'
+import { STORY_CATEGORY_TYPE, type StoryCategoryTypeValue } from '@/constants/story'
+import { useStoryCategoryTypeStore } from '@/stores/storyCategoryTypeStore'
 import type { StoryCategoryDTO, StoryCategoryVO } from '@/types/storyCategory'
 
 const route = useRoute()
 const router = useRouter()
+const storyCategoryTypeStore = useStoryCategoryTypeStore()
 
 const isEdit = computed(() => !!route.params.id)
 const editId = computed(() => (route.params.id ? Number(route.params.id) : null))

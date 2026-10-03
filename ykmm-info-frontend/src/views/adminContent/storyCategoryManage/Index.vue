@@ -5,10 +5,10 @@
       <el-form-item label="分类类型">
         <el-select v-model="query.categoryType" placeholder="全部" style="width: 160px" clearable>
           <el-option
-            v-for="opt in STORY_CATEGORY_TYPE_OPTIONS"
-            :key="opt.value"
-            :label="opt.label"
-            :value="opt.value"
+            v-for="opt in storyCategoryTypeStore.types"
+            :key="opt.id"
+            :label="opt.name"
+            :value="opt.id"
           />
         </el-select>
       </el-form-item>
@@ -80,12 +80,13 @@ import {
 import {
   STORY_CATEGORY_TYPE,
   STORY_CATEGORY_TYPE_LABEL,
-  STORY_CATEGORY_TYPE_OPTIONS,
   type StoryCategoryTypeValue,
 } from '@/constants/story'
+import { useStoryCategoryTypeStore } from '@/stores/storyCategoryTypeStore'
 import type { StoryCategoryPageQueryDTO, StoryCategoryVO } from '@/types/storyCategory'
 
 const router = useRouter()
+const storyCategoryTypeStore = useStoryCategoryTypeStore()
 
 /* -------- 表格 ref -------- */
 type TableInstance = ProTableExpose<StoryCategoryVO>

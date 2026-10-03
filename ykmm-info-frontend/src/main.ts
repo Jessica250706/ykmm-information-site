@@ -13,6 +13,7 @@ import { lazyPlugin } from '@/directives/lazy.ts' // 引入懒加载指令插件
 import router from '@/router'
 import { useAgencyStore } from '@/stores/agencyStore'
 import { useIdolGroupStore } from '@/stores/idolGroupStore'
+import { useStoryCategoryTypeStore } from '@/stores/storyCategoryTypeStore'
 import App from './App.vue'
 import '@/styles/style.css'
 
@@ -25,7 +26,12 @@ app.use(pinia)
 // pinia 装好后就可以调用 store
 const agencyStore = useAgencyStore()
 const idolGroupStore = useIdolGroupStore()
-Promise.all([agencyStore.loadAll(), idolGroupStore.loadAll()]).catch((e) => {
+const storyCategoryTypeStore = useStoryCategoryTypeStore()
+Promise.all([
+  agencyStore.loadAll(true),
+  idolGroupStore.loadAll(true),
+  storyCategoryTypeStore.loadAll(true),
+]).catch((e) => {
   console.error('初始化基础数据失败', e)
 })
 
