@@ -4,6 +4,7 @@
 
     <!-- Story 详情 -->
     <template v-else-if="storyDetail">
+      <!-- <div>{{ storyDetail }}</div> -->
       <!-- 详情头部 -->
       <div class="mb-4">
         <div class="flex justify-between items-center">
@@ -36,6 +37,7 @@
 
     <!-- 分类：子分类 + 剧情列表 -->
     <template v-else-if="currentCategory">
+      <!-- <div>{{ currentCategory }}</div> -->
       <div class="mb-4">
         <div class="flex justify-between items-center">
           <h2 class="text-lg font-semibold">{{ currentCategory.name }}</h2>

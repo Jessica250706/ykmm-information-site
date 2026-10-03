@@ -26,6 +26,7 @@
     <!-- 目录树 -->
     <div class="flex-1 overflow-x-hidden overflow-y-auto py-2">
       <el-tree
+        ref="treeRef"
         :data="categoryTree"
         :default-expanded-keys="expandedKeys"
         :expand-on-click-node="false"
@@ -45,20 +46,44 @@
 </template>
 
 <script setup lang="ts">
+import { nextTick, ref, watch } from 'vue'
 import type { StoryCategoryVO } from '@/types/storyCategory'
 import type { StoryCategoryTypeVO } from '@/types/storyCategoryType'
+import type { ElTree } from 'element-plus'
 
-defineProps<{
+const props = defineProps<{
   typeLabel: string
   categoryTree: StoryCategoryVO[]
   expandedKeys: number[]
   types: StoryCategoryTypeVO[]
+  /** 外部指定当前高亮节点（例如从中间点击子分类后回传） */
+  currentId?: number | null
 }>()
 
 const emit = defineEmits<{
   'node-click': [data: StoryCategoryVO]
   'switch-type': [typeId: number]
 }>()
+
+const treeRef = ref<InstanceType<typeof ElTree>>()
+
+/**
+ * 树数据或目标 id 变化时，把高亮同步到 targetId。
+ * - nextTick 保证 el-tree 内部已经渲染完数据（首次加载、切换类型都靠它）
+ * - undefined 会让 el-tree 清空当前高亮
+ */
+async function syncCurrentKey(targetId?: number | null) {
+  await nextTick()
+  treeRef.value?.setCurrentKey(targetId ?? undefined)
+}
+
+watch(
+  () => [props.currentId, props.categoryTree] as const,
+  () => {
+    void syncCurrentKey(props.currentId)
+  },
+  { immediate: true },
+)
 </script>
 
 <style lang="scss" scoped>

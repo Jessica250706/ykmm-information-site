@@ -3,6 +3,7 @@
     <!-- 左侧：分类树 -->
     <BrowseLeft
       :category-tree="categoryTree"
+      :current-id="currentHighlightId"
       :expanded-keys="expandedKeys"
       :type-label="typeLabel"
       :types="storyCategoryTypeStore.types"
@@ -66,6 +67,17 @@ const typeLabel = computed(
 /* -------- 树 -------- */
 const categoryTree = ref<StoryCategoryVO[]>([])
 const expandedKeys = ref<number[]>([])
+
+/**
+ * 左侧树高亮的目标 id：
+ * - kind === 'category' 时，高亮对应的分类节点
+ * - kind === 'story' 时不动左侧树（保持原分类高亮）
+ * - 也可以选择「story 时把 leftId 记下来，回到分类时再恢复」，看产品需求
+ */
+const currentHighlightId = computed(() => {
+  if (kind.value === 'category') return nodeId.value
+  return null
+})
 
 async function loadTree() {
   const res = await listUserStoryCategoryTreeAPI({ categoryType: type.value })
@@ -150,7 +162,25 @@ function handleNodeClick(data: StoryCategoryVO) {
 }
 
 function goBack() {
-  router.back()
+  if (storyDetail.value) {
+    router.push({
+      name: 'UserStoryBrowseDetail',
+      params: {
+        type: String(type.value),
+        kind: 'category',
+        id: String(storyDetail.value.categoryId),
+      },
+    })
+  } else {
+    router.push({
+      name: 'UserStoryBrowseDetail',
+      params: {
+        type: String(type.value),
+        kind: 'category',
+        id: String(currentCategory.value?.parentId),
+      },
+    })
+  }
 }
 
 function goCategory(id: number) {
