@@ -42,4 +42,16 @@
     </foreach>
   </select>
 
+  <select id="getByLabel" resultType="com.xq.entity.Sticker">
+    SELECT id,
+           label,
+           image_url    AS imageUrl,
+           emoji,
+           sticker_type AS stickerType,
+           created_at   AS createdAt
+    FROM sticker
+    WHERE label = #{label}
+    LIMIT 1
+  </select>
+
 </mapper>

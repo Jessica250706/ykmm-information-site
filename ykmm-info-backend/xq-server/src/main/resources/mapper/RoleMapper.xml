@@ -13,7 +13,8 @@
   </sql>
 
   <select id="pageQuery" resultType="com.xq.entity.Role">
-    SELECT <include refid="baseColumns"/>
+    SELECT
+    <include refid="baseColumns"/>
     FROM role
     <where>
       <if test="query.keyword != null and query.keyword != ''">
@@ -33,20 +34,18 @@
   </select>
 
   <select id="getById" resultType="com.xq.entity.Role">
-    SELECT <include refid="baseColumns"/>
+    SELECT
+    <include refid="baseColumns"/>
     FROM role
     WHERE id = #{id}
   </select>
 
   <insert id="insert" parameterType="com.xq.entity.Role"
           useGeneratedKeys="true" keyProperty="id">
-    INSERT INTO role (
-      person_id, name, intro,
-      created_at, updated_at
-    ) VALUES (
-               #{personId}, #{name}, #{intro},
-               CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
-             )
+    INSERT INTO role (person_id, name, intro,
+                      created_at, updated_at)
+    VALUES (#{personId}, #{name}, #{intro},
+            CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
   </insert>
 
   <update id="update" parameterType="com.xq.entity.Role">
@@ -61,11 +60,15 @@
   </update>
 
   <delete id="deleteById">
-    DELETE FROM role WHERE id = #{id}
+    DELETE
+    FROM role
+    WHERE id = #{id}
   </delete>
 
   <select id="countByPersonId" resultType="int">
-    SELECT COUNT(*) FROM role WHERE person_id = #{personId}
+    SELECT COUNT(*)
+    FROM role
+    WHERE person_id = #{personId}
   </select>
 
   <select id="listCategoryIdsByRoleId" resultType="long">
@@ -75,7 +78,9 @@
   </select>
 
   <delete id="deleteCategoryRel">
-    DELETE FROM role_story_category_rel WHERE role_id = #{roleId}
+    DELETE
+    FROM role_story_category_rel
+    WHERE role_id = #{roleId}
   </delete>
 
   <insert id="insertCategoryRel">
@@ -94,6 +99,31 @@
            JOIN role_story_category_rel r ON c.id = r.story_category_id
     WHERE r.role_id = #{roleId}
     ORDER BY c.sort ASC, c.id ASC
+  </select>
+
+  <select id="getByName" resultType="com.xq.entity.Role">
+    SELECT id,
+           person_id  AS personId,
+           name,
+           intro,
+           created_at AS createdAt,
+           updated_at AS updatedAt
+    FROM role
+    WHERE name = #{name}
+    LIMIT 1
+  </select>
+
+  <select id="getByPersonNameCn" resultType="com.xq.entity.Role">
+    SELECT r.id,
+           r.person_id  AS personId,
+           r.name,
+           r.intro,
+           r.created_at AS createdAt,
+           r.updated_at AS updatedAt
+    FROM role r
+           JOIN person p ON r.person_id = p.id
+    WHERE p.name_cn = #{nameCn}
+    LIMIT 1
   </select>
 
 </mapper>

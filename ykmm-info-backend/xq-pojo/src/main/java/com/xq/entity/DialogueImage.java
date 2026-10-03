@@ -18,15 +18,23 @@ public class DialogueImage implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    /** 主键 */
+    /**
+     * 主键
+     */
     private Long id;
 
-    /** 版本ID */
+    /**
+     * 所属对话版本
+     */
     private Long versionId;
 
-    /** 图片地址 */
+    /**
+     * 图片地址
+     */
     private String url;
 
-    /** 排序 */
+    /**
+     * 排序
+     */
     private Integer sort;
 }

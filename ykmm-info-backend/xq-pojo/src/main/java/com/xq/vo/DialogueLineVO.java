@@ -1,23 +1,64 @@
 package com.xq.vo;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
+import java.io.Serializable;
 import java.util.List;
 
 /**
- * 对话句子
+ * 对话句子返回
  */
 @Data
-public class DialogueLineVO {
-    private Long id;
-    private Long speakerId;
-    private String speakerName;
-    private String speakerAvatar;
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+public class DialogueLineVO implements Serializable {
+
     /**
-     * 1左 2右
+     * 句子ID
+     */
+    private Long id;
+
+    /**
+     * 说话角色ID
+     */
+    private Long speakerId;
+
+    /**
+     * 说话角色名
+     */
+    private String speakerName;
+
+    /**
+     * 对应人物ID
+     */
+    private Long personId;
+
+    /**
+     * 对应人物中文名
+     */
+    private String personNameCn;
+
+    /**
+     * RC聊天：1左 2右
      */
     private Integer side;
+
+    /**
+     * 原始文本内容
+     */
     private String content;
+
+    /**
+     * 排序
+     */
     private Integer sort;
+
+    /**
+     * 解析后的片段
+     */
     private List<DialogueSegmentVO> segments;
 }

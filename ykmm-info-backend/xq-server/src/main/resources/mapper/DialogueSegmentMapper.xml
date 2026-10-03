@@ -3,14 +3,53 @@
     "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.xq.mapper.DialogueSegmentMapper">
 
-  <select id="listByLineIds" resultType="com.xq.entity.DialogueSegment">
-    SELECT *
+  <sql id="baseColumns">
+    id,
+    line_id      AS lineId,
+    segment_type AS segmentType,
+    content,
+    sticker_id   AS stickerId,
+    sort
+  </sql>
+
+  <select id="listByLineId" resultType="com.xq.entity.DialogueSegment">
+    SELECT
+    <include refid="baseColumns"/>
     FROM dialogue_segment
-    WHERE line_id IN
-    <foreach collection="lineIds" item="id" open="(" separator="," close=")">
-      #{id}
-    </foreach>
+    WHERE line_id = #{lineId}
     ORDER BY sort, id
   </select>
+
+  <select id="listByLineIds" resultType="com.xq.entity.DialogueSegment">
+    SELECT
+    <include refid="baseColumns"/>
+    FROM dialogue_segment
+    WHERE line_id IN
+    <foreach collection="lineIds" item="lineId" open="(" separator="," close=")">
+      #{lineId}
+    </foreach>
+    ORDER BY line_id, sort, id
+  </select>
+
+  <insert id="insertBatch">
+    INSERT INTO dialogue_segment (line_id, segment_type, content, sticker_id, sort)
+    VALUES
+    <foreach collection="segments" item="s" separator=",">
+      (#{s.lineId}, #{s.segmentType}, #{s.content}, #{s.stickerId}, #{s.sort})
+    </foreach>
+  </insert>
+
+  <delete id="deleteByLineId">
+    DELETE
+    FROM dialogue_segment
+    WHERE line_id = #{lineId}
+  </delete>
+
+  <delete id="deleteByLineIds">
+    DELETE FROM dialogue_segment WHERE line_id IN
+    <foreach collection="lineIds" item="lineId" open="(" separator="," close=")">
+      #{lineId}
+    </foreach>
+  </delete>
 
 </mapper>

@@ -3,14 +3,85 @@
     "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.xq.mapper.DialogueLineMapper">
 
-  <select id="listByVersionIds" resultType="com.xq.entity.DialogueLine">
-    SELECT *
+  <sql id="baseColumns">
+    id,
+    version_id AS versionId,
+    speaker_id AS speakerId,
+    side,
+    content,
+    sort,
+    created_at AS createdAt
+  </sql>
+
+  <select id="listByVersionId" resultType="com.xq.entity.DialogueLine">
+    SELECT
+    <include refid="baseColumns"/>
     FROM dialogue_line
-    WHERE version_id IN
-    <foreach collection="versionIds" item="id" open="(" separator="," close=")">
-      #{id}
+    WHERE version_id = #{versionId}
+    ORDER BY sort ASC, id ASC
+  </select>
+
+  <select id="getById" resultType="com.xq.entity.DialogueLine">
+    SELECT
+    <include refid="baseColumns"/>
+    FROM dialogue_line
+    WHERE id = #{id}
+  </select>
+
+  <insert id="insert" parameterType="com.xq.entity.DialogueLine"
+          useGeneratedKeys="true" keyProperty="id">
+    INSERT INTO dialogue_line (version_id, speaker_id, side, content, sort)
+    VALUES (#{versionId}, #{speakerId}, #{side}, #{content}, #{sort})
+  </insert>
+
+  <insert id="insertBatch" useGeneratedKeys="true" keyProperty="id">
+    INSERT INTO dialogue_line (version_id, speaker_id, side, content, sort)
+    VALUES
+    <foreach collection="lines" item="line" separator=",">
+      (#{line.versionId}, #{line.speakerId}, #{line.side},
+      #{line.content}, #{line.sort})
     </foreach>
-    ORDER BY sort, id
+  </insert>
+
+  <update id="update" parameterType="com.xq.entity.DialogueLine">
+    UPDATE dialogue_line
+    <set>
+      <if test="speakerId != null">speaker_id = #{speakerId},</if>
+      <if test="side != null">side = #{side},</if>
+      <if test="content != null">content = #{content},</if>
+      <if test="sort != null">sort = #{sort},</if>
+    </set>
+    WHERE id = #{id}
+  </update>
+
+  <update id="updateSort">
+    UPDATE dialogue_line
+    SET sort = #{sort}
+    WHERE id = #{id}
+  </update>
+
+  <delete id="deleteById">
+    DELETE
+    FROM dialogue_line
+    WHERE id = #{id}
+  </delete>
+
+  <delete id="deleteByVersionId">
+    DELETE
+    FROM dialogue_line
+    WHERE version_id = #{versionId}
+  </delete>
+
+  <select id="countByVersionId" resultType="int">
+    SELECT COUNT(*)
+    FROM dialogue_line
+    WHERE version_id = #{versionId}
+  </select>
+
+  <select id="getMaxSort" resultType="java.lang.Integer">
+    SELECT MAX(sort)
+    FROM dialogue_line
+    WHERE version_id = #{versionId}
   </select>
 
 </mapper>

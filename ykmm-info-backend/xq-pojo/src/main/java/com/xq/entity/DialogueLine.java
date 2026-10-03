@@ -19,24 +19,38 @@ public class DialogueLine implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    /** 主键 */
+    /**
+     * 主键
+     */
     private Long id;
 
-    /** 版本ID */
+    /**
+     * 版本ID
+     */
     private Long versionId;
 
-    /** 说话人物ID */
+    /**
+     * 说话人物ID，关联 role.id
+     */
     private Long speakerId;
 
-    /** RC聊天：1左 2右 */
+    /**
+     * RC聊天：1左 2右
+     */
     private Integer side;
 
-    /** 纯文本内容缓存 */
+    /**
+     * 纯文本内容缓存
+     */
     private String content;
 
-    /** 排序 */
+    /**
+     * 排序
+     */
     private Integer sort;
 
-    /** 创建时间 */
+    /**
+     * 创建时间
+     */
     private LocalDateTime createdAt;
 }

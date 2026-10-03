@@ -32,6 +32,22 @@ public interface RoleMapper {
     Role getById(@Param("id") Long id);
 
     /**
+     * 根据角色名精确查询
+     *
+     * @param name 角色名
+     * @return 角色
+     */
+    Role getByName(@Param("name") String name);
+
+    /**
+     * 根据人物中文名查询角色
+     *
+     * @param nameCn 人物中文名
+     * @return 角色
+     */
+    Role getByPersonNameCn(@Param("nameCn") String nameCn);
+
+    /**
      * 新增
      *
      * @param role 角色

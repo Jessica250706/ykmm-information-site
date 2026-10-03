@@ -3,12 +3,78 @@
     "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.xq.mapper.DialogueVersionMapper">
 
+  <sql id="baseColumns">
+    id,
+    source_type AS sourceType,
+    source_id   AS sourceId,
+    language,
+    format,
+    scope,
+    created_at  AS createdAt
+  </sql>
+
+  <select id="pageQuery" resultType="com.xq.entity.DialogueVersion">
+    SELECT
+    <include refid="baseColumns"/>
+    FROM dialogue_version
+    <where>
+      <if test="query.sourceType != null">
+        AND source_type = #{query.sourceType}
+      </if>
+      <if test="query.sourceId != null">
+        AND source_id = #{query.sourceId}
+      </if>
+      <if test="query.language != null">
+        AND language = #{query.language}
+      </if>
+      <if test="query.format != null">
+        AND format = #{query.format}
+      </if>
+      <if test="query.scope != null">
+        AND scope = #{query.scope}
+      </if>
+    </where>
+    ORDER BY id ASC
+  </select>
+
   <select id="listBySource" resultType="com.xq.entity.DialogueVersion">
-    SELECT *
+    SELECT
+    <include refid="baseColumns"/>
     FROM dialogue_version
     WHERE source_type = #{sourceType}
-      AND source_id = #{sourceId}
+    AND source_id = #{sourceId}
     ORDER BY id
   </select>
+
+  <select id="getById" resultType="com.xq.entity.DialogueVersion">
+    SELECT
+    <include refid="baseColumns"/>
+    FROM dialogue_version
+    WHERE id = #{id}
+  </select>
+
+  <select id="getByUniqueKey" resultType="com.xq.entity.DialogueVersion">
+    SELECT
+    <include refid="baseColumns"/>
+    FROM dialogue_version
+    WHERE source_type = #{sourceType}
+    AND source_id = #{sourceId}
+    AND language = #{language}
+    AND format = #{format}
+    AND scope = #{scope}
+    LIMIT 1
+  </select>
+
+  <insert id="insert" parameterType="com.xq.entity.DialogueVersion"
+          useGeneratedKeys="true" keyProperty="id">
+    INSERT INTO dialogue_version (source_type, source_id, language, format, scope)
+    VALUES (#{sourceType}, #{sourceId}, #{language}, #{format}, #{scope})
+  </insert>
+
+  <delete id="deleteById">
+    DELETE
+    FROM dialogue_version
+    WHERE id = #{id}
+  </delete>
 
 </mapper>

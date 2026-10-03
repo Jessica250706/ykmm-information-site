@@ -28,4 +28,12 @@ public interface StickerMapper {
      * @return 表情包列表
      */
     List<Sticker> listByIds(@Param("ids") Collection<Long> ids);
+
+    /**
+     * 根据标签查询表情包
+     *
+     * @param label 标签
+     * @return 表情包
+     */
+    Sticker getByLabel(@Param("label") String label);
 }

@@ -1,28 +1,14 @@
-package com.xq.entity;
+package com.xq.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
-import java.time.LocalDateTime;
 
 /**
- * 对话版本表
+ * 对话版本创建
  */
 @Data
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
-public class DialogueVersion implements Serializable {
-
-    private static final long serialVersionUID = 1L;
-
-    /**
-     * 主键
-     */
-    private Long id;
+public class DialogueVersionDTO implements Serializable {
 
     /**
      * 1剧情 2卡面RTV 3卡面RC
@@ -48,9 +34,4 @@ public class DialogueVersion implements Serializable {
      * 1全部 2节选
      */
     private Integer scope;
-
-    /**
-     * 创建时间
-     */
-    private LocalDateTime createdAt;
 }

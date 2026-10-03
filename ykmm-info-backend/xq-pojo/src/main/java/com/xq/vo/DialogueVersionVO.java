@@ -1,30 +1,85 @@
 package com.xq.vo;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
+import java.io.Serializable;
+import java.time.LocalDateTime;
 import java.util.List;
 
 /**
- * 对话版本
+ * 对话版本返回
  */
 @Data
-public class DialogueVersionVO {
-    private Long id;
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+public class DialogueVersionVO implements Serializable {
+
     /**
-     * 1中文 2日文
+     * 主键
+     */
+    private Long id;
+
+    /**
+     * 来源类型
+     */
+    private Integer sourceType;
+
+    /**
+     * 来源类型标签
+     */
+    private String sourceTypeLabel;
+
+    /**
+     * 来源ID
+     */
+    private Long sourceId;
+
+    /**
+     * 语言
      */
     private Integer language;
-    private String languageLabel;
+
     /**
-     * 1文字 2图片
+     * 语言标签
+     */
+    private String languageLabel;
+
+    /**
+     * 形式
      */
     private Integer format;
-    private String formatLabel;
+
     /**
-     * 1全部 2节选
+     * 形式标签
+     */
+    private String formatLabel;
+
+    /**
+     * 范围
      */
     private Integer scope;
+
+    /**
+     * 范围标签
+     */
     private String scopeLabel;
+
+    /**
+     * 文字版本时的句子列表
+     */
     private List<DialogueLineVO> lines;
+
+    /**
+     * 图片版本时的图片列表
+     */
     private List<DialogueImageVO> images;
+
+    /**
+     * 创建时间
+     */
+    private LocalDateTime createdAt;
 }
