@@ -1,44 +1,74 @@
 <template>
-  <section>
-    <h1 class="mb-5 text-xl font-semibold">剧情</h1>
+  <section class="story-index h-full overflow-auto p-6">
+    <h1 class="mb-6 text-2xl font-semibold">剧情</h1>
 
-    <ul class="space-y-3">
-      <li
-        v-for="c in chapters"
-        :key="c.id"
-        class="flex items-center gap-4 rounded-xl bg-white p-4 shadow-sm transition"
-        :class="c.locked ? 'opacity-60' : 'hover:shadow-md'"
+    <div class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+      <div
+        v-for="type in typeOptions"
+        :key="type.value"
+        class="cursor-pointer rounded-xl bg-white p-6 shadow-sm transition hover:shadow-md"
+        @click="goType(type.value)"
       >
-        <span
-          class="grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-indigo-50 text-indigo-600"
-        >
-          {{ c.id }}
-        </span>
-        <div class="min-w-0 flex-1">
-          <p class="font-medium">{{ c.title }}</p>
-          <p class="mt-0.5 truncate text-sm text-slate-500">{{ c.desc }}</p>
+        <div class="mb-2 flex items-center gap-3">
+          <span :class="type.bgClass" class="grid h-10 w-10 place-items-center rounded-lg text-xl">
+            {{ type.emoji }}
+          </span>
+          <h3 class="text-lg font-medium">{{ type.label }}</h3>
         </div>
-        <span v-if="c.locked" class="text-xs text-slate-400">未解锁</span>
-        <button
-          v-else
-          class="rounded-lg bg-indigo-600 px-3 py-1.5 text-sm text-white transition hover:bg-indigo-700"
-          type="button"
-        >
-          阅读
-        </button>
-      </li>
-    </ul>
+        <p class="text-sm text-slate-500">{{ type.desc }}</p>
+      </div>
+    </div>
   </section>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { computed } from 'vue'
+import { useRouter } from 'vue-router'
+import {
+  STORY_CATEGORY_TYPE,
+  STORY_CATEGORY_TYPE_OPTIONS,
+  type StoryCategoryTypeValue,
+} from '@/constants/story'
 
-const chapters = ref([
-  { id: 1, title: '第一章 · 相遇', desc: '命运的齿轮开始转动。', locked: false },
-  { id: 2, title: '第二章 · 试炼', desc: '舞台之下的汗水与泪水。', locked: false },
-  { id: 3, title: '第三章 · 裂痕', desc: '还没有解锁。', locked: true },
-])
+const router = useRouter()
+
+const META: Record<StoryCategoryTypeValue, { emoji: string; desc: string; bgClass: string }> = {
+  [STORY_CATEGORY_TYPE.MAIN]: {
+    emoji: '📖',
+    desc: '第一部 ~ 第六部的主线剧情',
+    bgClass: 'bg-red-50 text-red-500',
+  },
+  [STORY_CATEGORY_TYPE.RAINBOW_CITY]: {
+    emoji: '🌈',
+    desc: '欢迎来到彩虹城市！',
+    bgClass: 'bg-amber-50 text-amber-500',
+  },
+  [STORY_CATEGORY_TYPE.SPECIAL]: {
+    emoji: '✨',
+    desc: '特别企划、纪念日剧情',
+    bgClass: 'bg-emerald-50 text-emerald-500',
+  },
+  [STORY_CATEGORY_TYPE.ACTIVITY]: {
+    emoji: '🎉',
+    desc: '活动篇剧情',
+    bgClass: 'bg-indigo-50 text-indigo-500',
+  },
+  [STORY_CATEGORY_TYPE.DRAMA]: {
+    emoji: '🎭',
+    desc: '戏剧篇 - 星巡、妖万华镜等',
+    bgClass: 'bg-slate-100 text-slate-500',
+  },
+}
+
+const typeOptions = computed(() =>
+  STORY_CATEGORY_TYPE_OPTIONS.map((o) => ({
+    value: o.value as StoryCategoryTypeValue,
+    label: o.label,
+    ...META[o.value as StoryCategoryTypeValue],
+  })),
+)
+
+function goType(type: StoryCategoryTypeValue) {
+  router.push({ name: 'UserStoryBrowse', params: { type: String(type) } })
+}
 </script>
-
-<style lang="scss" scoped></style>

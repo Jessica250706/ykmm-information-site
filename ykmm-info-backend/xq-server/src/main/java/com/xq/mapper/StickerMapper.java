@@ -4,6 +4,7 @@ import com.xq.entity.Sticker;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
+import java.util.Collection;
 import java.util.List;
 
 @Mapper
@@ -19,4 +20,12 @@ public interface StickerMapper {
      * 根据 id 查询表情包
      */
     Sticker getById(@Param("id") Long id);
+
+    /**
+     * 按 ID 集合批量查询表情包
+     *
+     * @param ids 主键集合
+     * @return 表情包列表
+     */
+    List<Sticker> listByIds(@Param("ids") Collection<Long> ids);
 }

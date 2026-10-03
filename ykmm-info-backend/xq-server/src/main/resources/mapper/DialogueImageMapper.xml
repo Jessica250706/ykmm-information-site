@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xq.mapper.DialogueImageMapper">
+
+  <select id="listByVersionIds" resultType="com.xq.entity.DialogueImage">
+    SELECT *
+    FROM dialogue_image
+    WHERE version_id IN
+    <foreach collection="versionIds" item="id" open="(" separator="," close=")">
+      #{id}
+    </foreach>
+    ORDER BY sort, id
+  </select>
+
+</mapper>

@@ -132,3 +132,134 @@ export interface StoryAuditDTO {
   status?: number
   [property: string]: any
 }
+
+/**
+ * 数据
+ *
+ * StoryDetailVO
+ */
+export interface StoryDetailVO {
+  /**
+   * 所属分类ID
+   */
+  categoryId?: number
+  /**
+   * 分类名
+   */
+  categoryName?: string
+  /**
+   * 分类类型
+   */
+  categoryType?: number
+  /**
+   * 分类类型标签
+   */
+  categoryTypeLabel?: string
+  /**
+   * 创建时间
+   */
+  createdAt?: string
+  /**
+   * 描述
+   */
+  description?: string
+  /**
+   * 主键
+   */
+  id?: number
+  /**
+   * 排序
+   */
+  sort?: number
+  /**
+   * 话标题
+   */
+  title?: string
+  /**
+   * 更新时间
+   */
+  updatedAt?: string
+  /**
+   * 对话版本列表
+   */
+  versions?: DialogueVersionVO[]
+  [property: string]: any
+}
+
+/**
+ * 对话版本
+ *
+ * DialogueVersionVO
+ */
+export interface DialogueVersionVO {
+  /**
+   * 1文字 2图片
+   */
+  format?: number
+  formatLabel?: string
+  id?: number
+  images?: DialogueImageVO[]
+  /**
+   * 1中文 2日文
+   */
+  language?: number
+  languageLabel?: string
+  lines?: DialogueLineVO[]
+  /**
+   * 1全部 2节选
+   */
+  scope?: number
+  scopeLabel?: string
+  [property: string]: any
+}
+
+/**
+ * 对话图片
+ *
+ * DialogueImageVO
+ */
+export interface DialogueImageVO {
+  id?: number
+  sort?: number
+  url?: string
+  [property: string]: any
+}
+
+/**
+ * 对话句子
+ *
+ * DialogueLineVO
+ */
+export interface DialogueLineVO {
+  content?: string
+  id?: number
+  segments?: DialogueSegmentVO[]
+  /**
+   * 1左 2右
+   */
+  side?: number
+  sort?: number
+  speakerAvatar?: string
+  speakerId?: number
+  speakerName?: string
+  [property: string]: any
+}
+
+/**
+ * 对话片段
+ *
+ * DialogueSegmentVO
+ */
+export interface DialogueSegmentVO {
+  content?: string
+  id?: number
+  /**
+   * 1文本 2表情包
+   */
+  segmentType?: number
+  sort?: number
+  stickerEmoji?: string
+  stickerId?: number
+  stickerUrl?: string
+  [property: string]: any
+}

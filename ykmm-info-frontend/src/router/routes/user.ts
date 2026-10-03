@@ -18,6 +18,20 @@ export const userRoutes: RouteRecordRaw = {
       meta: { title: '剧情' },
     },
     {
+      path: 'story/browse/:type',
+      name: 'UserStoryBrowse',
+      component: () => import('@/views/userStoryPage/Browse.vue'),
+      props: true,
+      meta: { title: '剧情浏览' },
+    },
+    {
+      path: 'story/browse/:type/:kind/:id',
+      name: 'UserStoryBrowseDetail',
+      component: () => import('@/views/userStoryPage/Browse.vue'),
+      props: true,
+      meta: { title: '剧情浏览' },
+    },
+    {
       path: 'profile',
       name: 'UserProfile',
       component: () => import('@/views/userProfilePage/Index.vue'),

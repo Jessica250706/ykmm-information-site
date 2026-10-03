@@ -218,4 +218,14 @@
     WHERE person_id = #{personId}
   </select>
 
+  <select id="listByIds" resultType="com.xq.entity.Person">
+    SELECT
+    <include refid="baseColumns"/>
+    FROM person
+    WHERE id IN
+    <foreach collection="ids" item="id" open="(" separator="," close=")">
+      #{id}
+    </foreach>
+  </select>
+
 </mapper>

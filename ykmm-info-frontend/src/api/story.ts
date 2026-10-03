@@ -1,5 +1,12 @@
 import type { PageResult } from '@/types/common'
-import type { StoryAuditDTO, StoryDTO, StoryPageQueryDTO, StoryVO } from '@/types/story'
+import type {
+  StoryAuditDTO,
+  StoryDetailVO,
+  StoryDTO,
+  StoryPageQueryDTO,
+  StoryVO,
+} from '@/types/story'
+import type { StoryCategoryQueryDTO, StoryCategoryVO } from '@/types/storyCategory'
 import request from '@/utils/http'
 
 /**
@@ -42,4 +49,25 @@ export const deleteStoryAPI = (id: number) => {
  */
 export const auditStoryAPI = (id: number, data: StoryAuditDTO) => {
   return request.put(`/admin/story/${id}/audit`, data)
+}
+
+/**
+ * @description: 用户端 - 查询剧情分类树
+ */
+export const listUserStoryCategoryTreeAPI = (params?: StoryCategoryQueryDTO) => {
+  return request.get<StoryCategoryVO[]>('/user/story/category/tree', { params })
+}
+
+/**
+ * @description: 用户端 - 分页查询某分类下的剧情
+ */
+export const pageUserStoryAPI = (params: StoryPageQueryDTO) => {
+  return request.get<PageResult<StoryVO>>('/user/story/page', { params })
+}
+
+/**
+ * @description: 用户端 - 查询剧情详情（含对话）
+ */
+export const getUserStoryDetailAPI = (id: number) => {
+  return request.get<StoryDetailVO>(`/user/story/${id}`)
 }

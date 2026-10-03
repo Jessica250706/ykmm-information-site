@@ -9,6 +9,7 @@ import com.xq.vo.PersonOptionVO;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
+import java.util.Collection;
 import java.util.List;
 
 @Mapper
@@ -100,4 +101,12 @@ public interface PersonMapper {
      * 判断人物是否被卡面引用
      */
     int countCardRefByPersonId(@Param("personId") Long personId);
+
+    /**
+     * 按 ID 集合批量查询人物
+     *
+     * @param ids 主键集合
+     * @return 人物列表
+     */
+    List<Person> listByIds(@Param("ids") Collection<Long> ids);
 }
