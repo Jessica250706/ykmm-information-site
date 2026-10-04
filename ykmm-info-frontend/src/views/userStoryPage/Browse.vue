@@ -48,6 +48,7 @@
       :pending-insert-after-id="pendingInsertAfterId"
       :story-detail="storyDetail"
       @add-line="handleAddLine"
+      @create-version="handleCreateVersion"
       @refresh="loadCurrent"
       @save-line="handleSaveLine"
       @select-line="handleSelectLine"
@@ -57,8 +58,12 @@
 
 <script setup lang="ts">
 import { watch } from 'vue'
+import { ElMessage } from 'element-plus'
+import { createDialogueVersionAPI } from '@/api/dialogueVersion'
+import { SOURCE_TYPE } from '@/constants/index'
 import { useStoryCategoryTypeStore } from '@/stores/storyCategoryTypeStore'
 import type { DialogueLineVO } from '@/types/dialogueLine'
+import type { DialogueVersionOptionVO } from '@/types/dialogueVersion'
 import type { StoryCategoryVO } from '@/types/storyCategory'
 import BrowseCenter from './components/BrowseCenter.vue'
 import BrowseLeft from './components/BrowseLeft.vue'
@@ -152,6 +157,7 @@ async function loadCurrent() {
     return
   }
 
+  // 非 story 视图，清理编辑状态
   resetEditState()
 
   if (kind.value === 'category' && nodeId.value != null) {
@@ -175,6 +181,40 @@ function handleSaveLine() {
 async function handleAddLine(payload: { afterId: number | null }) {
   pendingInsertAfterId.value = payload.afterId
   await loadCurrent()
+}
+
+/**
+ * 为「选中但还没有内容」的版本创建内容。
+ * 调用创建版本接口 → 重新拉详情 → 把新版本设为选中。
+ */
+async function handleCreateVersion(option: DialogueVersionOptionVO) {
+  const storyId = storyDetail.value?.id
+  if (!storyId) {
+    ElMessage.error('当前故事不存在')
+    return
+  }
+
+  try {
+    const res = await createDialogueVersionAPI({
+      sourceType: SOURCE_TYPE.STORY,
+      sourceId: storyId,
+      format: option.format,
+      language: option.language,
+      scope: option.scope,
+    })
+    ElMessage.success('创建成功')
+
+    // 重新拉详情，让 storyDetail.versions 里有新版本
+    await fetchStoryDetail(storyId)
+
+    const newId = res.data ?? null
+    if (newId != null) {
+      currentVersionId.value = newId
+      selectedVersionKey.value = `id:${newId}`
+    }
+  } catch {
+    ElMessage.error('创建失败')
+  }
 }
 
 function handleGoBack() {

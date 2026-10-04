@@ -33,7 +33,7 @@ export const getDialogueVersionDetailAPI = (id: number) => {
  * @description: 创建版本
  */
 export const createDialogueVersionAPI = (data: DialogueVersionDTO) => {
-  return request.post('/admin/dialogue-versions', data)
+  return request.post<number>('/admin/dialogue-versions', data)
 }
 
 /**

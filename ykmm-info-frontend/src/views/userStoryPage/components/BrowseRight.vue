@@ -9,22 +9,31 @@
       <el-switch v-model="editingModeLocal" active-text="编辑模式" inline-prompt />
     </div>
 
-    <!-- 未开启编辑模式 -->
+    <!-- 1. 未开启编辑模式 -->
     <div v-if="!editingModeLocal" class="flex-1 flex items-center justify-center">
       <el-empty description="开启编辑模式以编辑对话" />
     </div>
 
-    <!-- 无故事 -->
+    <!-- 2. 无故事 -->
     <div v-else-if="!storyDetail" class="flex-1 flex items-center justify-center">
       <el-empty description="请选择一个剧情" />
     </div>
 
-    <!-- 无版本 -->
-    <div v-else-if="!currentVersion" class="flex-1 flex items-center justify-center">
+    <!-- 3. 未选择版本 -->
+    <div v-else-if="!currentOptionVersion" class="flex-1 flex items-center justify-center">
       <el-empty description="请选择一个对话版本" />
     </div>
 
-    <!-- 编辑内容 -->
+    <!-- 4. 选中了版本，但该版本还没有内容 -->
+    <div v-else-if="!currentVersion" class="flex-1 flex items-center justify-center">
+      <el-empty :description="emptyVersionText">
+        <el-button :loading="creatingVersion" type="primary" @click="onCreateVersion">
+          创建该版本内容
+        </el-button>
+      </el-empty>
+    </div>
+
+    <!-- 5. 编辑内容 -->
     <div v-else class="flex-1 overflow-auto min-h-0">
       <!-- 图片版本 -->
       <template v-if="currentVersion.format === 2">
@@ -129,6 +138,10 @@ import type { RoleGroupVO } from '@/types/role'
 import type { StoryDetailVO } from '@/types/story'
 import type { UploadFile, UploadRequestOptions, UploadUserFile } from 'element-plus'
 
+/* ============================================================
+ * Props / Emits
+ * ============================================================ */
+
 const props = defineProps<{
   /** 是否处于编辑模式（v-model） */
   editingMode: boolean
@@ -155,11 +168,32 @@ const emit = defineEmits<{
   refresh: []
   /** 请求选中某一句，用于上一条/下一条切换 */
   'select-line': [line: DialogueLineVO]
+  /** 请求为当前选中的、尚未创建的版本创建内容 */
+  'create-version': [option: DialogueVersionOptionVO]
 }>()
 
 const editingModeLocal = useVModel(props, 'editingMode', emit, {
   passive: true,
 })
+
+/* ============================================================
+ * 空版本分支
+ * ============================================================ */
+
+/** 选中版本无内容时的提示文案 */
+const emptyVersionText = computed(() => {
+  const label = props.currentOptionVersion?.label ?? '该版本'
+  return `「${label}」尚未创建内容`
+})
+
+/** 创建版本内容中，防止重复点击 */
+const creatingVersion = ref(false)
+
+function onCreateVersion() {
+  const option = props.currentOptionVersion
+  if (!option) return
+  emit('create-version', option)
+}
 
 /* ============================================================
  * 角色下拉
@@ -302,10 +336,10 @@ async function onAdd() {
  * 只追加到末尾，不负责重排
  */
 async function appendNewLine() {
-  if (!props.currentVersion?.id) {
+  const versionId = props.currentVersion?.id
+  if (!versionId) {
     throw new Error('版本不存在')
   }
-  const versionId = props.currentVersion.id
   await batchSaveDialogueLinesAPI(versionId, [
     {
       speakerId: editorForm.speakerId!,
@@ -321,10 +355,10 @@ async function appendNewLine() {
  * 2. 如果需要插入到中间，刷新后由前端再调 sort 接口重排
  */
 async function appendAndReorder() {
-  if (!props.currentVersion?.id) {
+  const versionId = props.currentVersion?.id
+  if (!versionId) {
     throw new Error('版本不存在')
   }
-  const versionId = props.currentVersion.id
   const newLine = {
     speakerId: editorForm.speakerId!,
     content: editorForm.content,
@@ -371,16 +405,17 @@ function handleImageRemove(file: UploadFile) {
 }
 
 async function saveImages() {
-  if (!props.currentVersion?.id) return
+  const versionId = props.currentVersion?.id
+  if (!versionId) return
   imageSaving.value = true
   try {
     const images: DialogueImageDTO[] = imageFileList.value
       .filter((f) => f.url)
       .map((f, i) => ({
-        url: f.url,
+        url: f.url!,
         sort: i + 1,
       }))
-    await batchSaveDialogueImagesAPI(props.currentVersion.id, images)
+    await batchSaveDialogueImagesAPI(versionId, images)
     ElMessage.success('图片保存成功')
     emit('refresh')
   } catch {
@@ -412,10 +447,11 @@ async function onTxtFileChange(e: Event) {
   const target = e.target as HTMLInputElement
   const file = target.files?.[0]
   if (!file) return
-  if (!props.currentVersion?.id) return
+  const versionId = props.currentVersion?.id
+  if (!versionId) return
 
   try {
-    const parseRes = await parseDialogueTxtAPI(props.currentVersion.id, file)
+    const parseRes = await parseDialogueTxtAPI(versionId, file)
     const parsed = parseRes.data
     if (!parsed?.lines?.length) {
       ElMessage.warning('未解析到有效内容')
@@ -429,7 +465,7 @@ async function onTxtFileChange(e: Event) {
         { type: 'warning' },
       )
     }
-    await importDialogueTxtAPI(props.currentVersion.id, parsed.lines)
+    await importDialogueTxtAPI(versionId, parsed.lines)
     ElMessage.success('导入成功')
     emit('refresh')
   } catch {
