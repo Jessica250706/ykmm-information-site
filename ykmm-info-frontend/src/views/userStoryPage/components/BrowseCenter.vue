@@ -29,8 +29,8 @@
         </p>
       </div>
 
-      <!-- 版本分类选择 -->
-      <div v-if="storyDetail.versions?.length" class="mb-4 flex items-center gap-2">
+      <!-- 版本分类选择：列出全部版本，无论是否有内容 -->
+      <div class="mb-4 flex items-center gap-2">
         <span class="text-xs text-slate-500 shrink-0">版本：</span>
         <el-select
           :model-value="currentVersionId ?? undefined"
@@ -39,7 +39,7 @@
           @update:model-value="onVersionChange"
         >
           <el-option
-            v-for="v in storyDetail.versions"
+            v-for="v in storyDetail.versions ?? []"
             :key="v.id"
             :label="versionLabel(v)"
             :value="v.id"
@@ -47,14 +47,13 @@
         </el-select>
       </div>
 
-      <!-- 对话内容 -->
+      <!-- 对话内容：只渲染当前版本 -->
       <DialogueView
-        :current-version-id="currentVersionId ?? null"
+        :current-version="currentVersion ?? null"
         :detail="storyDetail"
         :editing-line-id="editingLineId ?? null"
         :editing-mode="editingMode"
         @select-line="onSelectLine"
-        @update:current-version-id="onVersionChange"
       />
     </template>
 
@@ -123,13 +122,14 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue'
 import type { DialogueLineVO } from '@/types/dialogueLine'
 import type { DialogueVersionVO } from '@/types/dialogueVersion'
 import type { StoryDetailVO, StoryVO } from '@/types/story'
 import type { StoryCategoryVO } from '@/types/storyCategory'
 import DialogueView from './DialogueView.vue'
 
-defineProps<{
+const props = defineProps<{
   /** 详情加载中 */
   loadingContent: boolean
   /** 当前剧情详情 */
@@ -163,6 +163,12 @@ const emit = defineEmits<{
   'select-line': [line: DialogueLineVO]
 }>()
 
+/** 当前选中的版本 */
+const currentVersion = computed<DialogueVersionVO | null>(() => {
+  if (!props.storyDetail?.versions?.length || props.currentVersionId == null) return null
+  return props.storyDetail.versions.find((v) => v.id === props.currentVersionId) ?? null
+})
+
 function onVersionChange(id: number | null | undefined) {
   emit('update:currentVersionId', id ?? null)
 }
@@ -171,9 +177,19 @@ function onSelectLine(line: DialogueLineVO) {
   emit('select-line', line)
 }
 
+/**
+ * 版本标签：
+ * 语言 · 形式 · 范围（内容数量）
+ */
 function versionLabel(v: DialogueVersionVO): string {
-  return (
+  const base =
     [v.languageLabel, v.formatLabel, v.scopeLabel].filter(Boolean).join(' · ') || `版本 ${v.id}`
-  )
+
+  if (v.format === 2) {
+    const count = v.images?.length ?? 0
+    return `${base}（${count} 张）`
+  }
+  const count = v.lines?.length ?? 0
+  return `${base}（${count} 句）`
 }
 </script>

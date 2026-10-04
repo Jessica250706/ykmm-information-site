@@ -142,6 +142,8 @@ const props = defineProps<{
   editingLineIndex: number
   /** 当前版本的全部句子，用于上下切换 */
   allLines: DialogueLineVO[]
+  /** 新增句子时要插到哪一句后面，null 表示追加到末尾 */
+  pendingInsertAfterId: number | null
 }>()
 
 const emit = defineEmits<{
@@ -288,10 +290,10 @@ async function onAdd() {
   }
   saving.value = true
   try {
-    await appendAndReorder()
+    await appendNewLine()
     ElMessage.success('新增成功')
+    // 把目标句 ID 传给父组件，让父组件决定是否重排
     emit('add-line', { afterId: props.editingLine?.id ?? null })
-    emit('refresh')
   } catch {
     return
   } finally {
@@ -300,10 +302,26 @@ async function onAdd() {
 }
 
 /**
+ * 只追加到末尾，不负责重排
+ */
+async function appendNewLine() {
+  if (!props.currentVersion?.id) {
+    throw new Error('版本不存在')
+  }
+  const versionId = props.currentVersion.id
+  await batchSaveDialogueLinesAPI(versionId, [
+    {
+      speakerId: editorForm.speakerId!,
+      content: editorForm.content,
+      side: editorForm.side ?? undefined,
+    },
+  ])
+}
+
+/**
  * 新增并重排：
  * 1. 追加到末尾
- * 2. 重新拉取（由父组件刷新后我们再触发排序）
- * 简化处理：直接追加，然后由父组件刷新后再调一次排序
+ * 2. 如果需要插入到中间，刷新后由前端再调 sort 接口重排
  */
 async function appendAndReorder() {
   if (!props.currentVersion?.id) {
@@ -316,12 +334,11 @@ async function appendAndReorder() {
     side: editorForm.side ?? undefined,
   }
 
-  // 追加
+  // 1. 追加到末尾
   await batchSaveDialogueLinesAPI(versionId, [newLine])
 
-  // 追加后由父组件刷新，这里通知父组件刷新即可
-  // 目标位置的排序在下一次 refresh 之后，由父组件传入的新 allLines 处理
-  // 若需要在中间插入，可在 refresh 后由前端再调 sort 接口（见下方说明）
+  // 2. 如果是在中间插入，需要在 refresh 后再调 sort
+  //    这里记录目标位置，父组件 refresh 完成后回到这里处理
 }
 
 /* ============================================================

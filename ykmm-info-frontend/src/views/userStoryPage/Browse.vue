@@ -40,6 +40,7 @@
       :current-version="currentVersion"
       :editing-line="editingLine"
       :editing-line-index="editingLineIndex"
+      :pending-insert-after-id="pendingInsertAfterId"
       :story-detail="storyDetail"
       @add-line="handleAddLine"
       @refresh="loadCurrent"
@@ -53,6 +54,7 @@
 import { computed, ref, watch } from 'vue'
 import { ElMessage } from 'element-plus'
 import { useRoute, useRouter } from 'vue-router'
+import { sortDialogueLinesAPI } from '@/api/dialogueLine'
 import { getUserStoryDetailAPI, listUserStoryCategoryTreeAPI, pageUserStoryAPI } from '@/api/story'
 import {
   STORY_CATEGORY_TYPE_LABEL,
@@ -134,6 +136,9 @@ const editingMode = ref(false)
 const currentVersionId = ref<number | null>(null)
 const editingLineId = ref<number | null>(null)
 
+/** 新增句子时要插到哪一句后面，null 表示追加到末尾 */
+const pendingInsertAfterId = ref<number | null>(null)
+
 /** 当前选中的版本 */
 const currentVersion = computed<DialogueVersionVO | null>(() => {
   if (!storyDetail.value?.versions?.length || currentVersionId.value == null) return null
@@ -179,6 +184,9 @@ async function loadCurrent() {
       if (editingLineId.value != null && !currentLines.some((l) => l.id === editingLineId.value)) {
         editingLineId.value = null
       }
+
+      // 新增后处理：如果记录了目标句，需要重排
+      await applyPendingInsert()
     } catch {
       ElMessage.error('剧情加载失败')
     } finally {
@@ -209,6 +217,44 @@ async function loadCurrent() {
   }
 }
 
+/**
+ * 如果存在待插入目标，则把刚追加到末尾的句子移动到目标句之后
+ */
+async function applyPendingInsert() {
+  const targetId = pendingInsertAfterId.value
+  pendingInsertAfterId.value = null
+
+  if (targetId == null) return
+  const version = currentVersion.value
+  if (!version?.id || !version.lines?.length) return
+
+  const lines = version.lines
+  const newLine = lines[lines.length - 1]
+  if (!newLine?.id) return
+
+  const targetIndex = lines.findIndex((l) => l.id === targetId)
+  // 目标句不存在，或新句本来就在末尾，无需重排
+  if (targetIndex < 0 || targetIndex >= lines.length - 1) return
+
+  // 重排：新句从末尾移到目标句之后
+  const ordered = [...lines]
+  const [moved] = ordered.splice(ordered.length - 1, 1)
+  if (!moved) return
+  ordered.splice(targetIndex + 1, 0, moved)
+
+  try {
+    await sortDialogueLinesAPI(version.id, {
+      lineIds: ordered.map((l) => l.id!),
+    })
+    // 排序成功后本地同步顺序，避免再请求一次
+    if (currentVersion.value) {
+      currentVersion.value.lines = ordered
+    }
+  } catch {
+    ElMessage.error('对话顺序调整失败')
+  }
+}
+
 /* -------- 交互 -------- */
 function handleNodeClick(data: StoryCategoryVO) {
   goCategory(data.id!)
@@ -222,8 +268,12 @@ function handleSaveLine() {
   void loadCurrent()
 }
 
-function handleAddLine(_payload: { afterId: number | null }) {
-  void loadCurrent()
+/**
+ * 处理新增：记录目标句，刷新后再按需重排
+ */
+async function handleAddLine(payload: { afterId: number | null }) {
+  pendingInsertAfterId.value = payload.afterId
+  await loadCurrent()
 }
 
 function goBack() {
