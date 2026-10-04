@@ -124,7 +124,7 @@ import { importDialogueTxtAPI, parseDialogueTxtAPI } from '@/api/dialogueTxt'
 import { listGroupedRolesAPI } from '@/api/role'
 import type { DialogueImageDTO } from '@/types/dialogueImage'
 import type { DialogueLineVO } from '@/types/dialogueLine'
-import type { DialogueVersionVO } from '@/types/dialogueVersion'
+import type { DialogueVersionOptionVO, DialogueVersionVO } from '@/types/dialogueVersion'
 import type { RoleGroupVO } from '@/types/role'
 import type { StoryDetailVO } from '@/types/story'
 import type { UploadFile, UploadRequestOptions, UploadUserFile } from 'element-plus'
@@ -144,6 +144,8 @@ const props = defineProps<{
   allLines: DialogueLineVO[]
   /** 新增句子时要插到哪一句后面，null 表示追加到末尾 */
   pendingInsertAfterId: number | null
+  /** 当前选中的版本 option；可能 versionId 为 null（尚未创建内容） */
+  currentOptionVersion: DialogueVersionOptionVO | null
 }>()
 
 const emit = defineEmits<{

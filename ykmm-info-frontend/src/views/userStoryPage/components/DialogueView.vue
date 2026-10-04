@@ -4,7 +4,7 @@
     <el-empty v-if="!currentVersion && !currentOptionVersion" description="请选择一个对话版本" />
 
     <!-- 文字版本 -->
-    <template v-else-if="currentVersion?.format === 1">
+    <template v-else-if="currentVersion?.format === VERSION_FORMAT.TEXT">
       <div v-if="!currentVersion.lines?.length" class="py-8">
         <el-empty description="暂无对话">
           <template v-if="editingMode" #default>
@@ -53,7 +53,7 @@
     </template>
 
     <!-- 图片版本 -->
-    <template v-else-if="currentVersion?.format === 2">
+    <template v-else-if="currentVersion?.format === VERSION_FORMAT.IMAGE">
       <div v-if="!currentVersion.images?.length" class="py-8">
         <el-empty description="暂无图片" />
       </div>
@@ -73,6 +73,7 @@
 
 <script setup lang="ts">
 import { type ComponentPublicInstance, nextTick, watch } from 'vue'
+import { VERSION_FORMAT } from '@/constants/index'
 import type { DialogueVersionOptionVO } from '@/types/dialogueVersion'
 import type { DialogueLineVO, DialogueVersionVO, StoryDetailVO } from '@/types/story'
 

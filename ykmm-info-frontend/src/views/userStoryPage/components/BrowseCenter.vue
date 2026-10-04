@@ -2,20 +2,20 @@
   <el-card class="min-w-0 flex-1 overflow-auto bg-slate-50 p-5">
     <el-skeleton v-if="loadingContent" :rows="6" animated />
 
-    <!-- Story 详情 -->
     <BrowseCenterStory
       v-else-if="storyDetail"
       v-model:current-version-id="currentVersionIdComputed"
+      v-model:selected-version-key="selectedVersionKeyComputed"
       :color="color"
       :editing-line-id="editingLineId"
       :editing-mode="editingMode"
       :story-detail="storyDetail"
       :version-options="versionOptions"
+      :version-select-items="versionSelectItems"
       @go-back="emit('goBack')"
       @select-line="(line) => emit('select-line', line)"
     />
 
-    <!-- 分类：子分类 + 剧情列表 -->
     <BrowseCenterCategory
       v-else-if="currentCategory"
       :color="color"
@@ -40,6 +40,7 @@ import type { StoryDetailVO, StoryVO } from '@/types/story'
 import type { StoryCategoryVO } from '@/types/storyCategory'
 import BrowseCenterCategory from './BrowseCenterCategory.vue'
 import BrowseCenterStory from './BrowseCenterStory.vue'
+import type { VersionSelectItem } from '../composables/useVersionSelection'
 
 const props = defineProps<{
   /** 详情加载中 */
@@ -64,6 +65,10 @@ const props = defineProps<{
   editingMode: boolean
   /** 所有版本选项 */
   versionOptions: DialogueVersionOptionVO[] | null
+  /** 当前选中的下拉 key */
+  selectedVersionKey: string
+  /** 预计算的下拉项 */
+  versionSelectItems: VersionSelectItem[]
 }>()
 
 const emit = defineEmits<{
@@ -74,12 +79,17 @@ const emit = defineEmits<{
   /** 返回 */
   goBack: []
   'update:currentVersionId': [id: number | null]
+  'update:selectedVersionKey': [key: string]
   'select-line': [line: DialogueLineVO]
 }>()
 
-/** 桥接 v-model:currentVersionId，子组件内部使用 update:currentVersionId */
 const currentVersionIdComputed = computed({
   get: () => props.currentVersionId,
   set: (val) => emit('update:currentVersionId', val),
+})
+
+const selectedVersionKeyComputed = computed({
+  get: () => props.selectedVersionKey,
+  set: (key) => emit('update:selectedVersionKey', key),
 })
 </script>
