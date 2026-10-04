@@ -3,6 +3,7 @@ package com.xq.service;
 import com.xq.dto.DialogueVersionDTO;
 import com.xq.dto.DialogueVersionPageQueryDTO;
 import com.xq.result.PageResult;
+import com.xq.vo.DialogueVersionOptionVO;
 import com.xq.vo.DialogueVersionVO;
 
 import java.util.List;
@@ -51,4 +52,13 @@ public interface DialogueVersionService {
      * @param versionId 版本ID
      */
     void delete(Long versionId);
+
+    /**
+     * 查询全部文字版本选项
+     *
+     * @param sourceType 来源类型：1剧情 2RTV 3RC
+     * @param sourceId   来源主键
+     * @return 选项列表
+     */
+    List<DialogueVersionOptionVO> listTextVersionOptions(Integer sourceType, Long sourceId);
 }

@@ -70,4 +70,16 @@ public interface DialogueVersionMapper {
      * @return 影响行数
      */
     int deleteById(@Param("id") Long id);
+
+    /**
+     * 按来源 + 格式查询版本
+     *
+     * @param sourceType 来源类型：1剧情 2RTV 3RC
+     * @param sourceId   来源主键
+     * @param format     格式：1文字 2图片
+     * @return 版本列表
+     */
+    List<DialogueVersion> listBySourceAndFormat(@Param("sourceType") Integer sourceType,
+                                                @Param("sourceId") Long sourceId,
+                                                @Param("format") Integer format);
 }

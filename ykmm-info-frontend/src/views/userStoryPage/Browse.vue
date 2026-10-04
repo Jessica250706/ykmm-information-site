@@ -27,6 +27,7 @@
       :stories="stories"
       :story-detail="storyDetail"
       :type-label="typeLabel"
+      :version-options="versionOptions"
       @go-back="goBack"
       @go-category="goCategory"
       @go-story="goStory"
@@ -55,15 +56,18 @@ import { computed, ref, watch } from 'vue'
 import { ElMessage } from 'element-plus'
 import { useRoute, useRouter } from 'vue-router'
 import { sortDialogueLinesAPI } from '@/api/dialogueLine'
+import { listTextDialogueVersionOptionsAPI } from '@/api/dialogueVersion.ts'
 import { getUserStoryDetailAPI, listUserStoryCategoryTreeAPI, pageUserStoryAPI } from '@/api/story'
+import { SOURCE_TYPE } from '@/constants/index'
 import {
   STORY_CATEGORY_TYPE_LABEL,
   STORY_STATUS,
   type StoryCategoryTypeValue,
 } from '@/constants/story'
 import { useStoryCategoryTypeStore } from '@/stores/storyCategoryTypeStore'
+import type { DialogueLineVO } from '@/types/dialogueLine'
+import type { DialogueVersionOptionVO, DialogueVersionVO } from '@/types/dialogueVersion'
 import type { StoryDetailVO, StoryVO } from '@/types/story'
-import type { DialogueLineVO, DialogueVersionVO } from '@/types/story'
 import type { StoryCategoryVO } from '@/types/storyCategory'
 import BrowseCenter from './components/BrowseCenter.vue'
 import BrowseLeft from './components/BrowseLeft.vue'
@@ -127,6 +131,7 @@ const currentCategory = computed(() => {
 
 const storyDetail = ref<StoryDetailVO | null>(null)
 const stories = ref<StoryVO[]>([])
+const versionOptions = ref<DialogueVersionOptionVO[] | null>(null)
 
 const loadingContent = ref(false)
 const loadingStories = ref(false)
@@ -185,6 +190,9 @@ async function loadCurrent() {
         editingLineId.value = null
       }
 
+      // 下拉框版本选项
+      initDialogueVersionOptions()
+
       // 新增后处理：如果记录了目标句，需要重排
       await applyPendingInsert()
     } catch {
@@ -215,6 +223,15 @@ async function loadCurrent() {
       loadingStories.value = false
     }
   }
+}
+
+async function initDialogueVersionOptions() {
+  if (!storyDetail.value?.id) {
+    ElMessage.error('当前故事不存在')
+    return
+  }
+  const res = await listTextDialogueVersionOptionsAPI(SOURCE_TYPE.STORY, storyDetail.value?.id)
+  versionOptions.value = res.data
 }
 
 /**

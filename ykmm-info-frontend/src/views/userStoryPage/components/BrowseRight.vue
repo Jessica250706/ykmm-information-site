@@ -125,7 +125,7 @@ import { listGroupedRolesAPI } from '@/api/role'
 import type { DialogueImageDTO } from '@/types/dialogueImage'
 import type { DialogueLineVO } from '@/types/dialogueLine'
 import type { DialogueVersionVO } from '@/types/dialogueVersion'
-import type { RoleGroupVO, RoleVO } from '@/types/role'
+import type { RoleGroupVO } from '@/types/role'
 import type { StoryDetailVO } from '@/types/story'
 import type { UploadFile, UploadRequestOptions, UploadUserFile } from 'element-plus'
 
@@ -172,11 +172,6 @@ async function loadRoles() {
     // 忽略，用户可在管理端维护
     roleOptions.value = []
   }
-}
-
-function roleLabel(r: RoleVO): string {
-  if (r.personNameCn) return `${r.name}（${r.personNameCn}）`
-  return r.name ?? `角色 #${r.id}`
 }
 
 watch(
@@ -378,9 +373,9 @@ async function saveImages() {
   imageSaving.value = true
   try {
     const images: DialogueImageDTO[] = imageFileList.value
-      .filter((f) => f.url || f.response?.url)
+      .filter((f) => f.url)
       .map((f, i) => ({
-        url: f.url ?? f.response?.url,
+        url: f.url,
         sort: i + 1,
       }))
     await batchSaveDialogueImagesAPI(props.currentVersion.id, images)

@@ -33,23 +33,28 @@
       <div class="mb-4 flex items-center gap-2">
         <span class="text-xs text-slate-500 shrink-0">版本：</span>
         <el-select
-          :model-value="currentVersionId ?? undefined"
+          v-model="selectedVersionKey"
           class="flex-1"
           placeholder="请选择对话版本"
           @update:model-value="onVersionChange"
         >
           <el-option
-            v-for="v in storyDetail.versions ?? []"
-            :key="v.id"
+            v-for="(v, index) in versionOptions ?? []"
+            :key="`${v.versionId ?? 'noid'}-${index}`"
             :label="versionLabel(v)"
-            :value="v.id"
+            :value="optionKey(v, index)"
           />
         </el-select>
       </div>
+      <div>{{ currentVersionId }}</div>
+      <div>{{ currentOptionVersion }}</div>
+      <div>{{ versionOptions?.[0] }}</div>
 
       <!-- 对话内容：只渲染当前版本 -->
       <DialogueView
+        :current-option-version="currentOptionVersion ?? null"
         :current-version="currentVersion ?? null"
+        :current-version-id="currentVersionId"
         :detail="storyDetail"
         :editing-line-id="editingLineId ?? null"
         :editing-mode="editingMode"
@@ -124,7 +129,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import type { DialogueLineVO } from '@/types/dialogueLine'
-import type { DialogueVersionVO } from '@/types/dialogueVersion'
+import type { DialogueVersionOptionVO, DialogueVersionVO } from '@/types/dialogueVersion'
 import type { StoryDetailVO, StoryVO } from '@/types/story'
 import type { StoryCategoryVO } from '@/types/storyCategory'
 import DialogueView from './DialogueView.vue'
@@ -150,6 +155,8 @@ const props = defineProps<{
   editingLineId: number | null
   /** 是否处于编辑模式 */
   editingMode: boolean
+  /** 所有版本选项 */
+  versionOptions: DialogueVersionOptionVO[] | null
 }>()
 
 const emit = defineEmits<{
@@ -163,10 +170,55 @@ const emit = defineEmits<{
   'select-line': [line: DialogueLineVO]
 }>()
 
-/** 当前选中的版本 */
+/* -------- 版本选择：字符串 key 桥接 -------- */
+
+function optionKey(v: DialogueVersionOptionVO, index: number): string {
+  if (v.versionId != null) return `id:${v.versionId}`
+  return `label:${v.label ?? index}`
+}
+
+const selectedVersionKey = computed<string>({
+  get() {
+    const id = props.currentVersionId
+    if (id == null) return ''
+    if (typeof id === 'number') return `id:${id}`
+    return `label:${id}`
+  },
+  set(key: string) {
+    if (!key) {
+      emit('update:currentVersionId', null)
+      return
+    }
+    if (key.startsWith('id:')) {
+      emit('update:currentVersionId', Number(key.slice(3)))
+    } else if (key.startsWith('label:')) {
+      emit('update:currentVersionId', Number(key.slice(6)))
+    }
+  },
+})
+
+/** 当前选中的版本（按数字 id 精确匹配） */
 const currentVersion = computed<DialogueVersionVO | null>(() => {
-  if (!props.storyDetail?.versions?.length || props.currentVersionId == null) return null
-  return props.storyDetail.versions.find((v) => v.id === props.currentVersionId) ?? null
+  const id = props.currentVersionId
+
+  // 1. 只处理数字 id；字符串（label 选中的情况）直接不匹配
+  if (typeof id !== 'number') return null
+
+  // 2. storyDetail 必须有版本列表
+  const versions = props.storyDetail?.versions
+  if (!versions?.length) return null
+
+  // 3. 精确按 id 查找，找不到返回 null
+  return versions.find((v) => v.id === id) ?? null
+})
+/** 当前选中的版本（无 id ） */
+const currentOptionVersion = computed<DialogueVersionOptionVO | null>(() => {
+  const id = props.currentVersionId
+  if (id == null) return null
+  if (typeof id === 'number') {
+    return props.versionOptions?.find((v) => v.versionId === id) ?? null
+  }
+  return props.versionOptions?.find((v) => v.label === id) ?? null
 })
 
 function onVersionChange(id: number | null | undefined) {

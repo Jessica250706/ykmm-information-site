@@ -1,10 +1,10 @@
 <template>
   <div class="dialogue-view">
     <!-- 没有选中的版本 -->
-    <el-empty v-if="!currentVersion" description="请选择一个对话版本" />
+    <el-empty v-if="!currentVersion && !currentOptionVersion" description="请选择一个对话版本" />
 
     <!-- 文字版本 -->
-    <template v-else-if="currentVersion.format === 1">
+    <template v-else-if="currentVersion?.format === 1">
       <div v-if="!currentVersion.lines?.length" class="py-8">
         <el-empty description="暂无对话">
           <template v-if="editingMode" #default>
@@ -53,7 +53,7 @@
     </template>
 
     <!-- 图片版本 -->
-    <template v-else-if="currentVersion.format === 2">
+    <template v-else-if="currentVersion?.format === 2">
       <div v-if="!currentVersion.images?.length" class="py-8">
         <el-empty description="暂无图片" />
       </div>
@@ -73,12 +73,17 @@
 
 <script setup lang="ts">
 import { type ComponentPublicInstance, nextTick, watch } from 'vue'
+import type { DialogueVersionOptionVO } from '@/types/dialogueVersion'
 import type { DialogueLineVO, DialogueVersionVO, StoryDetailVO } from '@/types/story'
 
 const props = defineProps<{
   detail: StoryDetailVO
+  /** 当前版本的 id */
+  currentVersionId: number | null
   /** 当前版本（已由父组件计算好） */
   currentVersion: DialogueVersionVO | null
+  /** 当前版本（无 id 版） */
+  currentOptionVersion: DialogueVersionOptionVO | null
   /** 当前编辑的句子 id */
   editingLineId: number | null
   /** 是否编辑模式 */

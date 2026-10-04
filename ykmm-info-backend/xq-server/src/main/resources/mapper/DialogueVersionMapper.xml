@@ -77,4 +77,14 @@
     WHERE id = #{id}
   </delete>
 
+  <!-- 按来源 + 格式查询 -->
+  <select id="listBySourceAndFormat" resultType="com.xq.entity.DialogueVersion">
+    SELECT *
+    FROM dialogue_version
+    WHERE source_type = #{sourceType}
+      AND source_id = #{sourceId}
+      AND format = #{format}
+    ORDER BY id
+  </select>
+
 </mapper>

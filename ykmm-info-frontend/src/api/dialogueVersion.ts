@@ -1,6 +1,7 @@
 import type { PageResult } from '@/types/common'
 import type {
   DialogueVersionDTO,
+  DialogueVersionOptionVO,
   DialogueVersionPageQueryDTO,
   DialogueVersionSourceDTO,
   DialogueVersionVO,
@@ -40,4 +41,13 @@ export const createDialogueVersionAPI = (data: DialogueVersionDTO) => {
  */
 export const deleteDialogueVersionAPI = (id: number) => {
   return request.delete(`/admin/dialogue-versions/${id}`)
+}
+
+/**
+ * @description: 查询全部文字版本选项（供下拉框使用）
+ */
+export const listTextDialogueVersionOptionsAPI = (sourceType: number, sourceId: number) => {
+  return request.get<DialogueVersionOptionVO[]>('/admin/dialogue-versions/text-options', {
+    params: { sourceType, sourceId },
+  })
 }

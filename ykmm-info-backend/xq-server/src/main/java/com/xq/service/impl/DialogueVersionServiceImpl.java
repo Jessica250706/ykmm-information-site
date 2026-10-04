@@ -18,10 +18,7 @@ import com.xq.mapper.DialogueSegmentMapper;
 import com.xq.mapper.DialogueVersionMapper;
 import com.xq.result.PageResult;
 import com.xq.service.DialogueVersionService;
-import com.xq.vo.DialogueImageVO;
-import com.xq.vo.DialogueLineVO;
-import com.xq.vo.DialogueSegmentVO;
-import com.xq.vo.DialogueVersionVO;
+import com.xq.vo.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -201,6 +198,59 @@ public class DialogueVersionServiceImpl implements DialogueVersionService {
         log.info("删除对话版本成功，id={}", versionId);
     }
 
+    /**
+     * 查询全部文字版本选项
+     *
+     * @param sourceType 来源类型
+     * @param sourceId   来源主键
+     * @return 选项列表
+     */
+    @Override
+    public List<DialogueVersionOptionVO> listTextVersionOptions(Integer sourceType, Long sourceId) {
+        if (!DialogueSourceTypeEnum.isValid(sourceType)) {
+            throw new RuntimeException("来源类型不合法");
+        }
+        if (sourceId == null) {
+            throw new RuntimeException("来源ID不能为空");
+        }
+
+        // 1. 查出当前来源下已有的文字版本
+        List<DialogueVersion> existed =
+                dialogueVersionMapper.listBySourceAndFormat(
+                        sourceType, sourceId, DialogueFormatEnum.TEXT.getValue());
+
+        // 2. 建索引：language-scope -> versionId
+        Map<String, Long> existedMap = new HashMap<>();
+        if (existed != null) {
+            for (DialogueVersion v : existed) {
+                existedMap.put(keyOf(v.getLanguage(), v.getScope()), v.getId());
+            }
+        }
+
+        // 3. 枚举所有语言 × 范围的组合
+        List<DialogueVersionOptionVO> result = new ArrayList<>();
+        for (DialogueLanguageEnum lang : DialogueLanguageEnum.values()) {
+            for (DialogueScopeEnum scope : DialogueScopeEnum.values()) {
+                DialogueVersionOptionVO vo = new DialogueVersionOptionVO();
+                vo.setLanguage(lang.getValue());
+                vo.setLanguageLabel(lang.getLabel());
+                vo.setFormat(DialogueFormatEnum.TEXT.getValue());
+                vo.setFormatLabel(DialogueFormatEnum.TEXT.getLabel());
+                vo.setScope(scope.getValue());
+                vo.setScopeLabel(scope.getLabel());
+                vo.setLabel(lang.getLabel() + " · " + DialogueFormatEnum.TEXT.getLabel()
+                        + " · " + scope.getLabel());
+
+                Long versionId = existedMap.get(keyOf(lang.getValue(), scope.getValue()));
+                vo.setVersionId(versionId);
+                vo.setExists(versionId != null);
+
+                result.add(vo);
+            }
+        }
+        return result;
+    }
+
     // ---------------------------------------------------
     // 私有方法
     // ---------------------------------------------------
@@ -287,5 +337,16 @@ public class DialogueVersionServiceImpl implements DialogueVersionService {
             result.add(vo);
         }
         return result;
+    }
+
+    /**
+     * 生成 language-scope 键
+     *
+     * @param language 语言
+     * @param scope    范围
+     * @return 键
+     */
+    private String keyOf(Integer language, Integer scope) {
+        return language + "-" + scope;
     }
 }

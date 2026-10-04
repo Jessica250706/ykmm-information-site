@@ -5,6 +5,7 @@ import com.xq.dto.DialogueVersionPageQueryDTO;
 import com.xq.result.PageResult;
 import com.xq.result.Result;
 import com.xq.service.DialogueVersionService;
+import com.xq.vo.DialogueVersionOptionVO;
 import com.xq.vo.DialogueVersionVO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -81,5 +82,19 @@ public class DialogueVersionController {
     public Result<Void> delete(@PathVariable Long id) {
         dialogueVersionService.delete(id);
         return Result.success();
+    }
+
+    /**
+     * 查询全部文字版本选项（供下拉框使用）
+     *
+     * @param sourceType 来源类型：1剧情 2RTV 3RC
+     * @param sourceId   来源主键
+     * @return 选项列表
+     */
+    @GetMapping("/text-options")
+    public Result<List<DialogueVersionOptionVO>> textOptions(
+            @RequestParam Integer sourceType,
+            @RequestParam Long sourceId) {
+        return Result.success(dialogueVersionService.listTextVersionOptions(sourceType, sourceId));
     }
 }
