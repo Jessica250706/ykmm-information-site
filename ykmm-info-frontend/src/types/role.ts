@@ -80,3 +80,53 @@ export interface RoleDTO {
   storyCategoryIds?: number[]
   [property: string]: any
 }
+
+/**
+ * 角色分组（按人物）
+ *
+ * RoleGroupVO
+ */
+export interface RoleGroupVO {
+  /**
+   * 人物头像
+   */
+  personAvatar?: string
+  /**
+   * 人物ID，null 表示"其他"分组
+   */
+  personId?: number
+  /**
+   * 人物中文名，或"其他"
+   */
+  personName?: string
+  /**
+   * 该人物下的角色列表
+   */
+  roles?: RoleSimpleVO[]
+  [property: string]: any
+}
+
+/**
+ * 角色简要信息
+ *
+ * RoleSimpleVO
+ */
+export interface RoleSimpleVO {
+  /**
+   * 主键
+   */
+  id?: number
+  /**
+   * 角色简介
+   */
+  intro?: string
+  /**
+   * 角色名
+   */
+  name?: string
+  /**
+   * 对应人物ID，null 表示无对应人物
+   */
+  personId?: number
+  [property: string]: any
+}

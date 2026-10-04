@@ -28,4 +28,12 @@ public interface UserStoryService {
      * @return 分页结果
      */
     PageResult<StoryVO> pageStory(StoryPageQueryDTO query);
+
+    /**
+     * 查询剧情详情，含所有对话版本
+     *
+     * @param id 剧情主键
+     * @return 详情
+     */
+    StoryDetailVO storyDetail(Long id);
 }

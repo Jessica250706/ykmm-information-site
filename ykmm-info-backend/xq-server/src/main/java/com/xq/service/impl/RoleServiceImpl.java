@@ -2,6 +2,7 @@ package com.xq.service.impl;
 
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
+import com.xq.constant.RoleConstant;
 import com.xq.dto.RoleDTO;
 import com.xq.dto.RolePageQueryDTO;
 import com.xq.dto.StoryCategorySimpleDTO;
@@ -13,6 +14,8 @@ import com.xq.mapper.RoleMapper;
 import com.xq.mapper.StoryCategoryMapper;
 import com.xq.result.PageResult;
 import com.xq.service.RoleService;
+import com.xq.vo.RoleGroupVO;
+import com.xq.vo.RoleSimpleVO;
 import com.xq.vo.RoleVO;
 import com.xq.vo.StoryCategoryVO;
 import lombok.extern.slf4j.Slf4j;
@@ -21,8 +24,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * 角色服务实现
@@ -237,6 +240,81 @@ public class RoleServiceImpl implements RoleService {
         }
         vo.setStoryCategories(categoryVOs);
 
+        return vo;
+    }
+
+    /**
+     * 查询全部角色，按人物分组，无对应人物的归入"其他"
+     *
+     * @return 分组列表
+     */
+    @Override
+    public List<RoleGroupVO> listAllGroupedByPerson() {
+        List<Role> roles = roleMapper.listAll();
+        if (roles == null || roles.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        // 1. 收集非空 personId
+        Set<Long> personIds = roles.stream()
+                .map(Role::getPersonId)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toSet());
+
+        // 2. 批量查人物
+        Map<Long, Person> personMap = personIds.isEmpty()
+                ? Collections.emptyMap()
+                : personMapper.listByIds(personIds).stream()
+                .collect(Collectors.toMap(Person::getId, p -> p));
+
+        // 3. 分组：有 personId 的进 grouped，无的进 others
+        Map<Long, List<Role>> grouped = new LinkedHashMap<>();
+        List<Role> others = new ArrayList<>();
+        for (Role r : roles) {
+            if (r.getPersonId() == null) {
+                others.add(r);
+            } else {
+                grouped.computeIfAbsent(r.getPersonId(), k -> new ArrayList<>()).add(r);
+            }
+        }
+
+        // 4. 组装 VO
+        List<RoleGroupVO> result = new ArrayList<>(grouped.size() + 1);
+        grouped.forEach((personId, roleList) -> {
+            Person person = personMap.get(personId);
+            RoleGroupVO group = new RoleGroupVO();
+            group.setPersonId(personId);
+            group.setPersonName(person != null ? person.getNameCn() : "未知人物");
+            group.setPersonAvatar(person != null ? person.getAvatar() : null);
+            group.setRoles(roleList.stream().map(this::toSimpleVO).collect(Collectors.toList()));
+            result.add(group);
+        });
+
+        // 5. "其他"放最后
+        if (!others.isEmpty()) {
+            RoleGroupVO otherGroup = new RoleGroupVO();
+            otherGroup.setPersonId(null);
+            otherGroup.setPersonName(RoleConstant.OTHER_GROUP_NAME);
+            otherGroup.setPersonAvatar(null);
+            otherGroup.setRoles(others.stream().map(this::toSimpleVO).collect(Collectors.toList()));
+            result.add(otherGroup);
+        }
+
+        return result;
+    }
+
+    /**
+     * Role -> RoleSimpleVO
+     *
+     * @param role 角色
+     * @return 简要信息
+     */
+    private RoleSimpleVO toSimpleVO(Role role) {
+        if (role == null) {
+            return null;
+        }
+        RoleSimpleVO vo = new RoleSimpleVO();
+        BeanUtils.copyProperties(role, vo);
         return vo;
     }
 }

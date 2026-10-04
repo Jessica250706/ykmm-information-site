@@ -1,5 +1,5 @@
 import type { PageResult } from '@/types/common'
-import type { RoleDTO, RolePageQueryDTO, RoleVO } from '@/types/role'
+import type { RoleDTO, RoleGroupVO, RolePageQueryDTO, RoleVO } from '@/types/role'
 import request from '@/utils/http'
 
 /**
@@ -7,6 +7,13 @@ import request from '@/utils/http'
  */
 export const listRoleAPI = (params: RolePageQueryDTO) => {
   return request.get<PageResult<RoleVO>>('/admin/role', { params })
+}
+
+/**
+ * @description: 查询全部角色（按人物分组）
+ */
+export const listGroupedRolesAPI = () => {
+  return request.get<RoleGroupVO[]>('/admin/role/all-grouped')
 }
 
 /**

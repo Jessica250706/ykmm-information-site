@@ -98,7 +98,7 @@ public interface RoleMapper {
     /**
      * 批量插入角色-分类关系
      *
-     * @param roleId          角色ID
+     * @param roleId      角色ID
      * @param categoryIds 分类ID列表
      * @return 影响行数
      */
@@ -112,4 +112,11 @@ public interface RoleMapper {
      * @return 分类列表
      */
     List<StoryCategorySimpleDTO> listCategoriesByRoleId(@Param("roleId") Long roleId);
+
+    /**
+     * 查询全部角色
+     *
+     * @return 角色列表
+     */
+    List<Role> listAll();
 }

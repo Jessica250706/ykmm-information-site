@@ -5,11 +5,11 @@
 
   <sql id="baseColumns">
     id,
-        person_id   AS personId,
-        name,
-        intro,
-        created_at  AS createdAt,
-        updated_at  AS updatedAt
+    person_id   AS personId,
+    name,
+    intro,
+    created_at  AS createdAt,
+    updated_at  AS updatedAt
   </sql>
 
   <select id="pageQuery" resultType="com.xq.entity.Role">
@@ -42,10 +42,8 @@
 
   <insert id="insert" parameterType="com.xq.entity.Role"
           useGeneratedKeys="true" keyProperty="id">
-    INSERT INTO role (person_id, name, intro,
-                      created_at, updated_at)
-    VALUES (#{personId}, #{name}, #{intro},
-            CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+    INSERT INTO role (person_id, name, intro)
+    VALUES (#{personId}, #{name}, #{intro})
   </insert>
 
   <update id="update" parameterType="com.xq.entity.Role">
@@ -53,8 +51,7 @@
     <set>
       <if test="personId != null">person_id = #{personId},</if>
       <if test="name != null">name = #{name},</if>
-      <if test="intro != null">intro = #{intro},</if>
-      updated_at = CURRENT_TIMESTAMP
+      <if test="intro != null">intro = #{intro}</if>
     </set>
     WHERE id = #{id}
   </update>
@@ -98,7 +95,7 @@
     FROM story_category c
            JOIN role_story_category_rel r ON c.id = r.story_category_id
     WHERE r.role_id = #{roleId}
-    ORDER BY c.sort ASC, c.id ASC
+    ORDER BY c.sort, c.id
   </select>
 
   <select id="getByName" resultType="com.xq.entity.Role">
@@ -124,6 +121,14 @@
            JOIN person p ON r.person_id = p.id
     WHERE p.name_cn = #{nameCn}
     LIMIT 1
+  </select>
+
+  <!-- 查询全部角色 -->
+  <select id="listAll" resultType="com.xq.entity.Role">
+    SELECT
+    <include refid="baseColumns"/>
+    FROM role
+    ORDER BY person_id IS NULL, person_id, id
   </select>
 
 </mapper>

@@ -4,8 +4,6 @@
 
     <!-- Story 详情 -->
     <template v-else-if="storyDetail">
-      <!-- <div>{{ storyDetail }}</div> -->
-      <!-- 详情头部 -->
       <div class="mb-4">
         <div class="flex justify-between items-center">
           <h2 class="text-lg font-semibold">
@@ -31,13 +29,37 @@
         </p>
       </div>
 
+      <!-- 版本分类选择 -->
+      <div v-if="storyDetail.versions?.length" class="mb-4 flex items-center gap-2">
+        <span class="text-xs text-slate-500 shrink-0">版本：</span>
+        <el-select
+          :model-value="currentVersionId ?? undefined"
+          class="flex-1"
+          placeholder="请选择对话版本"
+          @update:model-value="onVersionChange"
+        >
+          <el-option
+            v-for="v in storyDetail.versions"
+            :key="v.id"
+            :label="versionLabel(v)"
+            :value="v.id"
+          />
+        </el-select>
+      </div>
+
       <!-- 对话内容 -->
-      <DialogueView :detail="storyDetail" />
+      <DialogueView
+        :current-version-id="currentVersionId ?? null"
+        :detail="storyDetail"
+        :editing-line-id="editingLineId ?? null"
+        :editing-mode="editingMode"
+        @select-line="onSelectLine"
+        @update:current-version-id="onVersionChange"
+      />
     </template>
 
     <!-- 分类：子分类 + 剧情列表 -->
     <template v-else-if="currentCategory">
-      <!-- <div>{{ currentCategory }}</div> -->
       <div class="mb-4">
         <div class="flex justify-between items-center">
           <h2 class="text-lg font-semibold">{{ currentCategory.name }}</h2>
@@ -59,7 +81,6 @@
         </div>
       </div>
 
-      <!-- 子分类 -->
       <section v-if="currentCategory.children?.length" class="mb-6">
         <h3 class="mb-2 text-sm font-medium text-slate-500">子分类</h3>
         <div class="grid grid-cols-1 gap-3">
@@ -77,7 +98,6 @@
         </div>
       </section>
 
-      <!-- 剧情列表 -->
       <section v-if="stories.length">
         <h3 class="mb-2 text-sm font-medium text-slate-500">剧情列表</h3>
         <div v-loading="loadingStories">
@@ -98,12 +118,13 @@
       </section>
     </template>
 
-    <!-- 未选节点 -->
     <el-empty v-else description="请从左侧选择一个分类" />
   </el-card>
 </template>
 
 <script setup lang="ts">
+import type { DialogueLineVO } from '@/types/dialogueLine'
+import type { DialogueVersionVO } from '@/types/dialogueVersion'
 import type { StoryDetailVO, StoryVO } from '@/types/story'
 import type { StoryCategoryVO } from '@/types/storyCategory'
 import DialogueView from './DialogueView.vue'
@@ -123,6 +144,12 @@ defineProps<{
   stories: StoryVO[]
   /** 当前分类下的剧情列表 */
   color: string
+  /** 当前选中的版本 id */
+  currentVersionId: number | null
+  /** 当前编辑的句子 id */
+  editingLineId: number | null
+  /** 是否处于编辑模式 */
+  editingMode: boolean
 }>()
 
 const emit = defineEmits<{
@@ -132,5 +159,21 @@ const emit = defineEmits<{
   goStory: [id: number]
   /** 返回 */
   goBack: []
+  'update:currentVersionId': [id: number | null]
+  'select-line': [line: DialogueLineVO]
 }>()
+
+function onVersionChange(id: number | null | undefined) {
+  emit('update:currentVersionId', id ?? null)
+}
+
+function onSelectLine(line: DialogueLineVO) {
+  emit('select-line', line)
+}
+
+function versionLabel(v: DialogueVersionVO): string {
+  return (
+    [v.languageLabel, v.formatLabel, v.scopeLabel].filter(Boolean).join(' · ') || `版本 ${v.id}`
+  )
+}
 </script>
