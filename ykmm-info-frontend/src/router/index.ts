@@ -20,7 +20,7 @@ const routes: RouteRecordRaw[] = [
   adminRoutes,
   userRoutes,
   {
-    path: '/403',
+    path: '/404',
     name: 'Forbidden',
     component: () => import('@/views/forbidden/Index.vue'),
     meta: { title: '无权限' },

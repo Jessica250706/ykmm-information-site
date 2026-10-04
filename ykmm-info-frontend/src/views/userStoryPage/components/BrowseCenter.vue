@@ -3,124 +3,30 @@
     <el-skeleton v-if="loadingContent" :rows="6" animated />
 
     <!-- Story 详情 -->
-    <template v-else-if="storyDetail">
-      <div class="mb-4">
-        <div class="flex justify-between items-center">
-          <h2 class="text-lg font-semibold">
-            {{ storyDetail.title || `剧情 #${storyDetail.id}` }}
-          </h2>
-          <el-button @click="emit('goBack')">← 返回</el-button>
-        </div>
-        <div class="mt-1 flex flex-wrap items-center gap-2 text-xs text-slate-400">
-          <el-tag
-            :style="{
-              borderColor: `var(--color-${color})`,
-              color: `var(--color-${color})`,
-            }"
-            effect="plain"
-            size="small"
-          >
-            {{ storyDetail.categoryTypeLabel }}
-          </el-tag>
-          <span>{{ storyDetail.categoryName }}</span>
-        </div>
-        <p v-if="storyDetail.description" class="mt-3 whitespace-pre-line text-sm text-slate-600">
-          {{ storyDetail.description }}
-        </p>
-      </div>
-
-      <!-- 版本分类选择：列出全部版本，无论是否有内容 -->
-      <div class="mb-4 flex items-center gap-2">
-        <span class="text-xs text-slate-500 shrink-0">版本：</span>
-        <el-select
-          v-model="selectedVersionKey"
-          class="flex-1"
-          placeholder="请选择对话版本"
-          @update:model-value="onVersionChange"
-        >
-          <el-option
-            v-for="(v, index) in versionOptions ?? []"
-            :key="`${v.versionId ?? 'noid'}-${index}`"
-            :label="versionLabel(v)"
-            :value="optionKey(v, index)"
-          />
-        </el-select>
-      </div>
-      <div>{{ currentVersionId }}</div>
-      <div>{{ currentOptionVersion }}</div>
-      <div>{{ versionOptions?.[0] }}</div>
-
-      <!-- 对话内容：只渲染当前版本 -->
-      <DialogueView
-        :current-option-version="currentOptionVersion ?? null"
-        :current-version="currentVersion ?? null"
-        :current-version-id="currentVersionId"
-        :detail="storyDetail"
-        :editing-line-id="editingLineId ?? null"
-        :editing-mode="editingMode"
-        @select-line="onSelectLine"
-      />
-    </template>
+    <BrowseCenterStory
+      v-else-if="storyDetail"
+      v-model:current-version-id="currentVersionIdComputed"
+      :color="color"
+      :editing-line-id="editingLineId"
+      :editing-mode="editingMode"
+      :story-detail="storyDetail"
+      :version-options="versionOptions"
+      @go-back="emit('goBack')"
+      @select-line="(line) => emit('select-line', line)"
+    />
 
     <!-- 分类：子分类 + 剧情列表 -->
-    <template v-else-if="currentCategory">
-      <div class="mb-4">
-        <div class="flex justify-between items-center">
-          <h2 class="text-lg font-semibold">{{ currentCategory.name }}</h2>
-          <el-button v-if="currentCategory.parentId !== 0" @click="emit('goBack')">
-            ← 返回
-          </el-button>
-        </div>
-        <div class="mt-2 flex items-center gap-2 text-xs text-slate-400">
-          <el-tag
-            :style="{
-              borderColor: `var(--color-${color})`,
-              color: `var(--color-${color})`,
-            }"
-            effect="plain"
-            size="small"
-          >
-            {{ currentCategory.categoryTypeLabel ?? typeLabel }}
-          </el-tag>
-        </div>
-      </div>
-
-      <section v-if="currentCategory.children?.length" class="mb-6">
-        <h3 class="mb-2 text-sm font-medium text-slate-500">子分类</h3>
-        <div class="grid grid-cols-1 gap-3">
-          <div
-            v-for="child in currentCategory.children"
-            :key="child.id"
-            class="cursor-pointer rounded-lg border bg-white p-3 transition hover:border-indigo-300 hover:shadow-sm"
-            @click="emit('goCategory', child.id!)"
-          >
-            <div class="font-medium">{{ child.name }}</div>
-            <div v-if="child.children?.length" class="mt-0.5 text-xs text-slate-400">
-              {{ child.children.length }} 个子项
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section v-if="stories.length">
-        <h3 class="mb-2 text-sm font-medium text-slate-500">剧情列表</h3>
-        <div v-loading="loadingStories">
-          <div class="space-y-2">
-            <div
-              v-for="s in stories"
-              :key="s.id"
-              class="cursor-pointer rounded-lg border bg-white p-3 transition hover:border-indigo-300 hover:shadow-sm"
-              @click="emit('goStory', s.id!)"
-            >
-              <div class="font-medium">{{ s.title || `剧情 #${s.id}` }}</div>
-              <div v-if="s.description" class="mt-0.5 line-clamp-1 text-sm text-slate-500">
-                {{ s.description }}
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-    </template>
+    <BrowseCenterCategory
+      v-else-if="currentCategory"
+      :color="color"
+      :current-category="currentCategory"
+      :loading-stories="loadingStories"
+      :stories="stories"
+      :type-label="typeLabel"
+      @go-back="emit('goBack')"
+      @go-category="(id) => emit('goCategory', id)"
+      @go-story="(id) => emit('goStory', id)"
+    />
 
     <el-empty v-else description="请从左侧选择一个分类" />
   </el-card>
@@ -129,10 +35,11 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import type { DialogueLineVO } from '@/types/dialogueLine'
-import type { DialogueVersionOptionVO, DialogueVersionVO } from '@/types/dialogueVersion'
+import type { DialogueVersionOptionVO } from '@/types/dialogueVersion'
 import type { StoryDetailVO, StoryVO } from '@/types/story'
 import type { StoryCategoryVO } from '@/types/storyCategory'
-import DialogueView from './DialogueView.vue'
+import BrowseCenterCategory from './BrowseCenterCategory.vue'
+import BrowseCenterStory from './BrowseCenterStory.vue'
 
 const props = defineProps<{
   /** 详情加载中 */
@@ -147,7 +54,7 @@ const props = defineProps<{
   loadingStories: boolean
   /** 当前分类下的剧情列表 */
   stories: StoryVO[]
-  /** 当前分类下的剧情列表 */
+  /** 当前分类色 */
   color: string
   /** 当前选中的版本 id */
   currentVersionId: number | null
@@ -170,78 +77,9 @@ const emit = defineEmits<{
   'select-line': [line: DialogueLineVO]
 }>()
 
-/* -------- 版本选择：字符串 key 桥接 -------- */
-
-function optionKey(v: DialogueVersionOptionVO, index: number): string {
-  if (v.versionId != null) return `id:${v.versionId}`
-  return `label:${v.label ?? index}`
-}
-
-const selectedVersionKey = computed<string>({
-  get() {
-    const id = props.currentVersionId
-    if (id == null) return ''
-    if (typeof id === 'number') return `id:${id}`
-    return `label:${id}`
-  },
-  set(key: string) {
-    if (!key) {
-      emit('update:currentVersionId', null)
-      return
-    }
-    if (key.startsWith('id:')) {
-      emit('update:currentVersionId', Number(key.slice(3)))
-    } else if (key.startsWith('label:')) {
-      emit('update:currentVersionId', Number(key.slice(6)))
-    }
-  },
+/** 桥接 v-model:currentVersionId，子组件内部使用 update:currentVersionId */
+const currentVersionIdComputed = computed({
+  get: () => props.currentVersionId,
+  set: (val) => emit('update:currentVersionId', val),
 })
-
-/** 当前选中的版本（按数字 id 精确匹配） */
-const currentVersion = computed<DialogueVersionVO | null>(() => {
-  const id = props.currentVersionId
-
-  // 1. 只处理数字 id；字符串（label 选中的情况）直接不匹配
-  if (typeof id !== 'number') return null
-
-  // 2. storyDetail 必须有版本列表
-  const versions = props.storyDetail?.versions
-  if (!versions?.length) return null
-
-  // 3. 精确按 id 查找，找不到返回 null
-  return versions.find((v) => v.id === id) ?? null
-})
-/** 当前选中的版本（无 id ） */
-const currentOptionVersion = computed<DialogueVersionOptionVO | null>(() => {
-  const id = props.currentVersionId
-  if (id == null) return null
-  if (typeof id === 'number') {
-    return props.versionOptions?.find((v) => v.versionId === id) ?? null
-  }
-  return props.versionOptions?.find((v) => v.label === id) ?? null
-})
-
-function onVersionChange(id: number | null | undefined) {
-  emit('update:currentVersionId', id ?? null)
-}
-
-function onSelectLine(line: DialogueLineVO) {
-  emit('select-line', line)
-}
-
-/**
- * 版本标签：
- * 语言 · 形式 · 范围（内容数量）
- */
-function versionLabel(v: DialogueVersionVO): string {
-  const base =
-    [v.languageLabel, v.formatLabel, v.scopeLabel].filter(Boolean).join(' · ') || `版本 ${v.id}`
-
-  if (v.format === 2) {
-    const count = v.images?.length ?? 0
-    return `${base}（${count} 张）`
-  }
-  const count = v.lines?.length ?? 0
-  return `${base}（${count} 句）`
-}
 </script>
