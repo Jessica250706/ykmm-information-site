@@ -108,8 +108,6 @@ export interface DialogueVersionDTO {
 
 /**
  * 对话版本选项（供下拉框使用）
- *
- * DialogueVersionOptionVO
  */
 export interface DialogueVersionOptionVO {
   /**
