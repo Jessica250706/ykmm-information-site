@@ -1,4 +1,5 @@
 import type { PageRequest } from './common'
+import type { DialogueLineVO } from './dialogueLine'
 
 export interface StoryPageQueryDTO extends PageRequest {
   /**
@@ -222,26 +223,6 @@ export interface DialogueImageVO {
   id?: number
   sort?: number
   url?: string
-  [property: string]: any
-}
-
-/**
- * 对话句子
- *
- * DialogueLineVO
- */
-export interface DialogueLineVO {
-  content?: string
-  id?: number
-  segments?: DialogueSegmentVO[]
-  /**
-   * 1左 2右
-   */
-  side?: number
-  sort?: number
-  speakerAvatar?: string
-  speakerId?: number
-  speakerName?: string
   [property: string]: any
 }
 

@@ -131,4 +131,14 @@
     ORDER BY person_id IS NULL, person_id, id
   </select>
 
+  <select id="listByIds" resultType="com.xq.entity.Role">
+    SELECT
+    <include refid="baseColumns"/>
+    FROM role
+    WHERE id IN
+    <foreach collection="ids" item="id" open="(" separator="," close=")">
+      #{id}
+    </foreach>
+  </select>
+
 </mapper>

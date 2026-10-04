@@ -53,6 +53,8 @@ public class UserStoryServiceImpl implements UserStoryService {
     private PersonMapper personMapper;
     @Autowired
     private StickerMapper stickerMapper;
+    @Autowired
+    private RoleMapper roleMapper;
 
     @Override
     public List<StoryCategoryVO> categoryTree(Integer categoryType) {
@@ -154,13 +156,26 @@ public class UserStoryServiceImpl implements UserStoryService {
                 .collect(Collectors.groupingBy(DialogueSegment::getLineId));
 
         // 4. 说话人：基于所有 speakerId 批量查
+        // 4.1 speaker_id -> role
         Set<Long> speakerIds = allLines.stream()
                 .map(DialogueLine::getSpeakerId)
                 .filter(Objects::nonNull)
                 .collect(Collectors.toSet());
-        Map<Long, Person> speakerMap = speakerIds.isEmpty()
+
+        Map<Long, Role> roleMap = speakerIds.isEmpty()
                 ? Collections.emptyMap()
-                : personMapper.listByIds(speakerIds).stream()
+                : roleMapper.listByIds(speakerIds).stream()
+                .collect(Collectors.toMap(Role::getId, r -> r));
+
+        // 4.2 role.personId -> person
+        Set<Long> personIds = roleMap.values().stream()
+                .map(Role::getPersonId)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toSet());
+
+        Map<Long, Person> personMap = personIds.isEmpty()
+                ? Collections.emptyMap()
+                : personMapper.listByIds(personIds).stream()
                 .collect(Collectors.toMap(Person::getId, p -> p));
 
         // 5. 表情包：基于所有 stickerId 批量查
@@ -191,9 +206,16 @@ public class UserStoryServiceImpl implements UserStoryService {
                 DialogueLineVO lvo = new DialogueLineVO();
                 BeanUtils.copyProperties(line, lvo);
 
-                Person speaker = speakerMap.get(line.getSpeakerId());
-                if (speaker != null) {
-                    lvo.setSpeakerName(speaker.getNameCn());
+                // 通过 role 反查
+                Role role = roleMap.get(line.getSpeakerId());
+                if (role != null) {
+                    lvo.setSpeakerName(role.getName());        // 角色名 → speakerName
+                    lvo.setPersonId(role.getPersonId());       // 角色关联的人物ID → personId
+
+                    Person person = personMap.get(role.getPersonId());
+                    if (person != null) {
+                        lvo.setPersonNameCn(person.getNameCn());  // 人物中文名 → personNameCn
+                    }
                 }
 
                 List<DialogueSegment> segs =

@@ -7,6 +7,7 @@ import com.xq.vo.StoryCategoryVO;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -119,4 +120,9 @@ public interface RoleMapper {
      * @return 角色列表
      */
     List<Role> listAll();
+
+    /**
+     * 按 id 批量查询角色
+     */
+    List<Role> listByIds(@Param("ids") Collection<Long> ids);
 }

@@ -25,6 +25,7 @@
           class="flex items-start gap-3 rounded-lg p-3 transition"
           @click="onLineClick(line)"
         >
+          <!-- <div>{{ line }}</div> -->
           <el-avatar :size="36" :src="line.speakerAvatar">
             {{ line.speakerName?.charAt(0) || '?' }}
           </el-avatar>
@@ -32,7 +33,11 @@
             <div class="text-xs font-medium text-slate-500">{{ line.speakerName }}</div>
             <div class="mt-1 whitespace-pre-line text-sm text-slate-800">
               <template v-for="(seg, i) in line.segments ?? []" :key="seg.id ?? i">
-                <template v-if="seg.segmentType === 1">{{ seg.content }}</template>
+                <template v-if="seg.segmentType === 1">
+                  <span :class="{ 'dialogue-line--inner': line.monologue === MONOLOGUE.INNER }">
+                    {{ seg.content }}
+                  </span>
+                </template>
                 <span v-else-if="seg.segmentType === 2" class="mx-1 align-middle">
                   <img
                     v-if="seg.stickerUrl"
@@ -44,7 +49,9 @@
                 </span>
               </template>
               <template v-if="!line.segments?.length">
-                {{ line.content }}
+                <span :class="{ 'dialogue-line--inner': line.monologue === MONOLOGUE.INNER }">
+                  {{ line.content }}
+                </span>
               </template>
             </div>
           </div>
@@ -74,8 +81,10 @@
 <script setup lang="ts">
 import { type ComponentPublicInstance, nextTick, watch } from 'vue'
 import { VERSION_FORMAT } from '@/constants/index'
+import { MONOLOGUE } from '@/constants/index'
+import type { DialogueLineVO } from '@/types/dialogueLine'
 import type { DialogueVersionOptionVO } from '@/types/dialogueVersion'
-import type { DialogueLineVO, DialogueVersionVO, StoryDetailVO } from '@/types/story'
+import type { DialogueVersionVO, StoryDetailVO } from '@/types/story'
 
 const props = defineProps<{
   detail: StoryDetailVO
@@ -123,3 +132,9 @@ watch(
   },
 )
 </script>
+
+<style lang="scss" scoped>
+.dialogue-line--inner {
+  color: var(--color-blue) !important;
+}
+</style>

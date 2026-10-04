@@ -50,6 +50,11 @@ public class DialogueLine implements Serializable {
     private Integer sort;
 
     /**
+     * 是否内心独白：0否 1是，不传时默认 0
+     */
+    private Integer monologue;
+
+    /**
      * 创建时间
      */
     private LocalDateTime createdAt;

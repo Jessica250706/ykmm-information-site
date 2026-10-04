@@ -80,7 +80,7 @@
             </div>
           </div>
 
-          <el-form label-width="60px" size="default">
+          <el-form label-width="70px" size="default">
             <el-form-item label="说话人">
               <el-select
                 v-model="editorForm.speakerId"
@@ -96,6 +96,16 @@
                   <el-option v-for="r in g.roles" :key="r.id" :label="r.name" :value="r.id!" />
                 </el-option-group>
               </el-select>
+            </el-form-item>
+            <el-form-item label="内心独白">
+              <el-switch
+                v-model="editorForm.monologue"
+                :active-value="MONOLOGUE.INNER"
+                :inactive-value="MONOLOGUE.SPOKEN"
+                active-text="内心独白"
+                inactive-text="说出来的话"
+                inline-prompt
+              />
             </el-form-item>
             <el-form-item label="内容">
               <el-input
@@ -131,6 +141,7 @@ import { batchSaveDialogueImagesAPI } from '@/api/dialogueImage'
 import { batchSaveDialogueLinesAPI, updateDialogueLineAPI } from '@/api/dialogueLine'
 import { importDialogueTxtAPI, parseDialogueTxtAPI } from '@/api/dialogueTxt'
 import { listGroupedRolesAPI } from '@/api/role'
+import { MONOLOGUE } from '@/constants/index'
 import type { DialogueImageDTO } from '@/types/dialogueImage'
 import type { DialogueLineVO } from '@/types/dialogueLine'
 import type { DialogueVersionOptionVO, DialogueVersionVO } from '@/types/dialogueVersion'
@@ -229,11 +240,14 @@ const editorForm = reactive<{
   speakerId: number | null
   content: string
   side: number | null
+  /** 是否内心独白：0否 1是 */
+  monologue: number
 }>({
   id: null,
   speakerId: null,
   content: '',
   side: null,
+  monologue: MONOLOGUE.SPOKEN,
 })
 
 /** 编辑对象变化时，同步表单 */
@@ -245,11 +259,13 @@ watch(
       editorForm.speakerId = line.speakerId ?? null
       editorForm.content = line.content ?? ''
       editorForm.side = line.side ?? null
+      editorForm.monologue = line.monologue ?? MONOLOGUE.SPOKEN
     } else {
       editorForm.id = null
       editorForm.speakerId = null
       editorForm.content = ''
       editorForm.side = null
+      editorForm.monologue = MONOLOGUE.SPOKEN
     }
   },
   { immediate: true },
@@ -295,6 +311,7 @@ async function onSave() {
         speakerId: editorForm.speakerId,
         content: editorForm.content,
         side: editorForm.side ?? undefined,
+        monologue: editorForm.monologue,
       })
     } else {
       // 新增：先追加到末尾，再重排到目标位置
@@ -345,6 +362,7 @@ async function appendNewLine() {
       speakerId: editorForm.speakerId!,
       content: editorForm.content,
       side: editorForm.side ?? undefined,
+      monologue: editorForm.monologue,
     },
   ])
 }
@@ -363,6 +381,7 @@ async function appendAndReorder() {
     speakerId: editorForm.speakerId!,
     content: editorForm.content,
     side: editorForm.side ?? undefined,
+    monologue: editorForm.monologue,
   }
 
   // 1. 追加到末尾

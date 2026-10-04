@@ -35,4 +35,9 @@ public class DialogueLineDTO implements Serializable {
      */
     private Integer sort;
 
+    /**
+     * 是否内心独白：0否 1是
+     */
+    private Integer monologue;
+
 }

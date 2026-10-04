@@ -10,6 +10,7 @@
     side,
     content,
     sort,
+    monologue,
     created_at AS createdAt
   </sql>
 
@@ -18,7 +19,7 @@
     <include refid="baseColumns"/>
     FROM dialogue_line
     WHERE version_id = #{versionId}
-    ORDER BY sort ASC, id ASC
+    ORDER BY sort, id
   </select>
 
   <select id="getById" resultType="com.xq.entity.DialogueLine">
@@ -30,16 +31,16 @@
 
   <insert id="insert" parameterType="com.xq.entity.DialogueLine"
           useGeneratedKeys="true" keyProperty="id">
-    INSERT INTO dialogue_line (version_id, speaker_id, side, content, sort)
-    VALUES (#{versionId}, #{speakerId}, #{side}, #{content}, #{sort})
+    INSERT INTO dialogue_line (version_id, speaker_id, side, content, sort, monologue)
+    VALUES (#{versionId}, #{speakerId}, #{side}, #{content}, #{sort}, #{monologue})
   </insert>
 
   <insert id="insertBatch" useGeneratedKeys="true" keyProperty="id">
-    INSERT INTO dialogue_line (version_id, speaker_id, side, content, sort)
+    INSERT INTO dialogue_line (version_id, speaker_id, side, content, sort, monologue)
     VALUES
     <foreach collection="lines" item="line" separator=",">
       (#{line.versionId}, #{line.speakerId}, #{line.side},
-      #{line.content}, #{line.sort})
+      #{line.content}, #{line.sort}, #{line.monologue})
     </foreach>
   </insert>
 
@@ -50,6 +51,7 @@
       <if test="side != null">side = #{side},</if>
       <if test="content != null">content = #{content},</if>
       <if test="sort != null">sort = #{sort},</if>
+      <if test="monologue != null">monologue = #{monologue},</if>
     </set>
     WHERE id = #{id}
   </update>

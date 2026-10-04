@@ -22,6 +22,10 @@ export interface DialogueLineVO {
   sort?: number
   speakerId?: number
   speakerName?: string
+  /**
+   * 是否内心独白：0否 1是
+   */
+  monologue?: number
   [property: string]: any
 }
 
@@ -73,6 +77,10 @@ export interface DialogueLineDTO {
    * 说话角色ID
    */
   speakerId?: number
+  /**
+   * 是否内心独白：0否 1是
+   */
+  monologue?: number
   [property: string]: any
 }
 
