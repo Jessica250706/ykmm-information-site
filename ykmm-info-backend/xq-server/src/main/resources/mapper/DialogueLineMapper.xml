@@ -84,4 +84,14 @@
     WHERE version_id = #{versionId}
   </select>
 
+  <select id="listByVersionIds" resultType="com.xq.entity.DialogueLine">
+    SELECT *
+    FROM dialogue_line
+    WHERE version_id IN
+    <foreach collection="versionIds" item="vid" open="(" separator="," close=")">
+      #{vid}
+    </foreach>
+    ORDER BY version_id, sort
+  </select>
+
 </mapper>

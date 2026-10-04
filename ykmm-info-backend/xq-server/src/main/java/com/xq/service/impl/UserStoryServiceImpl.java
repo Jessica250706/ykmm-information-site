@@ -125,29 +125,36 @@ public class UserStoryServiceImpl implements UserStoryService {
             vo.setCategoryTypeLabel(StoryCategoryTypeEnum.getLabel(category.getCategoryType()));
         }
 
-        // 对话版本：有且仅有一个
+        // 1. 查全部对话版本
         List<DialogueVersion> versions =
                 dialogueVersionMapper.listBySource(SOURCE_TYPE_STORY, id);
         if (versions == null || versions.isEmpty()) {
             vo.setVersions(Collections.emptyList());
             return vo;
         }
-        DialogueVersion version = versions.get(0);
-        Long versionId = version.getId();
 
-        // 行、图片：直接单数查询，无需分组
-        List<DialogueLine> lines = dialogueLineMapper.listByVersionId(versionId);
-        List<DialogueImage> images = dialogueImageMapper.listByVersionId(versionId);
+        List<Long> versionIds = versions.stream()
+                .map(DialogueVersion::getId)
+                .toList();
 
-        // 片段：仍需按行批量查（一行多条片段）
-        List<Long> lineIds = lines.stream().map(DialogueLine::getId).toList();
-        Map<Long, List<DialogueSegment>> segmentsByLine = lineIds.isEmpty()
+        // 2. 批量查所有版本的行、图片，再按 versionId 分组
+        List<DialogueLine> allLines = dialogueLineMapper.listByVersionIds(versionIds);
+        List<DialogueImage> allImages = dialogueImageMapper.listByVersionIds(versionIds);
+
+        Map<Long, List<DialogueLine>> linesByVersion = allLines.stream()
+                .collect(Collectors.groupingBy(DialogueLine::getVersionId));
+        Map<Long, List<DialogueImage>> imagesByVersion = allImages.stream()
+                .collect(Collectors.groupingBy(DialogueImage::getVersionId));
+
+        // 3. 片段：基于所有 lineIds 批量查
+        List<Long> allLineIds = allLines.stream().map(DialogueLine::getId).toList();
+        Map<Long, List<DialogueSegment>> segmentsByLine = allLineIds.isEmpty()
                 ? Collections.emptyMap()
-                : dialogueSegmentMapper.listByLineIds(lineIds).stream()
+                : dialogueSegmentMapper.listByLineIds(allLineIds).stream()
                 .collect(Collectors.groupingBy(DialogueSegment::getLineId));
 
-        // 说话人
-        Set<Long> speakerIds = lines.stream()
+        // 4. 说话人：基于所有 speakerId 批量查
+        Set<Long> speakerIds = allLines.stream()
                 .map(DialogueLine::getSpeakerId)
                 .filter(Objects::nonNull)
                 .collect(Collectors.toSet());
@@ -156,7 +163,7 @@ public class UserStoryServiceImpl implements UserStoryService {
                 : personMapper.listByIds(speakerIds).stream()
                 .collect(Collectors.toMap(Person::getId, p -> p));
 
-        // 表情包
+        // 5. 表情包：基于所有 stickerId 批量查
         Set<Long> stickerIds = segmentsByLine.values().stream()
                 .flatMap(List::stream)
                 .map(DialogueSegment::getStickerId)
@@ -167,53 +174,63 @@ public class UserStoryServiceImpl implements UserStoryService {
                 : stickerMapper.listByIds(stickerIds).stream()
                 .collect(Collectors.toMap(Sticker::getId, s -> s));
 
-        // 唯一的版本 VO
-        DialogueVersionVO vvo = new DialogueVersionVO();
-        BeanUtils.copyProperties(version, vvo);
-        vvo.setLanguageLabel(DialogueLanguageEnum.getLabel(version.getLanguage()));
-        vvo.setFormatLabel(DialogueFormatEnum.getLabel(version.getFormat()));
-        vvo.setScopeLabel(DialogueScopeEnum.getLabel(version.getScope()));
+        // 6. 组装每个版本的 VO
+        List<DialogueVersionVO> versionVOs = new ArrayList<>(versions.size());
+        for (DialogueVersion version : versions) {
+            DialogueVersionVO vvo = new DialogueVersionVO();
+            BeanUtils.copyProperties(version, vvo);
+            vvo.setLanguageLabel(DialogueLanguageEnum.getLabel(version.getLanguage()));
+            vvo.setFormatLabel(DialogueFormatEnum.getLabel(version.getFormat()));
+            vvo.setScopeLabel(DialogueScopeEnum.getLabel(version.getScope()));
 
-        List<DialogueLineVO> lineVOs = new ArrayList<>(lines.size());
-        for (DialogueLine line : lines) {
-            DialogueLineVO lvo = new DialogueLineVO();
-            BeanUtils.copyProperties(line, lvo);
+            // 行
+            List<DialogueLine> lines =
+                    linesByVersion.getOrDefault(version.getId(), Collections.emptyList());
+            List<DialogueLineVO> lineVOs = new ArrayList<>(lines.size());
+            for (DialogueLine line : lines) {
+                DialogueLineVO lvo = new DialogueLineVO();
+                BeanUtils.copyProperties(line, lvo);
 
-            Person speaker = speakerMap.get(line.getSpeakerId());
-            if (speaker != null) {
-                lvo.setSpeakerName(speaker.getNameCn());
-            }
-
-            List<DialogueSegment> segs =
-                    segmentsByLine.getOrDefault(line.getId(), Collections.emptyList());
-            List<DialogueSegmentVO> segVOs = new ArrayList<>(segs.size());
-            for (DialogueSegment seg : segs) {
-                DialogueSegmentVO svo = new DialogueSegmentVO();
-                BeanUtils.copyProperties(seg, svo);
-                if (seg.getStickerId() != null) {
-                    Sticker sticker = stickerMap.get(seg.getStickerId());
-                    if (sticker != null) {
-                        svo.setStickerUrl(sticker.getImageUrl());
-                        svo.setStickerEmoji(sticker.getEmoji());
-                    }
+                Person speaker = speakerMap.get(line.getSpeakerId());
+                if (speaker != null) {
+                    lvo.setSpeakerName(speaker.getNameCn());
                 }
-                segVOs.add(svo);
+
+                List<DialogueSegment> segs =
+                        segmentsByLine.getOrDefault(line.getId(), Collections.emptyList());
+                List<DialogueSegmentVO> segVOs = new ArrayList<>(segs.size());
+                for (DialogueSegment seg : segs) {
+                    DialogueSegmentVO svo = new DialogueSegmentVO();
+                    BeanUtils.copyProperties(seg, svo);
+                    if (seg.getStickerId() != null) {
+                        Sticker sticker = stickerMap.get(seg.getStickerId());
+                        if (sticker != null) {
+                            svo.setStickerUrl(sticker.getImageUrl());
+                            svo.setStickerEmoji(sticker.getEmoji());
+                        }
+                    }
+                    segVOs.add(svo);
+                }
+                lvo.setSegments(segVOs);
+                lineVOs.add(lvo);
             }
-            lvo.setSegments(segVOs);
-            lineVOs.add(lvo);
-        }
-        vvo.setLines(lineVOs);
+            vvo.setLines(lineVOs);
 
-        List<DialogueImageVO> imageVOs = new ArrayList<>(images.size());
-        for (DialogueImage img : images) {
-            DialogueImageVO ivo = new DialogueImageVO();
-            BeanUtils.copyProperties(img, ivo);
-            imageVOs.add(ivo);
-        }
-        vvo.setImages(imageVOs);
+            // 图片
+            List<DialogueImage> images =
+                    imagesByVersion.getOrDefault(version.getId(), Collections.emptyList());
+            List<DialogueImageVO> imageVOs = new ArrayList<>(images.size());
+            for (DialogueImage img : images) {
+                DialogueImageVO ivo = new DialogueImageVO();
+                BeanUtils.copyProperties(img, ivo);
+                imageVOs.add(ivo);
+            }
+            vvo.setImages(imageVOs);
 
-        // 只返回一个版本
-        vo.setVersions(List.of(vvo));
+            versionVOs.add(vvo);
+        }
+
+        vo.setVersions(versionVOs);
         return vo;
     }
 

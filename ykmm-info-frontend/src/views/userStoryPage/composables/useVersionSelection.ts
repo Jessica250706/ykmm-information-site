@@ -16,17 +16,37 @@ export interface VersionSelectItem {
   count: string
 }
 
+/* -------- 内部工具 -------- */
+
+function formatVersionLabel(v: DialogueVersionVO): string {
+  const base =
+    [v.languageLabel, v.formatLabel, v.scopeLabel].filter(Boolean).join(' · ') || `版本 ${v.id}`
+  return base
+}
+
+function buildCount(source: { format?: number; images?: unknown[]; lines?: unknown[] }): string {
+  if (source.format === VERSION_FORMAT.IMAGE) {
+    return `${source.images?.length ?? 0} 张`
+  }
+  return `${source.lines?.length ?? 0} 句`
+}
+
+/** 语言-形式-范围的组合 key，用于把 option 和真实版本配对 */
+function comboKey(v: { language?: number; format?: number; scope?: number }): string {
+  return `${v.language ?? ''}|${v.format ?? ''}|${v.scope ?? ''}`
+}
+
 /**
  * 版本选中态 + 下拉项
  *
- * - selectedVersionKey：UI 层的 source of truth，能表达"选中了没有内容的版本"
- * - currentOptionVersion：当前选中的 option（可能 versionId 为 null）
+ * 关键点：versionSelectItems 会合并 versionOptions 和 storyDetail.versions，
+ * 保证「新创建但 options 尚未刷新」的版本也能出现在下拉里。
  */
 export function useVersionSelection(
   storyDetail: Ref<StoryDetailVO | null>,
   versionOptions: Ref<DialogueVersionOptionVO[] | null>,
 ) {
-  /** 当前选中的 option key */
+  /** 当前选中的 option key（UI 层 source of truth） */
   const selectedVersionKey = ref<string>('')
 
   /** id -> version 索引 */
@@ -38,29 +58,78 @@ export function useVersionSelection(
     return map
   })
 
-  /** 下拉项，预计算 label / key / count，模板里只读字段 */
+  /** 下拉项，合并 options + versions */
   const versionSelectItems = computed<VersionSelectItem[]>(() => {
     const options = versionOptions.value ?? []
-    return options.map((opt, index) => {
-      const versionId = opt.versionId ?? null
-      const key = versionId != null ? `id:${versionId}` : `label:${opt.label ?? index}`
+    const versions = storyDetail.value?.versions ?? []
 
-      let label = opt.label
-      if (!label) {
-        const v = versionId != null ? versionMapById.value.get(versionId) : undefined
-        label = v
-          ? [v.languageLabel, v.formatLabel, v.scopeLabel].filter(Boolean).join(' · ') ||
-            `版本 ${v.id}`
-          : `版本 ${versionId ?? index}`
+    // 组合 key -> version
+    const versionByCombo = new Map<string, DialogueVersionVO>()
+    for (const v of versions) {
+      versionByCombo.set(comboKey(v), v)
+    }
+
+    // 记录被 options 消费掉的 versionId，用于第二遍去重
+    const consumedIds = new Set<number>()
+    const items: VersionSelectItem[] = []
+
+    /* -------- 第一遍：按 options 顺序生成 -------- */
+    options.forEach((opt, index) => {
+      let versionId = opt.versionId ?? null
+      let matchedVersion: DialogueVersionVO | undefined
+
+      if (versionId != null) {
+        // option 自带 id，直接查
+        matchedVersion = versionMapById.value.get(versionId)
+        consumedIds.add(versionId)
+      } else {
+        // option 无 id，用组合匹配
+        matchedVersion = versionByCombo.get(comboKey(opt))
+        if (matchedVersion?.id != null) {
+          versionId = matchedVersion.id
+          consumedIds.add(versionId)
+        }
       }
 
-      const count =
-        opt.format === VERSION_FORMAT.IMAGE
-          ? `${opt.images?.length ?? 0} 张`
-          : `${opt.lines?.length ?? 0} 句`
+      const key = versionId != null ? `id:${versionId}` : `label:${opt.label ?? index}`
+      const label =
+        opt.label ??
+        (matchedVersion ? formatVersionLabel(matchedVersion) : `版本 ${versionId ?? index}`)
+      const countSource = matchedVersion ?? opt
 
-      return { key, label, versionId, option: opt, count }
+      items.push({
+        key,
+        label,
+        versionId,
+        option: opt,
+        count: buildCount(countSource),
+      })
     })
+
+    /* -------- 第二遍：补上 options 没有的版本 -------- */
+    for (const v of versions) {
+      if (v.id == null || consumedIds.has(v.id)) continue
+
+      const label = formatVersionLabel(v)
+      items.push({
+        key: `id:${v.id}`,
+        label,
+        versionId: v.id,
+        option: {
+          versionId: v.id,
+          label,
+          language: v.language,
+          languageLabel: v.languageLabel,
+          format: v.format,
+          formatLabel: v.formatLabel,
+          scope: v.scope,
+          scopeLabel: v.scopeLabel,
+        },
+        count: buildCount(v),
+      })
+    }
+
+    return items
   })
 
   /** key -> item，O(1) 查找 */
@@ -70,15 +139,41 @@ export function useVersionSelection(
     return map
   })
 
-  /** 当前选中的 option：能表达"选中了没有内容的版本" */
+  /** 当前选中的 option */
   const currentOptionVersion = computed<DialogueVersionOptionVO | null>(
     () => versionItemMap.value.get(selectedVersionKey.value)?.option ?? null,
   )
+
+  /* -------- setter -------- */
+
+  function setSelectedVersionKey(key: string) {
+    if (selectedVersionKey.value === key) return
+    selectedVersionKey.value = key
+  }
+
+  /**
+   * 按版本 id 选中对应 option。
+   * 找不到对应 option 时（例如数据源尚未刷新），key 置空。
+   */
+  function selectByVersionId(id: number | null) {
+    if (id == null) {
+      setSelectedVersionKey('')
+      return
+    }
+    const key = `id:${id}`
+    if (versionItemMap.value.has(key)) {
+      setSelectedVersionKey(key)
+    } else {
+      setSelectedVersionKey('')
+    }
+  }
 
   return {
     selectedVersionKey,
     versionSelectItems,
     versionItemMap,
     currentOptionVersion,
+    setSelectedVersionKey,
+    selectByVersionId,
   }
 }

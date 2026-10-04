@@ -4,6 +4,7 @@ import com.xq.entity.DialogueImage;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -60,4 +61,9 @@ public interface DialogueImageMapper {
      * @return 影响行数
      */
     int deleteByVersionId(@Param("versionId") Long versionId);
+
+    /**
+     * 按版本ID批量查询图片
+     */
+    List<DialogueImage> listByVersionIds(@Param("versionIds") Collection<Long> versionIds);
 }

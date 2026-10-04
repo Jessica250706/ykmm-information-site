@@ -114,8 +114,13 @@ const {
 } = useDialogueEdit(storyDetail)
 
 /* -------- 版本选中 -------- */
-const { selectedVersionKey, versionSelectItems, versionItemMap, currentOptionVersion } =
-  useVersionSelection(storyDetail, versionOptions)
+const {
+  selectedVersionKey,
+  versionSelectItems,
+  versionItemMap,
+  currentOptionVersion,
+  selectByVersionId,
+} = useVersionSelection(storyDetail, versionOptions)
 
 /**
  * 外部 currentVersionId 变化时同步本地 key。
@@ -202,17 +207,29 @@ async function handleCreateVersion(option: DialogueVersionOptionVO) {
       language: option.language,
       scope: option.scope,
     })
+
+    const newId = res?.data
+
+    if (newId == null) {
+      console.error('创建版本返回结果异常：', res)
+      ElMessage.error('创建成功但未拿到版本 ID，请刷新页面查看')
+      await loadCurrent()
+      return
+    }
+
     ElMessage.success('创建成功')
 
-    // 重新拉详情，让 storyDetail.versions 里有新版本
+    // 1. 关键：先刷新 storyDetail，让 versions 里有新版本
     await fetchStoryDetail(storyId)
 
-    const newId = res.data ?? null
-    if (newId != null) {
-      currentVersionId.value = newId
-      selectedVersionKey.value = `id:${newId}`
-    }
-  } catch {
+    // 2. versionOptions 能刷新更好，刷不了也不影响（第二遍会补上）
+    await fetchVersionOptions().catch(() => {})
+
+    // 3. 数据源就绪后，再切选中
+    currentVersionId.value = newId
+    selectByVersionId(newId)
+  } catch (err) {
+    console.error('创建版本失败：', err)
     ElMessage.error('创建失败')
   }
 }

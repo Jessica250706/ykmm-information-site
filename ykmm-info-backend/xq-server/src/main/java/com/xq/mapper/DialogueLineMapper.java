@@ -4,6 +4,7 @@ import com.xq.entity.DialogueLine;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -92,4 +93,9 @@ public interface DialogueLineMapper {
      * @return 最大 sort
      */
     Integer getMaxSort(@Param("versionId") Long versionId);
+
+    /**
+     * 按版本ID批量查询行
+     */
+    List<DialogueLine> listByVersionIds(@Param("versionIds") Collection<Long> versionIds);
 }
