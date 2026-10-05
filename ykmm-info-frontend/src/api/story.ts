@@ -52,6 +52,13 @@ export const auditStoryAPI = (id: number, data: StoryAuditDTO) => {
 }
 
 /**
+ * 根据分类ID查询剧情列表
+ */
+export const listStoryByCategoryAPI = (categoryId: number) => {
+  return request.get<StoryVO[]>(`/admin/story/by-category/${categoryId}`)
+}
+
+/**
  * @description: 用户端 - 查询剧情分类树
  */
 export const listUserStoryCategoryTreeAPI = (params?: StoryCategoryQueryDTO) => {

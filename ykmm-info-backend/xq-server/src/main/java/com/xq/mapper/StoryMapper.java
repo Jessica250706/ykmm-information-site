@@ -68,4 +68,12 @@ public interface StoryMapper {
      * @return 数量
      */
     int countByCategoryId(@Param("categoryId") Long categoryId);
+
+    /**
+     * 根据分类ID查询剧情列表
+     *
+     * @param categoryId 分类ID
+     * @return 剧情列表
+     */
+    List<Story> listByCategoryId(@Param("categoryId") Long categoryId);
 }

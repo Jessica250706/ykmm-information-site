@@ -6,6 +6,8 @@ import com.xq.dto.StoryPageQueryDTO;
 import com.xq.result.PageResult;
 import com.xq.vo.StoryVO;
 
+import java.util.List;
+
 /**
  * 剧情服务
  */
@@ -57,4 +59,12 @@ public interface StoryService {
      * @param dto        审核参数
      */
     void audit(Long id, StoryAuditDTO dto);
+
+    /**
+     * 根据分类ID查询剧情列表
+     *
+     * @param categoryId 分类ID
+     * @return 剧情列表
+     */
+    List<StoryVO> listByCategoryId(Long categoryId);
 }

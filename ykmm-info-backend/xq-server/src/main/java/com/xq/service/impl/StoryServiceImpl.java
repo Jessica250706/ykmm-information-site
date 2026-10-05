@@ -24,6 +24,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -209,6 +210,41 @@ public class StoryServiceImpl implements StoryService {
         story.setReviewRemark(dto.getReviewRemark());
         storyMapper.updateStatus(story);
         log.info("审核剧情成功，id={}, status={}", id, dto.getStatus());
+    }
+
+    /**
+     * 根据分类ID查询剧情列表
+     *
+     * @param categoryId 分类ID
+     * @return 剧情列表
+     */
+    @Override
+    public List<StoryVO> listByCategoryId(Long categoryId) {
+        if (categoryId == null) {
+            throw new RuntimeException("分类ID不能为空");
+        }
+        List<Story> stories = storyMapper.listByCategoryId(categoryId);
+        if (stories == null || stories.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        // 分类查一次，所有 VO 复用
+        StoryCategory category = storyCategoryMapper.getById(categoryId);
+
+        List<StoryVO> voList = new ArrayList<>(stories.size());
+        for (Story story : stories) {
+            StoryVO vo = new StoryVO();
+            BeanUtils.copyProperties(story, vo);
+            vo.setStatusLabel(StoryStatusEnum.getLabel(story.getStatus()));
+            if (category != null) {
+                vo.setCategoryName(category.getName());
+                vo.setCategoryType(category.getCategoryType());
+                vo.setCategoryTypeLabel(
+                        StoryCategoryTypeEnum.getLabel(category.getCategoryType()));
+            }
+            voList.add(vo);
+        }
+        return voList;
     }
 
     /**

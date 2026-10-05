@@ -89,4 +89,12 @@
     WHERE category_id = #{categoryId}
   </select>
 
+  <select id="listByCategoryId" resultType="com.xq.entity.Story">
+    SELECT
+    <include refid="baseColumns"/>
+    FROM story s
+    WHERE s.category_id = #{categoryId}
+    ORDER BY s.sort, s.id
+  </select>
+
 </mapper>

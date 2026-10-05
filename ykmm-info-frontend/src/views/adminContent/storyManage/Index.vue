@@ -99,7 +99,9 @@
           >
             审核
           </el-button>
-          <el-button size="small" type="primary" link @click="handleDetail(row)">详情</el-button>
+          <el-button size="small" type="primary" link @click="handleDetail(row)">
+            查看对话
+          </el-button>
           <el-button size="small" type="primary" link @click="handleEdit(row)">编辑</el-button>
           <el-button size="small" type="danger" link @click="handleDelete(row)">删除</el-button>
         </template>

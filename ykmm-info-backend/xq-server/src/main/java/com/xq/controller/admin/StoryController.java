@@ -11,6 +11,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 /**
  * 剧情管理
  */
@@ -94,5 +96,16 @@ public class StoryController {
                               @RequestBody StoryAuditDTO dto) {
         storyService.audit(id, dto);
         return Result.success();
+    }
+
+    /**
+     * 根据分类ID查询剧情列表
+     *
+     * @param categoryId 分类ID
+     * @return 剧情列表
+     */
+    @GetMapping("/by-category/{categoryId}")
+    public Result<List<StoryVO>> listByCategoryId(@PathVariable Long categoryId) {
+        return Result.success(storyService.listByCategoryId(categoryId));
     }
 }

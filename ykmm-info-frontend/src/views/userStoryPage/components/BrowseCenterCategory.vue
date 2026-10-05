@@ -37,6 +37,8 @@
     </section>
 
     <section v-if="stories.length">
+      <h3 class="mb-2 text-sm font-medium text-slate-500">简介</h3>
+      <div class="mb-2 text-sm whitespace-pre-line">{{ currentCategory.description ?? '-' }}</div>
       <h3 class="mb-2 text-sm font-medium text-slate-500">剧情列表</h3>
       <div v-loading="loadingStories">
         <div class="space-y-2">
