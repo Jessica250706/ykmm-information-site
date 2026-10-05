@@ -43,8 +43,10 @@
 
     <!-- 简介 + 剧情列表 -->
     <section v-if="stories.length" class="shrink-0">
-      <h3 class="mb-2 text-sm font-medium text-slate-500">简介</h3>
-      <div class="mb-2 text-sm whitespace-pre-line">{{ currentCategory.description ?? '-' }}</div>
+      <div v-if="currentCategory.description">
+        <h3 class="mb-2 text-sm font-medium text-slate-500">简介</h3>
+        <div class="mb-2 text-sm whitespace-pre-line">{{ currentCategory.description }}</div>
+      </div>
       <h3 class="mb-2 text-sm font-medium text-slate-500">剧情列表</h3>
       <div v-loading="loadingStories">
         <div class="space-y-2">
@@ -61,6 +63,9 @@
           </div>
         </div>
       </div>
+    </section>
+    <section v-else>
+      <el-empty description="暂无故事详情" />
     </section>
   </div>
 </template>

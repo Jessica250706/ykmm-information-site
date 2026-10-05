@@ -27,8 +27,8 @@
           class="flex items-start gap-3 rounded-lg p-3 transition"
           @click="onLineClick(line)"
         >
-          <el-avatar :size="36" :src="line.speakerAvatar">
-            {{ line.speakerName?.charAt(0) || '?' }}
+          <el-avatar :size="36" :src="line.personAvatar">
+            {{ line.speakerName?.slice(-1) || '?' }}
           </el-avatar>
           <div class="min-w-0 flex-1">
             <div class="text-xs font-medium text-slate-500">{{ line.speakerName }}</div>

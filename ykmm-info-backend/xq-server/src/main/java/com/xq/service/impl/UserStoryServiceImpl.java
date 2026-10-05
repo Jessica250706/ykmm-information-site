@@ -215,6 +215,7 @@ public class UserStoryServiceImpl implements UserStoryService {
                     Person person = personMap.get(role.getPersonId());
                     if (person != null) {
                         lvo.setPersonNameCn(person.getNameCn());  // 人物中文名 → personNameCn
+                        lvo.setPersonAvatar(person.getAvatar());  // 人物头像 → personAvatar
                     }
                 }
 

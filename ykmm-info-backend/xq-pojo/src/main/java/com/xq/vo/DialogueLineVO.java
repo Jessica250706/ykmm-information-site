@@ -43,6 +43,11 @@ public class DialogueLineVO implements Serializable {
     private String personNameCn;
 
     /**
+     * 对应人物头像
+     */
+    private String personAvatar;
+
+    /**
      * RC聊天：1左 2右
      */
     private Integer side;

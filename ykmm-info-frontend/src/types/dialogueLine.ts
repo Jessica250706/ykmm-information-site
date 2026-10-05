@@ -11,6 +11,10 @@ export interface DialogueLineVO {
    */
   personId?: number
   /**
+   * 对应人物头像
+   */
+  personAvatar?: string
+  /**
    * 对应人物中文名
    */
   personNameCn?: string

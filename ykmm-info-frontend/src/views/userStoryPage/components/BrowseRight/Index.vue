@@ -91,20 +91,16 @@
 
           <el-form label-width="70px" size="default">
             <el-form-item label="说话人">
-              <el-select
+              <el-cascader
                 v-model="editorForm.speakerId"
+                :options="roleCascaderOptions"
+                :props="cascaderProps"
+                :show-all-levels="false"
                 class="w-full"
                 placeholder="请选择角色"
+                clearable
                 filterable
-              >
-                <el-option-group
-                  v-for="g in roleOptions"
-                  :key="g.personId ?? 'other'"
-                  :label="g.personName"
-                >
-                  <el-option v-for="r in g.roles" :key="r.id" :label="r.name" :value="r.id!" />
-                </el-option-group>
-              </el-select>
+              />
             </el-form-item>
             <el-form-item label="内心独白">
               <el-switch
@@ -222,6 +218,34 @@ function onCreateVersion() {
  * 角色下拉
  * ============================================================ */
 const { roleOptions } = useRoleOptions(editingModeLocal)
+
+/** cascader 配置：只返回叶子 value，父节点不可选 */
+const cascaderProps = {
+  value: 'value',
+  label: 'label',
+  children: 'children',
+  /** 只返回选中叶子的 value，而不是整条路径数组 */
+  emitPath: false,
+  /** 父节点（person）不可选，只能选 role */
+  checkStrictly: false,
+} as const
+
+/**
+ * RoleGroupVO[] → cascader 树
+ * - 第一级：person
+ * - 第二级：该 person 下的 role
+ */
+const roleCascaderOptions = computed(() =>
+  roleOptions.value.map((g) => ({
+    value: `person:${g.personId ?? 'other'}`,
+    label: g.personName ?? '未分组',
+    disabled: false, // 分组节点本身不可选
+    children: (g.roles ?? []).map((r) => ({
+      value: r.id!,
+      label: r.name ?? '',
+    })),
+  })),
+)
 
 /* ============================================================
  * 编辑器表单
