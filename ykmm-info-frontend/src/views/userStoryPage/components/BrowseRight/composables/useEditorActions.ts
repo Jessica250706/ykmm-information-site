@@ -1,6 +1,10 @@
 import { computed, type ComputedRef, ref, type Ref } from 'vue'
-import { ElMessage } from 'element-plus'
-import { batchSaveDialogueLinesAPI, updateDialogueLineAPI } from '@/api/dialogueLine'
+import { ElMessage, ElMessageBox } from 'element-plus'
+import {
+  batchSaveDialogueLinesAPI,
+  deleteDialogueLineAPI,
+  updateDialogueLineAPI,
+} from '@/api/dialogueLine'
 import type { DialogueLineVO } from '@/types/dialogueLine'
 import type { DialogueVersionVO } from '@/types/dialogueVersion'
 import type { EditorForm, EditorMode } from './useEditorForm'
@@ -9,6 +13,7 @@ interface Options {
   editorForm: EditorForm
   editorMode: Ref<EditorMode>
   creatingAfterId: Ref<number | null>
+  creatingAtStart: Ref<boolean>
   dirty: Ref<boolean>
   currentVersion: ComputedRef<DialogueVersionVO | null>
   editingLine: ComputedRef<DialogueLineVO | null>
@@ -16,13 +21,20 @@ interface Options {
   allLines: ComputedRef<DialogueLineVO[]>
   onSelectLine: (line: DialogueLineVO) => void
   onSaveDone: () => void
-  onAddDone: (afterId: number | null) => void
-  enterCreateMode: (afterId: number | null) => void
+  onAddDone: (payload: { afterId: number | null; atStart: boolean }) => void
+  enterCreateMode: (afterId: number | null, atStart?: boolean) => void
   exitCreateMode: (options?: { keepForm?: boolean }) => void
+  /** 删除成功后：父级负责刷新 + 定位到相邻行 */
+  onDeleteDone: (payload: {
+    deletedId: number
+    prevId: number | null
+    nextId: number | null
+  }) => void
 }
 
 export function useEditorActions(opts: Options) {
   const saving = ref(false)
+  const deleting = ref(false)
 
   const hasPrev = computed(() => {
     if (opts.editorMode.value === 'create') return true
@@ -37,7 +49,17 @@ export function useEditorActions(opts: Options) {
 
   function onAdd() {
     if (opts.editorMode.value === 'create') return
-    opts.enterCreateMode(opts.editingLine.value?.id ?? null)
+    opts.enterCreateMode(opts.editingLine.value?.id ?? null, false)
+  }
+
+  /** 进入创建模式，目标为开头；已在创建模式时只切换目标 */
+  function onAddAtStart() {
+    if (opts.editorMode.value === 'create') {
+      opts.creatingAfterId.value = null
+      opts.creatingAtStart.value = true
+    } else {
+      opts.enterCreateMode(null, true)
+    }
   }
 
   function onCancelCreate() {
@@ -94,8 +116,9 @@ export function useEditorActions(opts: Options) {
       ElMessage.error('版本不存在')
       return false
     }
-
     const afterId = opts.creatingAfterId.value
+    const atStart = opts.creatingAtStart.value
+
     try {
       await batchSaveDialogueLinesAPI(versionId, [
         {
@@ -106,9 +129,8 @@ export function useEditorActions(opts: Options) {
         },
       ])
       ElMessage.success('新增成功')
-      // 立即退出 create，但保留表单，等父级刷新后 watch 会 fill 到新行
       opts.exitCreateMode({ keepForm: true })
-      opts.onAddDone(afterId)
+      opts.onAddDone({ afterId, atStart })
       return true
     } catch (err) {
       console.error('新增失败', err)
@@ -159,13 +181,58 @@ export function useEditorActions(opts: Options) {
     opts.onSelectLine(next)
   }
 
+  async function onDelete(): Promise<boolean> {
+    // 只在 edit 模式、且有选中行时可删
+    if (opts.editorMode.value !== 'edit') return false
+    const id = opts.editorForm.id
+    if (id == null) {
+      ElMessage.warning('没有可删除的对话')
+      return false
+    }
+
+    // 二次确认
+    try {
+      await ElMessageBox.confirm('确定要删除这条对话吗？删除后不可恢复。', '删除确认', {
+        type: 'warning',
+        confirmButtonText: '删除',
+        confirmButtonClass: 'el-button--danger',
+        cancelButtonText: '取消',
+      })
+    } catch {
+      return false // 用户取消
+    }
+
+    // 计算相邻行 id，供父级删除后定位
+    const i = opts.editingLineIndex.value
+    const lines = opts.allLines.value
+    const prevId = i > 0 ? (lines[i - 1]?.id ?? null) : null
+    const nextId = i >= 0 && i < lines.length - 1 ? (lines[i + 1]?.id ?? null) : null
+
+    deleting.value = true
+    try {
+      await deleteDialogueLineAPI(id)
+      ElMessage.success('删除成功')
+      opts.dirty.value = false
+      opts.onDeleteDone({ deletedId: id, prevId, nextId })
+      return true
+    } catch (err) {
+      console.error('删除失败', err)
+      return false
+    } finally {
+      deleting.value = false
+    }
+  }
+
   return {
     saving,
+    deleting,
     hasPrev,
     hasNext,
     onAdd,
+    onAddAtStart,
     onCancelCreate,
     onSave,
+    onDelete,
     goPrev,
     goNext,
   }

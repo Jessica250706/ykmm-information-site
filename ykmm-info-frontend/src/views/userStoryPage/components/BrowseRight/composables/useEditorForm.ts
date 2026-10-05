@@ -15,6 +15,8 @@ export interface EditorForm {
 export function useEditorForm(editingLine: ComputedRef<DialogueLineVO | null>) {
   const editorMode = ref<EditorMode>('edit')
   const creatingAfterId = ref<number | null>(null)
+  /** 新增目标是否为"开头"（优先级高于 creatingAfterId） */
+  const creatingAtStart = ref(false)
   const dirty = ref(false)
 
   const editorForm = reactive<EditorForm>({
@@ -49,6 +51,7 @@ export function useEditorForm(editingLine: ComputedRef<DialogueLineVO | null>) {
       if (editorMode.value === 'create') {
         editorMode.value = 'edit'
         creatingAfterId.value = null
+        creatingAtStart.value = false
       }
       fillForm(editingLine.value)
       dirty.value = false
@@ -76,9 +79,10 @@ export function useEditorForm(editingLine: ComputedRef<DialogueLineVO | null>) {
     },
   )
 
-  function enterCreateMode(afterId: number | null) {
+  function enterCreateMode(afterId: number | null, atStart = false) {
     editorMode.value = 'create'
     creatingAfterId.value = afterId
+    creatingAtStart.value = atStart
     fillForm(null)
     dirty.value = false
   }
@@ -90,6 +94,7 @@ export function useEditorForm(editingLine: ComputedRef<DialogueLineVO | null>) {
   function exitCreateMode(options?: { keepForm?: boolean }) {
     editorMode.value = 'edit'
     creatingAfterId.value = null
+    creatingAtStart.value = false
     if (!options?.keepForm) {
       fillForm(editingLine.value)
     }
@@ -99,6 +104,7 @@ export function useEditorForm(editingLine: ComputedRef<DialogueLineVO | null>) {
   return {
     editorMode,
     creatingAfterId,
+    creatingAtStart,
     dirty,
     editorForm,
     fillForm,

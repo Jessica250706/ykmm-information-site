@@ -52,6 +52,7 @@
       class="h-full shrink-0 overflow-hidden"
       @add-line="handleAddLine"
       @create-version="handleCreateVersion"
+      @delete-line="handleDeleteLine"
       @refresh="loadCurrent"
       @save-line="handleSaveLine"
       @select-line="handleSelectLine"
@@ -109,6 +110,7 @@ const {
   currentVersionId,
   editingLineId,
   pendingInsertAfterId,
+  pendingInsertAtStart,
   currentVersion,
   editingLine,
   editingLineIndex,
@@ -195,16 +197,22 @@ function handleSaveLine() {
  * 2. 刷新数据（applyPendingInsert 会在需要时调 sort）
  * 3. 刷新完成后自动选中新行
  */
-async function handleAddLine(payload: { afterId: number | null }) {
-  pendingInsertAfterId.value = payload.afterId
+async function handleAddLine(payload: { afterId: number | null; atStart: boolean }) {
+  // 1. 记录插入目标
+  pendingInsertAtStart.value = payload.atStart
+  pendingInsertAfterId.value = payload.atStart ? null : payload.afterId
+
+  // 2. 刷新（applyPendingInsert 会按需重排）
   await loadCurrent()
 
-  // 定位新行：afterId 存在时新行在它之后，否则新行在末尾
+  // 3. 定位新行
   const lines = currentVersion.value?.lines ?? []
   if (lines.length === 0) return
 
   let newLineId: number | null = null
-  if (payload.afterId == null) {
+  if (payload.atStart) {
+    newLineId = lines[0]?.id ?? null // 重排后新行在第一行
+  } else if (payload.afterId == null) {
     newLineId = lines[lines.length - 1]?.id ?? null
   } else {
     const idx = lines.findIndex((l) => l.id === payload.afterId)
@@ -261,6 +269,31 @@ async function handleCreateVersion(option: DialogueVersionOptionVO) {
   } catch (err) {
     console.error('创建版本失败：', err)
     ElMessage.error('创建失败')
+  }
+}
+
+async function handleDeleteLine(payload: {
+  deletedId: number
+  prevId: number | null
+  nextId: number | null
+}) {
+  // 先清掉当前选中，避免刷新期间引用已删除行
+  editingLineId.value = null
+
+  await loadCurrent()
+
+  // 优先选中上一条，其次下一条
+  const lines = currentVersion.value?.lines ?? []
+  if (lines.length === 0) return
+
+  const targetId =
+    (payload.prevId != null && lines.some((l) => l.id === payload.prevId)
+      ? payload.prevId
+      : null) ??
+    (payload.nextId != null && lines.some((l) => l.id === payload.nextId) ? payload.nextId : null)
+
+  if (targetId != null) {
+    editingLineId.value = targetId
   }
 }
 

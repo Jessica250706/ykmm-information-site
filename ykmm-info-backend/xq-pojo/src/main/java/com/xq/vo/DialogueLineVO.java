@@ -48,6 +48,11 @@ public class DialogueLineVO implements Serializable {
     private String personAvatar;
 
     /**
+     * 应援色
+     */
+    private String personThemeColor;
+
+    /**
      * RC聊天：1左 2右
      */
     private Integer side;

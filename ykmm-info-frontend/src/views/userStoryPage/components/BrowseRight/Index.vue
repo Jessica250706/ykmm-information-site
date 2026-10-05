@@ -86,7 +86,13 @@
             type="info"
             show-icon
           >
-            {{ creatingAfterId != null ? '将在当前句之后插入新对话' : '将追加到末尾' }}
+            {{
+              creatingAtStart
+                ? '将追加到开头'
+                : creatingAfterId != null
+                  ? '将在当前句之后插入新对话'
+                  : '将追加到末尾'
+            }}
           </el-alert>
 
           <el-form label-width="70px" size="default">
@@ -124,8 +130,22 @@
 
           <div class="flex justify-between">
             <div>
-              <el-button v-if="editorMode === 'edit'" @click="onAdd">+ 新增</el-button>
-              <el-button v-else @click="onCancelCreate">取消新增</el-button>
+              <template v-if="editorMode === 'edit'">
+                <el-button @click="onAdd">+ 新增</el-button>
+                <el-button
+                  v-if="editingLine"
+                  :loading="deleting"
+                  type="danger"
+                  plain
+                  @click="onDelete"
+                >
+                  删除
+                </el-button>
+              </template>
+              <template v-else>
+                <el-button @click="onCancelCreate">取消新增</el-button>
+                <el-button plain @click="onAddAtStart">↑ 追加到开头</el-button>
+              </template>
             </div>
             <el-button
               :disabled="!editorForm.id && editorMode === 'edit'"
@@ -180,10 +200,11 @@ const props = defineProps<{
 const emit = defineEmits<{
   'update:editingMode': [val: boolean]
   'save-line': []
-  'add-line': [payload: { afterId: number | null }]
+  'add-line': [payload: { afterId: number | null; atStart: boolean }]
   refresh: []
   'select-line': [line: DialogueLineVO]
   'create-version': [option: DialogueVersionOptionVO]
+  'delete-line': [payload: { deletedId: number; prevId: number | null; nextId: number | null }]
 }>()
 
 const editingModeLocal = useVModel(props, 'editingMode', emit, {
@@ -250,28 +271,49 @@ const roleCascaderOptions = computed(() =>
 /* ============================================================
  * 编辑器表单
  * ============================================================ */
-const { editorMode, creatingAfterId, dirty, editorForm, enterCreateMode, exitCreateMode } =
-  useEditorForm(editingLineRef)
+const {
+  editorMode,
+  creatingAfterId,
+  creatingAtStart,
+  dirty,
+  editorForm,
+  enterCreateMode,
+  exitCreateMode,
+} = useEditorForm(editingLineRef)
 
 /* ============================================================
  * 编辑器动作
  * ============================================================ */
-const { saving, hasPrev, hasNext, onAdd, onCancelCreate, onSave, goPrev, goNext } =
-  useEditorActions({
-    editorForm,
-    editorMode,
-    creatingAfterId,
-    dirty,
-    currentVersion: currentVersionRef,
-    editingLine: editingLineRef,
-    editingLineIndex: editingLineIndexRef,
-    allLines: allLinesRef,
-    onSelectLine: (line) => emit('select-line', line),
-    onSaveDone: () => emit('save-line'),
-    onAddDone: (afterId) => emit('add-line', { afterId }),
-    enterCreateMode,
-    exitCreateMode,
-  })
+
+const {
+  saving,
+  deleting,
+  hasPrev,
+  hasNext,
+  onAdd,
+  onAddAtStart,
+  onCancelCreate,
+  onSave,
+  onDelete,
+  goPrev,
+  goNext,
+} = useEditorActions({
+  editorForm,
+  editorMode,
+  creatingAfterId,
+  creatingAtStart,
+  dirty,
+  currentVersion: currentVersionRef,
+  editingLine: editingLineRef,
+  editingLineIndex: editingLineIndexRef,
+  allLines: allLinesRef,
+  onSelectLine: (line) => emit('select-line', line),
+  onSaveDone: () => emit('save-line'),
+  onAddDone: (payload) => emit('add-line', payload),
+  onDeleteDone: (payload) => emit('delete-line', payload),
+  enterCreateMode,
+  exitCreateMode,
+})
 
 /* ============================================================
  * 图片上传

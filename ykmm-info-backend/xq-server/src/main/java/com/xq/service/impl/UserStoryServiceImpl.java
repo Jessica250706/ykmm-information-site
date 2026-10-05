@@ -216,6 +216,7 @@ public class UserStoryServiceImpl implements UserStoryService {
                     if (person != null) {
                         lvo.setPersonNameCn(person.getNameCn());  // 人物中文名 → personNameCn
                         lvo.setPersonAvatar(person.getAvatar());  // 人物头像 → personAvatar
+                        lvo.setPersonThemeColor(person.getThemeColor());  // 人物代表色 → personThemeColor
                     }
                 }
 
