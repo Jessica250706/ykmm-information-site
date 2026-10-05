@@ -282,10 +282,12 @@ function scrollThumbs(direction: -1 | 1) {
 /* -------- 主图 -------- */
 .main {
   position: relative;
-  width: 100%; /* 默认铺满；内联样式可覆盖 */
   background: #f5f5f5;
   border-radius: 4px;
   overflow: hidden;
+  height: 100%;
+  width: 100%; /* 默认铺满；内联样式可覆盖 */
+  flex: 1;
 
   .main-image {
     display: block;
