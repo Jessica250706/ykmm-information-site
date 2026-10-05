@@ -38,16 +38,15 @@
       <!-- 图片版本 -->
       <template v-if="currentVersion.format === 2">
         <div class="text-sm font-medium mb-2">图片列表</div>
-        <el-upload
-          v-model:file-list="imageFileList"
-          :class="'w-full'"
-          :http-request="handleImageUpload"
-          :on-remove="handleImageRemove"
-          accept="image/*"
-          list-type="picture-card"
-        >
-          <el-icon><Plus /></el-icon>
-        </el-upload>
+
+        <ImageUpload
+          v-model="imageUrls"
+          :max-count="50"
+          :max-size="10"
+          tip="支持多图上传，顺序即为展示顺序"
+          multiple
+        />
+
         <div class="mt-2 flex justify-end">
           <el-button :loading="imageSaving" type="primary" @click="saveImages">保存图片</el-button>
         </div>
@@ -156,7 +155,6 @@
 
 <script setup lang="ts">
 import { computed, ref } from 'vue'
-import { Plus } from '@element-plus/icons-vue'
 import { useVModel } from '@vueuse/core'
 import { MONOLOGUE } from '@/constants/index'
 import type { DialogueLineVO } from '@/types/dialogueLine'
@@ -254,13 +252,7 @@ const { saving, hasPrev, hasNext, onAdd, onCancelCreate, onSave, goPrev, goNext 
 /* ============================================================
  * 图片上传
  * ============================================================ */
-const {
-  imageFileList,
-  imageSaving,
-  handleImageUpload,
-  handleImageRemove,
-  saveImages: saveImagesRaw,
-} = useImageUpload(currentVersionRef)
+const { imageUrls, imageSaving, saveImages: saveImagesRaw } = useImageUpload(currentVersionRef)
 
 async function saveImages() {
   const ok = await saveImagesRaw()
