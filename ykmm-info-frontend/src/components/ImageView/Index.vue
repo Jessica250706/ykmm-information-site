@@ -27,9 +27,9 @@
       <div v-show="magnifier && !isOutside && ready" :style="layerStyle" class="layer" />
     </div>
 
-    <!-- 缩略图：横向滚动 + 左右按钮 -->
+    <!-- 缩略图：横向滚动 + 渐变按钮 -->
     <div v-if="showThumbs && imageList.length > 1" class="thumbs-wrap">
-      <!-- 左按钮 -->
+      <!-- 左渐变按钮 -->
       <button
         v-show="canScrollLeft"
         class="thumbs-nav thumbs-nav--prev"
@@ -44,6 +44,7 @@
         <li
           v-for="(img, index) in imageList"
           :key="index"
+          :ref="(el) => setThumbRef(el, index)"
           :class="{ active: index === activeIndex }"
           :style="thumbStyle"
           @click="selectIndex(index)"
@@ -52,7 +53,7 @@
         </li>
       </ul>
 
-      <!-- 右按钮 -->
+      <!-- 右渐变按钮 -->
       <button
         v-show="canScrollRight"
         class="thumbs-nav thumbs-nav--next"
@@ -69,7 +70,7 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, ref, watch } from 'vue'
+import { type ComponentPublicInstance, computed, nextTick, ref, watch } from 'vue'
 import { ArrowLeft, ArrowRight } from '@element-plus/icons-vue'
 import { useElementSize, useMouseInElement } from '@vueuse/core'
 import { useScroll } from '@vueuse/core'
@@ -255,17 +256,92 @@ const thumbStyle = computed(() => ({
 }))
 
 /* -------- 缩略图横向滚动 -------- */
+/* -------- 缩略图横向滚动 -------- */
 const thumbsRef = ref<HTMLElement | null>(null)
 const { arrivedState } = useScroll(thumbsRef)
 const canScrollLeft = computed(() => !arrivedState.left)
 const canScrollRight = computed(() => !arrivedState.right)
 
-/** direction: -1 向左，1 向右。滚一屏的 80% */
+/** 手动点击左右按钮：滚一屏的 80% */
 function scrollThumbs(direction: -1 | 1) {
   const el = thumbsRef.value
   if (!el) return
   const step = el.clientWidth * 0.8
   el.scrollBy({ left: direction * step, behavior: 'smooth' })
+}
+
+/**
+ * 保证第 index-1 / index / index+1 张缩略图在可视范围内。
+ * 额外行为：如果当前缩略图已经贴到右/左边缘，
+ * 主动多滚一点，让相邻的那张也露出来。
+ */
+async function ensureThumbVisible(index: number) {
+  await nextTick()
+  const container = thumbsRef.value
+  const thumb = thumbRefs.value[index]
+  if (!container || !thumb) return
+
+  const padding = 24
+  const containerRect = container.getBoundingClientRect()
+  const visibleWidth = containerRect.width - padding * 2
+
+  const thumbRect = thumb.getBoundingClientRect()
+  const prevRect = thumbRefs.value[index - 1]?.getBoundingClientRect() ?? null
+  const nextRect = thumbRefs.value[index + 1]?.getBoundingClientRect() ?? null
+
+  // ★ 三张缩略图整体的包围盒（相对容器左边缘的坐标）
+  // 首张用 prev，末张用 next；边界情况自动退化
+  const groupLeftRel = (prevRect ?? thumbRect).left - containerRect.left
+  const groupRightRel = (nextRect ?? thumbRect).right - containerRect.left
+  const groupWidth = groupRightRel - groupLeftRel
+
+  // -------- 情况 A：三张整体能装下 --------
+  if (groupWidth <= visibleWidth) {
+    // 整体偏左 → 向左滚
+    if (groupLeftRel < padding) {
+      container.scrollBy({
+        left: groupLeftRel - padding,
+        behavior: 'smooth',
+      })
+      return
+    }
+    // 整体偏右 → 向右滚
+    if (groupRightRel > containerRect.width - padding) {
+      container.scrollBy({
+        left: groupRightRel - (containerRect.width - padding),
+        behavior: 'smooth',
+      })
+    }
+    return
+  }
+
+  // -------- 情况 B：三张装不下 → 退化为保证 index 自身可见 --------
+  const thumbLeftRel = thumbRect.left - containerRect.left
+  const thumbRightRel = thumbRect.right - containerRect.left
+
+  if (thumbLeftRel < padding) {
+    container.scrollBy({
+      left: thumbLeftRel - padding,
+      behavior: 'smooth',
+    })
+  } else if (thumbRightRel > containerRect.width - padding) {
+    container.scrollBy({
+      left: thumbRightRel - (containerRect.width - padding),
+      behavior: 'smooth',
+    })
+  }
+}
+
+/** 主图切换 / 点击缩略图 时，跟随滚动 */
+watch(activeIndex, (index) => {
+  ensureThumbVisible(index)
+})
+
+/* -------- 缩略图 DOM 引用 -------- */
+const thumbRefs = ref<(HTMLElement | null)[]>([])
+
+function setThumbRef(el: Element | ComponentPublicInstance | null, index: number) {
+  thumbRefs.value[index] = el instanceof HTMLElement ? el : null
 }
 </script>
 
@@ -356,36 +432,32 @@ function scrollThumbs(direction: -1 | 1) {
   pointer-events: none;
 }
 
-/* -------- 缩略图区（横向滚动 + 两侧按钮） -------- */
+/* -------- 缩略图区（渐变按钮覆盖） -------- */
 .thumbs-wrap {
-  position: relative;
-  display: flex;
-  align-items: center;
-  gap: 4px;
+  position: relative; /* 为绝对定位的渐变按钮做参照 */
+  width: 100%;
 }
 
 .thumbs {
-  flex: 1;
   display: flex;
   flex-wrap: nowrap; /* 强制一行 */
   gap: 8px;
-  padding: 2px; /* 给激活态的 border 留空间，别被 overflow 裁掉 */
+  padding: 2px; /* 给激活态 border 留空间 */
   margin: 0;
   list-style: none;
   overflow-x: auto;
   overflow-y: hidden;
   scroll-behavior: smooth;
 
-  /* 隐藏滚动条（Chrome/Safari/Edge） */
+  /* 隐藏滚动条 */
   &::-webkit-scrollbar {
     display: none;
   }
-  /* Firefox */
   scrollbar-width: none;
   -ms-overflow-style: none;
 
   li {
-    flex: 0 0 auto; /* 不收缩，不增长 */
+    flex: 0 0 auto;
     cursor: pointer;
     border: 2px solid transparent;
     border-radius: 4px;
@@ -402,28 +474,52 @@ function scrollThumbs(direction: -1 | 1) {
     &:hover,
     &.active {
       border-color: var(--menu-border-bg, var(--el-color-primary));
+      border-width: 4px;
     }
   }
 }
 
-/* -------- 左右按钮 -------- */
+/* -------- 渐变按钮：绝对定位覆盖在滚动区两侧 -------- */
 .thumbs-nav {
-  flex: 0 0 auto;
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  z-index: 2;
   display: flex;
   align-items: center;
-  justify-content: center;
-  width: 24px;
-  height: 24px;
+  width: 40px;
   padding: 0;
   border: none;
-  border-radius: 50%;
-  background: var(--el-fill-color-light);
-  color: var(--el-text-color-primary);
   cursor: pointer;
-  transition: background-color 0.2s;
+  color: var(--el-text-color-primary);
+  transition: color 0.2s;
 
   &:hover {
-    background: var(--el-fill-color);
+    color: var(--el-color-primary);
   }
+}
+
+.thumbs-nav--prev {
+  left: 0;
+  justify-content: flex-start;
+  padding-left: 6px;
+  background: linear-gradient(
+    to right,
+    var(--el-bg-color) 0%,
+    var(--el-bg-color) 30%,
+    transparent 100%
+  );
+}
+
+.thumbs-nav--next {
+  right: 0;
+  justify-content: flex-end;
+  padding-right: 6px;
+  background: linear-gradient(
+    to left,
+    var(--el-bg-color) 0%,
+    var(--el-bg-color) 30%,
+    transparent 100%
+  );
 }
 </style>
