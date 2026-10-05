@@ -21,6 +21,11 @@ public class StoryCategoryDTO implements Serializable {
     private String name;
 
     /**
+     * 分类简介
+     */
+    private String description;
+
+    /**
      * 1主线 2彩虹城 3特别篇 4活动篇 5戏剧篇
      */
     private Integer categoryType;

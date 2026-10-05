@@ -99,6 +99,7 @@
           >
             审核
           </el-button>
+          <el-button size="small" type="primary" link @click="handleDetail(row)">详情</el-button>
           <el-button size="small" type="primary" link @click="handleEdit(row)">编辑</el-button>
           <el-button size="small" type="danger" link @click="handleDelete(row)">删除</el-button>
         </template>
@@ -219,6 +220,14 @@ function handleReset() {
 
 function handleCreate() {
   router.push({ name: 'AdminStoryCreate' })
+}
+
+function handleDetail(row: StoryVO) {
+  const { href } = router.resolve({
+    name: 'UserStoryBrowseDetail',
+    params: { type: String(row.categoryType), kind: 'category', id: String(row.categoryId) },
+  })
+  window.open(href, '_blank')
 }
 
 function handleEdit(row: StoryVO) {

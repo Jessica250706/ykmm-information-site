@@ -34,6 +34,15 @@
           <el-input v-model="form.name" placeholder="请输入分类名" />
         </el-form-item>
 
+        <el-form-item label="描述" prop="description">
+          <el-input
+            v-model="form.description"
+            :rows="4"
+            placeholder="请输入剧情描述"
+            type="textarea"
+          />
+        </el-form-item>
+
         <el-form-item label="排序" prop="sort">
           <el-input-number v-model="form.sort" :max="9999" :min="0" :precision="0" />
         </el-form-item>
@@ -74,6 +83,7 @@ const loading = ref(false)
 const form = reactive<StoryCategoryDTO>({
   parentId: 0,
   name: '',
+  description: '',
   categoryType: STORY_CATEGORY_TYPE.MAIN,
   sort: 0,
 })
@@ -122,6 +132,7 @@ async function loadDetail() {
 
   form.parentId = data.parentId ?? 0
   form.name = data.name ?? ''
+  form.description = data.description ?? ''
   form.categoryType = (data.categoryType as StoryCategoryTypeValue) ?? STORY_CATEGORY_TYPE.MAIN
   form.sort = data.sort ?? 0
 }

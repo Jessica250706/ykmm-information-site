@@ -63,6 +63,10 @@ export interface StoryCategoryVO {
    */
   sort?: number
   /**
+   * 分类简介
+   */
+  description?: string
+  /**
    * 更新时间
    */
   updatedAt?: string
@@ -81,6 +85,10 @@ export interface StoryCategoryDTO {
    * 分类名
    */
   name?: string
+  /**
+   * 分类简介
+   */
+  description?: string
   /**
    * 父分类ID，0 表示根节点
    */

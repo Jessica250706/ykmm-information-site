@@ -5,6 +5,10 @@
         <div class="flex items-center justify-between">
           <span class="font-medium">剧情分类详情</span>
           <div>
+            <el-button :disabled="!detail" type="primary" @click="handleEditCurrent">
+              <el-icon><Edit /></el-icon>
+              编辑
+            </el-button>
             <el-button
               v-if="detail?.children?.length === 0"
               type="primary"
@@ -26,7 +30,7 @@
 
       <template v-else-if="detail">
         <!-- 基本信息 -->
-        <el-descriptions :column="2" class="mb-4" border>
+        <el-descriptions :column="2" class="mb-4" label-width="80px" border>
           <el-descriptions-item label="分类名">
             {{ detail.name ?? '-' }}
           </el-descriptions-item>
@@ -46,6 +50,9 @@
           </el-descriptions-item>
           <el-descriptions-item label="更新时间">
             {{ detail.updatedAt ?? '-' }}
+          </el-descriptions-item>
+          <el-descriptions-item label="简介">
+            <span class="whitespace-pre-line">{{ detail.description ?? '-' }}</span>
           </el-descriptions-item>
         </el-descriptions>
 
@@ -94,7 +101,7 @@
 
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
-import { Plus } from '@element-plus/icons-vue'
+import { Edit, Plus } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { useRoute, useRouter } from 'vue-router'
 import {
@@ -208,6 +215,16 @@ function handleEdit(row: StoryCategoryVO) {
     name: 'AdminStoryCategoryEdit',
     params: { id: String(row.id) },
     query: { from: 'detail', detailId: String(detailId.value) },
+  })
+}
+
+/** 编辑当前正在查看的分类 */
+function handleEditCurrent() {
+  if (!detail.value?.id) return
+  router.push({
+    name: 'AdminStoryCategoryEdit',
+    params: { id: String(detail.value.id) },
+    query: { from: 'detail', detailId: String(detail.value.id) },
   })
 }
 

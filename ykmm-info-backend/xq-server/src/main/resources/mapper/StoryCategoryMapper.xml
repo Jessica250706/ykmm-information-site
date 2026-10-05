@@ -7,6 +7,7 @@
     id,
     parent_id      AS parentId,
     name,
+    description,
     category_type  AS categoryType,
     sort,
     created_at     AS createdAt,
@@ -49,8 +50,8 @@
 
   <insert id="insert" parameterType="com.xq.entity.StoryCategory"
           useGeneratedKeys="true" keyProperty="id">
-    INSERT INTO story_category (parent_id, name, category_type, sort)
-    VALUES (#{parentId}, #{name}, #{categoryType}, #{sort})
+    INSERT INTO story_category (parent_id, name, description, category_type, sort)
+    VALUES (#{parentId}, #{name}, #{description}, #{categoryType}, #{sort})
   </insert>
 
   <update id="update" parameterType="com.xq.entity.StoryCategory">
@@ -58,6 +59,7 @@
     <set>
       <if test="parentId != null">parent_id = #{parentId},</if>
       <if test="name != null">name = #{name},</if>
+      <if test="description != null">description = #{description},</if>
       <if test="categoryType != null">category_type = #{categoryType},</if>
       <if test="sort != null">sort = #{sort}</if>
     </set>
