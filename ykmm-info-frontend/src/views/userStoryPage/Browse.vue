@@ -183,9 +183,33 @@ function handleSaveLine() {
   void loadCurrent()
 }
 
+/**
+ * 处理新增：
+ * 1. 记录目标插入位置
+ * 2. 刷新数据（applyPendingInsert 会在需要时调 sort）
+ * 3. 刷新完成后自动选中新行
+ */
 async function handleAddLine(payload: { afterId: number | null }) {
   pendingInsertAfterId.value = payload.afterId
   await loadCurrent()
+
+  // 定位新行：afterId 存在时新行在它之后，否则新行在末尾
+  const lines = currentVersion.value?.lines ?? []
+  if (lines.length === 0) return
+
+  let newLineId: number | null = null
+  if (payload.afterId == null) {
+    newLineId = lines[lines.length - 1]?.id ?? null
+  } else {
+    const idx = lines.findIndex((l) => l.id === payload.afterId)
+    if (idx >= 0 && idx + 1 < lines.length) {
+      newLineId = lines[idx + 1]?.id ?? null
+    }
+  }
+
+  if (newLineId != null) {
+    editingLineId.value = newLineId
+  }
 }
 
 /**

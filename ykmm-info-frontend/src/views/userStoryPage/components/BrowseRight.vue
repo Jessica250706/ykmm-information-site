@@ -80,6 +80,16 @@
             </div>
           </div>
 
+          <el-alert
+            v-if="editorMode === 'create'"
+            :closable="false"
+            class="mb-4!"
+            type="info"
+            show-icon
+          >
+            {{ creatingAfterId != null ? '将在当前句之后插入新对话' : '将追加到末尾' }}
+          </el-alert>
+
           <el-form label-width="70px" size="default">
             <el-form-item label="说话人">
               <el-select
@@ -118,12 +128,25 @@
           </el-form>
 
           <div class="flex justify-between">
-            <el-button @click="onAdd">+ 新增</el-button>
-            <el-button :loading="saving" type="primary" @click="onSave">保存</el-button>
+            <div>
+              <el-button v-if="editorMode === 'edit'" @click="onAdd">+ 新增</el-button>
+              <el-button v-else @click="onCancelCreate">取消新增</el-button>
+            </div>
+            <el-button
+              :disabled="!editorForm.id && editorMode === 'edit'"
+              :loading="saving"
+              type="primary"
+              @click="onSave"
+            >
+              {{ editorMode === 'create' ? '创建' : '保存' }}
+            </el-button>
           </div>
 
-          <div v-if="!editingLine" class="mt-2 text-xs text-slate-400">
+          <div v-if="editorMode === 'edit' && !editingLine" class="mt-2 text-xs text-slate-400">
             点击左侧某一句对话可加载到编辑器；未选中时新增将追加到末尾。
+          </div>
+          <div v-else-if="editorMode === 'create'" class="mt-2 text-xs text-slate-400">
+            填写完成后点击"创建"，将作为新对话插入。
           </div>
         </div>
       </template>
@@ -191,7 +214,6 @@ const editingModeLocal = useVModel(props, 'editingMode', emit, {
  * 空版本分支
  * ============================================================ */
 
-/** 选中版本无内容时的提示文案 */
 const emptyVersionText = computed(() => {
   const label = props.currentOptionVersion?.label ?? '该版本'
   return `「${label}」尚未创建内容`
@@ -216,7 +238,6 @@ async function loadRoles() {
     const res = await listGroupedRolesAPI()
     roleOptions.value = res.data ?? []
   } catch {
-    // 忽略，用户可在管理端维护
     roleOptions.value = []
   }
 }
@@ -232,9 +253,22 @@ watch(
 )
 
 /* ============================================================
- * 编辑器表单
+ * 编辑器：模式 + 表单
  * ============================================================ */
+
+type EditorMode = 'edit' | 'create'
+
+/** 当前编辑器模式：编辑已有行 / 新建 */
+const editorMode = ref<EditorMode>('edit')
+
+/** 新建模式下插入到哪个句子的 id 之后；null 表示追加到末尾 */
+const creatingAfterId = ref<number | null>(null)
+
+/** 是否有未保存的修改 */
+const dirty = ref(false)
+
 const saving = ref(false)
+
 const editorForm = reactive<{
   id: number | null
   speakerId: number | null
@@ -250,145 +284,224 @@ const editorForm = reactive<{
   monologue: MONOLOGUE.SPOKEN,
 })
 
-/** 编辑对象变化时，同步表单 */
+/** 用一行数据填充表单；传 null 则清空 */
+function fillForm(line: DialogueLineVO | null) {
+  if (line) {
+    editorForm.id = line.id ?? null
+    editorForm.speakerId = line.speakerId ?? null
+    editorForm.content = line.content ?? ''
+    editorForm.side = line.side ?? null
+    editorForm.monologue = line.monologue ?? MONOLOGUE.SPOKEN
+  } else {
+    editorForm.id = null
+    editorForm.speakerId = null
+    editorForm.content = ''
+    editorForm.side = null
+    editorForm.monologue = MONOLOGUE.SPOKEN
+  }
+}
+
+function clearForm() {
+  fillForm(null)
+}
+
+/**
+ * 外部选中行变化（点击左侧某句 / 上下切换 / 父级自动选中）时同步表单。
+ * 若处于新建模式且外部切换了选中行，则退出新建模式。
+ */
 watch(
-  () => props.editingLine,
-  (line) => {
-    if (line) {
-      editorForm.id = line.id ?? null
-      editorForm.speakerId = line.speakerId ?? null
-      editorForm.content = line.content ?? ''
-      editorForm.side = line.side ?? null
-      editorForm.monologue = line.monologue ?? MONOLOGUE.SPOKEN
-    } else {
-      editorForm.id = null
-      editorForm.speakerId = null
-      editorForm.content = ''
-      editorForm.side = null
-      editorForm.monologue = MONOLOGUE.SPOKEN
+  () => props.editingLine?.id,
+  (newId, oldId) => {
+    if (newId === oldId) return
+
+    if (editorMode.value === 'create') {
+      editorMode.value = 'edit'
+      creatingAfterId.value = null
     }
+
+    fillForm(props.editingLine)
+    dirty.value = false
   },
   { immediate: true },
+)
+
+/** 跟踪 dirty：编辑器内容与原始行不一致时置 true */
+watch(
+  () => [editorForm.speakerId, editorForm.content, editorForm.monologue],
+  () => {
+    if (editorMode.value === 'create') {
+      dirty.value = !!editorForm.content.trim() || editorForm.speakerId != null
+      return
+    }
+    const orig = props.editingLine
+    if (!orig) {
+      dirty.value = false
+      return
+    }
+    dirty.value =
+      editorForm.speakerId !== (orig.speakerId ?? null) ||
+      editorForm.content !== (orig.content ?? '') ||
+      editorForm.monologue !== (orig.monologue ?? MONOLOGUE.SPOKEN)
+  },
 )
 
 /* ============================================================
  * 上一句 / 下一句
  * ============================================================ */
-const hasPrev = computed(() => props.editingLineIndex > 0)
-const hasNext = computed(
-  () => props.editingLineIndex >= 0 && props.editingLineIndex < props.allLines.length - 1,
-)
 
-function goPrev() {
-  if (!hasPrev.value) return
+const hasPrev = computed(() => {
+  if (editorMode.value === 'create') return true
+  return props.editingLineIndex > 0
+})
+
+const hasNext = computed(() => {
+  if (editorMode.value === 'create') return true
+  return props.editingLineIndex >= 0 && props.editingLineIndex < props.allLines.length - 1
+})
+
+async function goPrev() {
+  if (editorMode.value === 'create') {
+    if (dirty.value) {
+      // 有内容：保存新行，父级刷新后会选中新行；不继续切换
+      await onSave()
+      return
+    }
+    // 无内容：取消新建
+    cancelCreate()
+  }
+
+  if (props.editingLineIndex <= 0) return
   const prev = props.allLines[props.editingLineIndex - 1]
-  if (prev) emit('select-line', prev)
+  if (!prev) return
+
+  if (dirty.value) {
+    const ok = await onSave()
+    if (!ok) return
+  }
+
+  emit('select-line', prev)
 }
 
-function goNext() {
-  if (!hasNext.value) return
+async function goNext() {
+  if (editorMode.value === 'create') {
+    if (dirty.value) {
+      await onSave()
+      return
+    }
+    cancelCreate()
+  }
+
+  if (props.editingLineIndex < 0 || props.editingLineIndex >= props.allLines.length - 1) return
   const next = props.allLines[props.editingLineIndex + 1]
-  if (next) emit('select-line', next)
+  if (!next) return
+
+  if (dirty.value) {
+    const ok = await onSave()
+    if (!ok) return
+  }
+
+  emit('select-line', next)
 }
 
 /* ============================================================
- * 保存 / 新增
+ * 新增 / 取消 / 保存
  * ============================================================ */
-async function onSave() {
+
+/** 进入新建模式 */
+function onAdd() {
+  if (editorMode.value === 'create') return
+  editorMode.value = 'create'
+  creatingAfterId.value = props.editingLine?.id ?? null
+  clearForm()
+  dirty.value = false
+}
+
+/** 退出新建模式，恢复编辑器为当前选中行 */
+function cancelCreate() {
+  editorMode.value = 'edit'
+  creatingAfterId.value = null
+  fillForm(props.editingLine)
+  dirty.value = false
+}
+
+function onCancelCreate() {
+  cancelCreate()
+}
+
+async function onSave(): Promise<boolean> {
   if (editorForm.speakerId == null) {
     ElMessage.warning('请选择说话人')
-    return
+    return false
   }
   if (!editorForm.content?.trim()) {
     ElMessage.warning('内容不能为空')
-    return
+    return false
   }
+
   saving.value = true
   try {
-    if (editorForm.id != null) {
-      await updateDialogueLineAPI(editorForm.id, {
-        id: editorForm.id,
-        speakerId: editorForm.speakerId,
-        content: editorForm.content,
-        side: editorForm.side ?? undefined,
-        monologue: editorForm.monologue,
-      })
-    } else {
-      // 新增：先追加到末尾，再重排到目标位置
-      await appendAndReorder()
+    if (editorMode.value === 'create') {
+      return await saveCreate()
     }
-    ElMessage.success('保存成功')
-    emit('save-line')
-    emit('refresh')
-  } catch {
-    return
+    return await saveEdit()
   } finally {
     saving.value = false
   }
 }
 
-async function onAdd() {
-  if (editorForm.speakerId == null) {
-    ElMessage.warning('请选择说话人')
-    return
+/** 更新已有行 */
+async function saveEdit(): Promise<boolean> {
+  if (editorForm.id == null) {
+    ElMessage.warning('无效的编辑行')
+    return false
   }
-  if (!editorForm.content?.trim()) {
-    ElMessage.warning('内容不能为空')
-    return
-  }
-  saving.value = true
   try {
-    await appendNewLine()
-    ElMessage.success('新增成功')
-    // 把目标句 ID 传给父组件，让父组件决定是否重排
-    emit('add-line', { afterId: props.editingLine?.id ?? null })
-  } catch {
-    return
-  } finally {
-    saving.value = false
-  }
-}
-
-/**
- * 只追加到末尾，不负责重排
- */
-async function appendNewLine() {
-  const versionId = props.currentVersion?.id
-  if (!versionId) {
-    throw new Error('版本不存在')
-  }
-  await batchSaveDialogueLinesAPI(versionId, [
-    {
+    await updateDialogueLineAPI(editorForm.id, {
+      id: editorForm.id,
       speakerId: editorForm.speakerId!,
       content: editorForm.content,
       side: editorForm.side ?? undefined,
       monologue: editorForm.monologue,
-    },
-  ])
+    })
+    ElMessage.success('保存成功')
+    dirty.value = false
+    emit('save-line')
+    return true
+  } catch (err) {
+    console.error('保存失败', err)
+    return false
+  }
 }
 
-/**
- * 新增并重排：
- * 1. 追加到末尾
- * 2. 如果需要插入到中间，刷新后由前端再调 sort 接口重排
- */
-async function appendAndReorder() {
+/** 创建新行 */
+async function saveCreate(): Promise<boolean> {
   const versionId = props.currentVersion?.id
   if (!versionId) {
-    throw new Error('版本不存在')
-  }
-  const newLine = {
-    speakerId: editorForm.speakerId!,
-    content: editorForm.content,
-    side: editorForm.side ?? undefined,
-    monologue: editorForm.monologue,
+    ElMessage.error('版本不存在')
+    return false
   }
 
-  // 1. 追加到末尾
-  await batchSaveDialogueLinesAPI(versionId, [newLine])
+  const afterId = creatingAfterId.value
 
-  // 2. 如果是在中间插入，需要在 refresh 后再调 sort
-  //    这里记录目标位置，父组件 refresh 完成后回到这里处理
+  try {
+    await batchSaveDialogueLinesAPI(versionId, [
+      {
+        speakerId: editorForm.speakerId!,
+        content: editorForm.content,
+        side: editorForm.side ?? undefined,
+        monologue: editorForm.monologue,
+      },
+    ])
+    ElMessage.success('新增成功')
+    dirty.value = false
+    editorMode.value = 'edit'
+    creatingAfterId.value = null
+    emit('add-line', { afterId })
+    return true
+  } catch (err) {
+    console.error('新增失败', err)
+    return false
+  }
 }
 
 /* ============================================================
@@ -397,7 +510,6 @@ async function appendAndReorder() {
 const imageFileList = ref<UploadUserFile[]>([])
 const imageSaving = ref(false)
 
-/** 版本变化时，同步已有图片 */
 watch(
   () => [props.currentVersion?.id, props.currentVersion?.images],
   () => {
@@ -419,7 +531,6 @@ async function handleImageUpload(options: UploadRequestOptions) {
 }
 
 function handleImageRemove(file: UploadFile) {
-  // 从本地列表移除
   imageFileList.value = imageFileList.value.filter((f) => f.uid !== file.uid)
 }
 
@@ -476,7 +587,6 @@ async function onTxtFileChange(e: Event) {
       ElMessage.warning('未解析到有效内容')
       return
     }
-    // 展示简要信息
     if (parsed.unmatchedSpeakers?.length) {
       await ElMessageBox.confirm(
         `以下说话人未匹配到角色：\n${parsed.unmatchedSpeakers.join('、')}\n\n仍要导入吗？`,

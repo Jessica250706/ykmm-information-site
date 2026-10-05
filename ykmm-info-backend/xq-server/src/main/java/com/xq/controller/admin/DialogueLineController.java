@@ -1,6 +1,7 @@
 package com.xq.controller.admin;
 
 import com.xq.dto.DialogueLineDTO;
+import com.xq.dto.DialogueLineSortDTO;
 import com.xq.result.Result;
 import com.xq.service.DialogueLineService;
 import lombok.extern.slf4j.Slf4j;
@@ -64,13 +65,13 @@ public class DialogueLineController {
      * 调整句子顺序
      *
      * @param versionId 版本ID
-     * @param lineIds   句子ID顺序
+     * @param dto       句子ID顺序
      * @return 统一返回
      */
     @PutMapping("/sort/{versionId}")
     public Result<Void> sort(@PathVariable Long versionId,
-                             @RequestBody List<Long> lineIds) {
-        dialogueLineService.sort(versionId, lineIds);
+                             @RequestBody DialogueLineSortDTO dto) {
+        dialogueLineService.sort(versionId, dto.getLineIds());
         return Result.success();
     }
 }
