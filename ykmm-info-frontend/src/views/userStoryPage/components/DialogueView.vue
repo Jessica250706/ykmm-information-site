@@ -62,25 +62,17 @@
 
     <!-- 图片版本 -->
     <template v-else-if="currentVersion?.format === VERSION_FORMAT.IMAGE">
-      <div v-if="!currentVersion.images?.length" class="py-8">
+      <div v-if="!imageUrls.length" class="py-8">
         <el-empty description="暂无图片" />
       </div>
 
-      <div v-else class="grid grid-cols-1 gap-3 md:grid-cols-2">
-        <img
-          v-for="img in currentVersion.images"
-          :key="img.id"
-          :src="img.url"
-          alt="dialogue"
-          class="w-full rounded-lg shadow-sm"
-        />
-      </div>
+      <ImageView v-else :image-list="imageUrls" :magnifier="true" />
     </template>
   </div>
 </template>
 
 <script setup lang="ts">
-import { type ComponentPublicInstance, nextTick, watch } from 'vue'
+import { type ComponentPublicInstance, computed, nextTick, watch } from 'vue'
 import { VERSION_FORMAT } from '@/constants/index'
 import { MONOLOGUE } from '@/constants/index'
 import type { DialogueLineVO } from '@/types/dialogueLine'
@@ -131,6 +123,11 @@ watch(
     const el = lineRefMap.get(id)
     el?.scrollIntoView({ behavior: 'smooth', block: 'center' })
   },
+)
+
+/* -------- 图片列表 -------- */
+const imageUrls = computed(() =>
+  (props.currentVersion?.images ?? []).map((img) => img.url).filter((url): url is string => !!url),
 )
 </script>
 

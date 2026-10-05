@@ -1,6 +1,6 @@
 <template>
-  <div class="goods-image">
-    <!-- 左侧大图-->
+  <div :class="{ 'goods-image--with-magnifier': magnifier }" class="goods-image">
+    <!-- 上方：大图 -->
     <div
       ref="target"
       :style="{
@@ -10,9 +10,10 @@
       class="middle"
     >
       <img :src="imageList[activeIndex] as string" alt="" />
-      <!-- 蒙层小滑块 -->
+
+      <!-- 蒙层小滑块：仅放大镜模式显示 -->
       <div
-        v-show="!isOutside"
+        v-show="magnifier && !isOutside"
         :style="{
           width: `${layerWidth}px`,
           height: `${layerHeight}px`,
@@ -23,7 +24,8 @@
         class="layer"
       ></div>
     </div>
-    <!-- 小图列表 -->
+
+    <!-- 下方：小图列表 -->
     <ul class="small">
       <li
         v-for="(img, index) in imageList"
@@ -34,9 +36,10 @@
         <img :src="img as string" alt="" />
       </li>
     </ul>
-    <!-- 放大镜大图 -->
+
+    <!-- 放大镜大图：仅放大镜模式显示 -->
     <div
-      v-show="!isOutside"
+      v-show="magnifier && !isOutside"
       :style="{
         backgroundImage: `url(${imageList[activeIndex]})`,
         backgroundSize: `${bgWidth}px ${bgHeight}px`,
@@ -55,19 +58,26 @@ import { computed, ref, watch } from 'vue'
 import { useMouseInElement } from '@vueuse/core'
 import { clamp } from 'lodash-es'
 
-defineProps({
-  imageList: {
-    type: Array,
-    default: () => [],
-  },
+/* -------- Props -------- */
+interface Props {
+  /** 图片列表 */
+  imageList?: string[]
+  /** 是否开启放大镜功能，默认开启 */
+  magnifier?: boolean
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  imageList: () => [],
+  magnifier: false,
 })
 
-// —— 尺寸配置 ——
+/* -------- 尺寸配置 -------- */
 const IMAGE_CONFIG = {
   middleWidth: 400,
   middleHeight: 400,
   largeWidth: 400,
   largeHeight: 400,
+  /** 放大倍数 */
   scale: 2,
 } as const
 
@@ -78,15 +88,16 @@ const bgHeight = IMAGE_CONFIG.middleHeight * IMAGE_CONFIG.scale
 const maxLeft = IMAGE_CONFIG.middleWidth - layerWidth
 const maxTop = IMAGE_CONFIG.middleHeight - layerHeight
 
-// —— 状态 ——
+/* -------- 状态 -------- */
 const activeIndex = ref(0)
 const target = ref<HTMLElement | null>(null)
 const left = ref(0)
 const top = ref(0)
 
+/* -------- 鼠标跟踪（仅放大镜模式下才用） -------- */
 const { elementX, elementY, isOutside } = useMouseInElement(target)
 
-// —— 大图背景位置 ——
+/* -------- 大图背景位置 -------- */
 const bgX = computed(() => {
   const ratio = (left.value - layerWidth / 2) / maxLeft
   return -ratio * (bgWidth - IMAGE_CONFIG.largeWidth)
@@ -97,18 +108,19 @@ const bgY = computed(() => {
   return -ratio * (bgHeight - IMAGE_CONFIG.largeHeight)
 })
 
-// —— 滑块跟随鼠标 ——
+/* -------- 滑块跟随鼠标 -------- */
 watch([elementX, elementY, isOutside], () => {
+  if (!props.magnifier) return
   if (isOutside.value) return
 
-  const halfLayerW = layerWidth / 2 // 滑块宽度的一半
-  const halfLayerH = layerHeight / 2 // 滑块高度的一半
+  const halfLayerW = layerWidth / 2
+  const halfLayerH = layerHeight / 2
 
-  // clamp(x, min, max) 把 x 限制在 [min, max] 范围内
   left.value = clamp(elementX.value, halfLayerW, IMAGE_CONFIG.middleWidth - halfLayerW)
   top.value = clamp(elementY.value, halfLayerH, IMAGE_CONFIG.middleHeight - halfLayerH)
 })
 
+/* -------- 切换选中图 -------- */
 const handleEnter = (index: number) => {
   activeIndex.value = index
 }
@@ -116,19 +128,31 @@ const handleEnter = (index: number) => {
 
 <style scoped lang="scss">
 .goods-image {
-  width: 480px;
-  height: 400px;
   position: relative;
   display: flex;
+  flex-direction: column; /* 上下排列 */
+  gap: 12px;
+  width: 400px;
 
   .middle {
     background: #f5f5f5;
+    position: relative; /* 让 .layer 绝对定位以它为参照 */
+    overflow: hidden;
+    border-radius: 4px;
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
   }
 
+  /* 放大镜大图：仍然贴在右侧，不破坏上方布局 */
   .large {
     position: absolute;
     top: 0;
-    left: 412px;
+    left: 412px; /* 大图宽度 400 + 间距 12 */
     width: 400px;
     height: 400px;
     z-index: 500;
@@ -140,21 +164,37 @@ const handleEnter = (index: number) => {
   .layer {
     background: rgba(0, 0, 0, 0.2);
     position: absolute;
+    pointer-events: none; /* 不挡鼠标事件 */
   }
 
+  /* 下方缩略图列表：横向排列、可换行 */
   .small {
-    width: 80px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    padding: 0;
+    margin: 0;
+    list-style: none;
 
     li {
       width: 68px;
       height: 68px;
-      margin-left: 12px;
-      margin-bottom: 15px;
       cursor: pointer;
+      border: 2px solid transparent;
+      border-radius: 4px;
+      overflow: hidden;
+      transition: border-color 0.2s;
+
+      img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+      }
 
       &:hover,
       &.active {
-        border: 2px solid var(--menu-border-bg);
+        border-color: var(--menu-border-bg, var(--el-color-primary));
       }
     }
   }
