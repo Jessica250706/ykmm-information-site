@@ -1,5 +1,5 @@
 <template>
-  <div class="story-browse flex h-full gap-4">
+  <div class="story-browse flex h-full gap-4 overflow-hidden">
     <!-- 左侧：分类树 -->
     <BrowseLeft
       :category-tree="categoryTree"
@@ -7,6 +7,7 @@
       :expanded-keys="expandedKeys"
       :type-label="typeLabel"
       :types="storyCategoryTypeStore.types"
+      class="shrink-0 overflow-hidden"
       @node-click="handleNodeClick"
       @switch-type="handleSwitchType"
     />
@@ -30,6 +31,7 @@
       :type-label="typeLabel"
       :version-options="versionOptions"
       :version-select-items="versionSelectItems"
+      class="h-full flex-1 min-w-0 overflow-hidden"
       @go-back="handleGoBack"
       @go-category="(id: number) => goCategory(type, id)"
       @go-story="(id: number) => goStory(type, id)"
@@ -47,6 +49,7 @@
       :editing-line-index="editingLineIndex"
       :pending-insert-after-id="pendingInsertAfterId"
       :story-detail="storyDetail"
+      class="h-full shrink-0 overflow-hidden"
       @add-line="handleAddLine"
       @create-version="handleCreateVersion"
       @refresh="loadCurrent"

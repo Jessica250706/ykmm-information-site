@@ -1,5 +1,8 @@
 <template>
-  <el-card class="min-w-0 flex-1 overflow-auto bg-slate-50 p-5">
+  <el-card
+    body-class="flex-1 min-h-0 flex flex-col p-5"
+    class="min-w-0 flex-1 flex flex-col overflow-hidden bg-slate-50"
+  >
     <el-skeleton v-if="loadingContent" :rows="6" animated />
 
     <BrowseCenterStory

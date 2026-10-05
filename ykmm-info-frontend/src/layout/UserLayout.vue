@@ -59,7 +59,7 @@
 
       <!-- 内容区 -->
       <el-main class="p-0!">
-        <div class="mx-auto w-full max-w-6xl px-4 py-6">
+        <div class="userLayout mx-auto w-full max-w-6xl px-4 py-6 overflow-hidden">
           <RouterView v-slot="{ Component }">
             <Transition mode="out-in" name="fade">
               <component :is="Component" />
@@ -145,5 +145,9 @@ onMounted(() => {
       font-weight: 500;
     }
   }
+}
+
+.userLayout {
+  height: calc(100dvh - 64px);
 }
 </style>

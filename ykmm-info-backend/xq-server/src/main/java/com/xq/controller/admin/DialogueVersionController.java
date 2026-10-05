@@ -97,4 +97,18 @@ public class DialogueVersionController {
             @RequestParam Long sourceId) {
         return Result.success(dialogueVersionService.listTextVersionOptions(sourceType, sourceId));
     }
+
+    /**
+     * 查询全部版本选项（供下拉框使用）
+     *
+     * @param sourceType 来源类型：1剧情 2RTV 3RC
+     * @param sourceId   来源主键
+     * @return 选项列表
+     */
+    @GetMapping("/options")
+    public Result<List<DialogueVersionOptionVO>> options(
+            @RequestParam Integer sourceType,
+            @RequestParam Long sourceId) {
+        return Result.success(dialogueVersionService.listVersionOptions(sourceType, sourceId));
+    }
 }

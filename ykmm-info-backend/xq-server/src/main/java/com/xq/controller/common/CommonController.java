@@ -146,7 +146,7 @@ public class CommonController {
 
         // 2. 校验大小
         if (file.getSize() > MAX_SIZE) {
-            return Result.error("文件大小不能超过 5MB");
+            return Result.error("文件大小不能超过 10MB");
         }
 
         // 3. 校验后缀

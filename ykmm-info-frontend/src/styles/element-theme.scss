@@ -81,3 +81,32 @@ body,
   overflow: auto;
   flex: 1;
 }
+
+/* Firefox：默认隐藏，hover 才显示颜色 */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: transparent transparent;
+}
+*:hover {
+  scrollbar-color: var(--el-border-color-darker) transparent;
+}
+
+/* WebKit */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: transparent;
+  border-radius: 3px;
+  transition: background-color 0.2s;
+}
+*:hover::-webkit-scrollbar-thumb {
+  background: var(--el-border-color-darker);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--el-color-primary);
+}

@@ -1,7 +1,7 @@
 <template>
-  <div>
+  <div class="flex flex-col h-full min-h-0">
     <!-- 标题区域 -->
-    <div class="mb-4">
+    <div class="mb-4 shrink-0">
       <div class="flex justify-between items-center">
         <h2 class="text-lg font-semibold">
           {{ storyDetail.title || `剧情 #${storyDetail.id}` }}
@@ -27,7 +27,7 @@
     </div>
 
     <!-- 版本选择 -->
-    <div class="mb-4 flex items-center gap-2">
+    <div class="mb-4 flex items-center gap-2 shrink-0">
       <span class="text-xs text-slate-500 shrink-0">版本：</span>
       <el-select
         :model-value="selectedVersionKey"
@@ -50,20 +50,38 @@
     </div>
 
     <!-- 对话内容 -->
-    <DialogueView
-      :current-option-version="currentOptionVersion"
-      :current-version="currentVersion"
-      :current-version-id="resolvedVersionId"
-      :detail="storyDetail"
-      :editing-line-id="editingLineId ?? null"
-      :editing-mode="editingMode"
-      @select-line="(line) => emit('select-line', line)"
-    />
+    <div class="relative flex-1 min-h-0">
+      <!-- 滚动区 -->
+      <div ref="scrollerRef" class="h-full overflow-y-auto app-scrollbar">
+        <DialogueView
+          :current-option-version="currentOptionVersion"
+          :current-version="currentVersion"
+          :current-version-id="resolvedVersionId"
+          :detail="storyDetail"
+          :editing-line-id="editingLineId ?? null"
+          :editing-mode="editingMode"
+          @select-line="(line) => emit('select-line', line)"
+        />
+      </div>
+
+      <!-- 顶部内阴影（滚动离开顶部时显示） -->
+      <div
+        :class="showTopShadow ? 'opacity-100' : 'opacity-0'"
+        class="scroll-shadow-top pointer-events-none absolute inset-x-0 top-0 h-6 transition-opacity duration-200"
+      />
+
+      <!-- 底部内阴影（未滚到底时显示） -->
+      <div
+        :class="showBottomShadow ? 'opacity-100' : 'opacity-0'"
+        class="scroll-shadow-bottom pointer-events-none absolute inset-x-0 bottom-0 h-6 transition-opacity duration-200"
+      />
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
+import { useScrollShadow } from '@/composables/useScrollShadow'
 import type { DialogueLineVO } from '@/types/dialogueLine'
 import type { DialogueVersionOptionVO, DialogueVersionVO } from '@/types/dialogueVersion'
 import type { StoryDetailVO } from '@/types/story'
@@ -108,4 +126,22 @@ const currentVersion = computed<DialogueVersionVO | null>(() => {
 
 /** 传给 DialogueView 的 versionId，保证与 currentVersion 一致 */
 const resolvedVersionId = computed<number | null>(() => currentVersion.value?.id ?? null)
+
+/* -------- 阴影 -------- */
+const scrollerRef = ref<HTMLElement | null>(null)
+const { atTop, atBottom, canScroll } = useScrollShadow(scrollerRef)
+
+// 有内容可滚 且 已经离开顶部 → 显示顶部阴影
+const showTopShadow = computed(() => canScroll.value && !atTop.value)
+// 有内容可滚 且 未到底 → 显示底部阴影
+const showBottomShadow = computed(() => canScroll.value && !atBottom.value)
 </script>
+
+<style lang="scss" scoped>
+.scroll-shadow-top {
+  background: linear-gradient(to bottom, var(--el-fill-color-darker) 0%, transparent 100%);
+}
+.scroll-shadow-bottom {
+  background: linear-gradient(to top, var(--el-fill-color-darker) 0%, transparent 100%);
+}
+</style>

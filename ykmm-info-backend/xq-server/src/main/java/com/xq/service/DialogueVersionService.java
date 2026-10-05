@@ -61,4 +61,13 @@ public interface DialogueVersionService {
      * @return 选项列表
      */
     List<DialogueVersionOptionVO> listTextVersionOptions(Integer sourceType, Long sourceId);
+
+    /**
+     * 查询全部版本选项
+     *
+     * @param sourceType 来源类型：1剧情 2RTV 3RC
+     * @param sourceId   来源主键
+     * @return 选项列表
+     */
+    List<DialogueVersionOptionVO> listVersionOptions(Integer sourceType, Long sourceId);
 }

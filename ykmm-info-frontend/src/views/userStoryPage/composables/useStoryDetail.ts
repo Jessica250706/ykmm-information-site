@@ -1,6 +1,6 @@
 import { ref } from 'vue'
 import { ElMessage } from 'element-plus'
-import { listTextDialogueVersionOptionsAPI } from '@/api/dialogueVersion'
+import { listDialogueVersionOptionsAPI } from '@/api/dialogueVersion'
 import { getUserStoryDetailAPI, pageUserStoryAPI } from '@/api/story'
 import { SOURCE_TYPE } from '@/constants'
 import { STORY_STATUS } from '@/constants/story'
@@ -56,7 +56,7 @@ export function useStoryDetail() {
       ElMessage.error('当前故事不存在')
       return
     }
-    const res = await listTextDialogueVersionOptionsAPI(SOURCE_TYPE.STORY, storyDetail.value.id)
+    const res = await listDialogueVersionOptionsAPI(SOURCE_TYPE.STORY, storyDetail.value.id)
     versionOptions.value = res.data
   }
 

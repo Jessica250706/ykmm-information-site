@@ -23,6 +23,10 @@ spring:
     time-zone: GMT+8
     serialization:
       write-dates-as-timestamps: false
+  servlet:
+    multipart:
+      max-file-size: 10MB       # 单个文件最大
+      max-request-size: 50MB    # 整个请求最大（多文件时用得上）
 
 mybatis:
   #mapper配置文件

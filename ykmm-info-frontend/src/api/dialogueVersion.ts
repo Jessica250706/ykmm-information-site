@@ -51,3 +51,12 @@ export const listTextDialogueVersionOptionsAPI = (sourceType: number, sourceId: 
     params: { sourceType, sourceId },
   })
 }
+
+/**
+ * @description: 查询全部版本选项（供下拉框使用）
+ */
+export const listDialogueVersionOptionsAPI = (sourceType: number, sourceId: number) => {
+  return request.get<DialogueVersionOptionVO[]>('/admin/dialogue-versions/options', {
+    params: { sourceType, sourceId },
+  })
+}

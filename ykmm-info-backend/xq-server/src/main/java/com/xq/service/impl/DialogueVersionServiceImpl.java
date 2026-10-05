@@ -251,6 +251,58 @@ public class DialogueVersionServiceImpl implements DialogueVersionService {
         return result;
     }
 
+    /**
+     * 查询全部文字版本选项
+     *
+     * @param sourceType 来源类型
+     * @param sourceId   来源主键
+     * @return 选项列表
+     */
+    @Override
+    public List<DialogueVersionOptionVO> listVersionOptions(Integer sourceType, Long sourceId) {
+        if (!DialogueSourceTypeEnum.isValid(sourceType)) {
+            throw new RuntimeException("来源类型不合法");
+        }
+        if (sourceId == null) {
+            throw new RuntimeException("来源ID不能为空");
+        }
+
+        // 1. 查出当前来源下已有的文字版本
+        List<DialogueVersion> existed = dialogueVersionMapper.listBySource(sourceType, sourceId);
+
+        // 2. 建索引：language-scope -> versionId
+        Map<String, Long> existedMap = new HashMap<>();
+        if (existed != null) {
+            for (DialogueVersion v : existed) {
+                existedMap.put(keyOf(v.getLanguage(), v.getFormat(), v.getScope()), v.getId());
+            }
+        }
+
+        // 3. 枚举所有语言 × 范围的组合
+        List<DialogueVersionOptionVO> result = new ArrayList<>();
+        for (DialogueLanguageEnum lang : DialogueLanguageEnum.values()) {
+            for (DialogueScopeEnum scope : DialogueScopeEnum.values()) {
+                for (DialogueFormatEnum format : DialogueFormatEnum.values()) {
+                    DialogueVersionOptionVO vo = new DialogueVersionOptionVO();
+                    vo.setLanguage(lang.getValue());
+                    vo.setLanguageLabel(lang.getLabel());
+                    vo.setFormat(format.getValue());
+                    vo.setFormatLabel(format.getLabel());
+                    vo.setScope(scope.getValue());
+                    vo.setScopeLabel(scope.getLabel());
+                    vo.setLabel(lang.getLabel() + " · " + format.getLabel() + " · " + scope.getLabel());
+
+                    Long versionId = existedMap.get(keyOf(lang.getValue(), format.getValue(), scope.getValue()));
+                    vo.setVersionId(versionId);
+                    vo.setExists(versionId != null);
+
+                    result.add(vo);
+                }
+            }
+        }
+        return result;
+    }
+
     // ---------------------------------------------------
     // 私有方法
     // ---------------------------------------------------
@@ -348,5 +400,13 @@ public class DialogueVersionServiceImpl implements DialogueVersionService {
      */
     private String keyOf(Integer language, Integer scope) {
         return language + "-" + scope;
+    }
+
+    /**
+     * 组合 key：language-format-scope
+     * 用于把「枚举组合」映射到「已存在的 versionId」
+     */
+    private String keyOf(Integer language, Integer format, Integer scope) {
+        return language + "-" + format + "-" + scope;
     }
 }

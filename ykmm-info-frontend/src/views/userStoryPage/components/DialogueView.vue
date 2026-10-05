@@ -1,7 +1,9 @@
 <template>
   <div class="dialogue-view">
     <!-- 没有选中的版本 -->
-    <el-empty v-if="!currentVersion && !currentOptionVersion" description="请选择一个对话版本" />
+    <el-empty v-if="!currentOptionVersion" description="请选择一个对话版本" />
+    <!-- 没有选中的版本 -->
+    <el-empty v-else-if="!currentVersion" description="当前对话版本暂无对话" />
 
     <!-- 文字版本 -->
     <template v-else-if="currentVersion?.format === VERSION_FORMAT.TEXT">
@@ -13,19 +15,18 @@
         </el-empty>
       </div>
 
-      <div v-else class="space-y-3">
+      <div v-else>
         <div
           v-for="line in currentVersion.lines"
           :key="line.id"
           :ref="(el) => setLineRef(line.id, el)"
-          :class="[
-            line.id === editingLineId ? 'bg-indigo-50 ring-2 ring-indigo-300' : 'bg-slate-50',
-            editingMode ? 'cursor-pointer hover:bg-indigo-50/50' : '',
-          ]"
+          :class="{
+            'dialogue-line--selected': line.id === editingLineId,
+            'dialogue-line--editable': editingMode,
+          }"
           class="flex items-start gap-3 rounded-lg p-3 transition"
           @click="onLineClick(line)"
         >
-          <!-- <div>{{ line }}</div> -->
           <el-avatar :size="36" :src="line.speakerAvatar">
             {{ line.speakerName?.charAt(0) || '?' }}
           </el-avatar>
@@ -136,5 +137,25 @@ watch(
 <style lang="scss" scoped>
 .dialogue-line--inner {
   color: var(--color-blue) !important;
+}
+
+.dialogue-line {
+  background: var(--el-fill-color-lighter);
+  transition:
+    background-color 0.15s,
+    box-shadow 0.15s;
+}
+
+.dialogue-line--editable {
+  cursor: pointer;
+}
+
+.dialogue-line--editable:hover {
+  background: var(--el-color-primary-light-9);
+}
+
+.dialogue-line--selected {
+  background: var(--el-color-info-light-9);
+  box-shadow: inset 0 0 0 2px var(--el-color-primary-light-5);
 }
 </style>
