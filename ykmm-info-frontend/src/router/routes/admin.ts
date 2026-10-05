@@ -146,7 +146,7 @@ export const adminRoutes: RouteRecordRaw = {
       path: 'content/story-category/detail/:id',
       name: 'AdminStoryCategoryDetail',
       component: () =>
-        import('@/views/adminContent/storyCategoryManage/components/DetailStoryCategory.vue'),
+        import('@/views/adminContent/storyCategoryManage/components/DetailStoryCategory/Index.vue'),
       meta: { title: '剧情分类详情' },
     },
     // ---------- 剧情分类类型管理 ----------
