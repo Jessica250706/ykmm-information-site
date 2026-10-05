@@ -37,7 +37,10 @@
 
         <!-- 类型 -->
         <template #categoryType="{ row }">
-          <el-tag :type="categoryTypeTag(row.categoryType)" effect="plain">
+          <el-tag
+            :style="categoryTagStyle(storyCategoryTypeStore.getTypeColor(row.categoryType))"
+            effect="plain"
+          >
             {{ STORY_CATEGORY_TYPE_LABEL[row.categoryType as StoryCategoryTypeValue] ?? '未知' }}
           </el-tag>
         </template>
@@ -77,13 +80,10 @@ import {
   type ProTableColumn,
   type ProTableExpose,
 } from '@/components/ProTable'
-import {
-  STORY_CATEGORY_TYPE,
-  STORY_CATEGORY_TYPE_LABEL,
-  type StoryCategoryTypeValue,
-} from '@/constants/story'
+import { STORY_CATEGORY_TYPE_LABEL, type StoryCategoryTypeValue } from '@/constants/story'
 import { useStoryCategoryTypeStore } from '@/stores/storyCategoryTypeStore'
 import type { StoryCategoryPageQueryDTO, StoryCategoryVO } from '@/types/storyCategory'
+import { categoryTagStyle } from '@/utils/helpers'
 
 const router = useRouter()
 const storyCategoryTypeStore = useStoryCategoryTypeStore()
@@ -119,24 +119,6 @@ const columns: ProTableColumn<StoryCategoryVO>[] = [
   },
   { label: '操作', minWidth: 300, align: 'center', fixed: 'right', slot: 'action' },
 ]
-
-/** 不同分类类型给不同 tag 颜色 */
-function categoryTypeTag(type?: number): 'primary' | 'success' | 'warning' | 'danger' | 'info' {
-  switch (type) {
-    case STORY_CATEGORY_TYPE.MAIN:
-      return 'danger'
-    case STORY_CATEGORY_TYPE.RAINBOW_CITY:
-      return 'warning'
-    case STORY_CATEGORY_TYPE.SPECIAL:
-      return 'success'
-    case STORY_CATEGORY_TYPE.ACTIVITY:
-      return 'primary'
-    case STORY_CATEGORY_TYPE.DRAMA:
-      return 'info'
-    default:
-      return 'info'
-  }
-}
 
 /* -------- 请求适配 -------- */
 async function fetchList(

@@ -2,7 +2,10 @@
   <el-descriptions :column="2" label-width="80px" border>
     <el-descriptions-item label="分类名">{{ detail.name ?? '-' }}</el-descriptions-item>
     <el-descriptions-item label="分类类型">
-      <el-tag :type="categoryTypeTag(detail.categoryType)" effect="plain">
+      <el-tag
+        :style="categoryTagStyle(storyCategoryTypeStore.getTypeColor(detail.categoryType))"
+        effect="plain"
+      >
         {{ detail.categoryTypeLabel ?? '未知' }}
       </el-tag>
     </el-descriptions-item>
@@ -19,10 +22,13 @@
 </template>
 
 <script setup lang="ts">
+import { useStoryCategoryTypeStore } from '@/stores/storyCategoryTypeStore'
 import type { StoryCategoryVO } from '@/types/storyCategory'
-import { categoryTypeTag } from './helpers'
+import { categoryTagStyle } from '@/utils/helpers'
 
 defineProps<{
   detail: StoryCategoryVO
 }>()
+
+const storyCategoryTypeStore = useStoryCategoryTypeStore()
 </script>

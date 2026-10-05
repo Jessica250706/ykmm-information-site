@@ -12,7 +12,10 @@
     </template>
 
     <template #categoryType="{ row }">
-      <el-tag :type="categoryTypeTag(row.categoryType)" effect="plain">
+      <el-tag
+        :style="categoryTagStyle(storyCategoryTypeStore.getTypeColor(row.categoryType))"
+        effect="plain"
+      >
         {{ row.categoryTypeLabel ?? '未知' }}
       </el-tag>
     </template>
@@ -46,8 +49,9 @@ import {
   type ProTableColumn,
   type ProTableExpose,
 } from '@/components/ProTable'
+import { useStoryCategoryTypeStore } from '@/stores/storyCategoryTypeStore'
 import type { StoryCategoryPageQueryDTO, StoryCategoryVO } from '@/types/storyCategory'
-import { categoryTypeTag } from './helpers'
+import { categoryTagStyle } from '@/utils/helpers'
 
 const props = defineProps<{
   /** 父分类 ID：请求子分类时带上 */
@@ -61,6 +65,8 @@ const emit = defineEmits<{
   edit: [row: StoryCategoryVO]
   delete: [row: StoryCategoryVO]
 }>()
+
+const storyCategoryTypeStore = useStoryCategoryTypeStore()
 
 const columns: ProTableColumn<StoryCategoryVO>[] = [
   { prop: 'name', label: '分类名', minWidth: 240, slot: 'name' },

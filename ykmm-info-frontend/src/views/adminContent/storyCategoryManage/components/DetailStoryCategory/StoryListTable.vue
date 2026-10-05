@@ -32,7 +32,7 @@ import {
   type ProTableExpose,
 } from '@/components/ProTable'
 import type { StoryVO } from '@/types/story'
-import { storyStatusTag } from './helpers'
+import { storyStatusTag } from '@/utils/helpers'
 
 const props = defineProps<{
   /** 分类 ID：请求该分类下的剧情 */

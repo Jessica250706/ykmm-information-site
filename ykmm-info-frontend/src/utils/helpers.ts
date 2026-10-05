@@ -31,3 +31,15 @@ export function storyStatusTag(status?: number): TagType {
       return 'info'
   }
 }
+
+/**
+ * 按颜色变量生成 el-tag 的内联样式：
+ * <el-tag :style="categoryTagStyle(color)" effect="plain">
+ * → borderColor: var(--color-xxx); color: var(--color-xxx)
+ */
+export function categoryTagStyle(color: string) {
+  return {
+    borderColor: `var(--color-${color})`,
+    color: `var(--color-${color})`,
+  }
+}
