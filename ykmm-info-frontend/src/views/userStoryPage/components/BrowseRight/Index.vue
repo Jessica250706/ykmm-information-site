@@ -47,7 +47,7 @@
           multiple
         />
 
-        <div class="mt-2 flex justify-end">
+        <div class="mt-2 flex justify-center">
           <el-button :loading="imageSaving" type="primary" @click="saveImages">保存图片</el-button>
         </div>
       </template>
@@ -56,7 +56,7 @@
       <template v-else-if="currentVersion.format === 1">
         <!-- txt 上传 -->
         <div class="mb-4">
-          <el-button class="w-full" type="warning" plain @click="onTxtUploadClick">
+          <el-button class="w-full" type="info" plain @click="onTxtUploadClick">
             📄 上传 txt 文件
           </el-button>
           <input

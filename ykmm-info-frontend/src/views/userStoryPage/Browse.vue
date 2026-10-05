@@ -60,7 +60,7 @@
 </template>
 
 <script setup lang="ts">
-import { watch } from 'vue'
+import { computed, watch } from 'vue'
 import { ElMessage } from 'element-plus'
 import { createDialogueVersionAPI } from '@/api/dialogueVersion'
 import { SOURCE_TYPE } from '@/constants/index'
@@ -83,10 +83,6 @@ const storyCategoryTypeStore = useStoryCategoryTypeStore()
 /* -------- 路由 -------- */
 const { type, kind, nodeId, typeLabel } = useBrowseRoute()
 
-/* -------- 分类树 -------- */
-const { categoryTree, expandedKeys, currentHighlightId, currentCategory, loadTree } =
-  useCategoryTree(type, kind, nodeId)
-
 /* -------- 详情 / 列表 -------- */
 const {
   storyDetail,
@@ -99,6 +95,13 @@ const {
   fetchStories,
   fetchVersionOptions,
 } = useStoryDetail()
+
+/** story 模式下左侧树要高亮的分类 id：取 storyDetail.categoryId */
+const storyCategoryId = computed(() => storyDetail.value?.categoryId ?? null)
+
+/* -------- 分类树 -------- */
+const { categoryTree, expandedKeys, currentHighlightId, currentCategory, loadTree } =
+  useCategoryTree(type, kind, nodeId, storyCategoryId)
 
 /* -------- 编辑态 -------- */
 const {
