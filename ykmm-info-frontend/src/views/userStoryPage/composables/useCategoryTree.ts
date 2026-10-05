@@ -51,7 +51,6 @@ export function useCategoryTree(
   async function loadTree() {
     const res = await listUserStoryCategoryTreeAPI({ categoryType: type.value })
     categoryTree.value = res.data ?? []
-    expandedKeys.value = collectIds(categoryTree.value).slice(0, 5)
   }
 
   /** 找到某个分类的祖先 id 链（含自身） */

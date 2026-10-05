@@ -9,6 +9,7 @@
         :src="currentUrl"
         class="main-image"
         hide-on-click-modal
+        lazy
         preview-teleported
         @switch="onPreviewSwitch"
       />
@@ -49,7 +50,7 @@
           :style="thumbStyle"
           @click="selectIndex(index)"
         >
-          <img :src="img" alt="" />
+          <img v-img-lazy="img" alt="" />
         </li>
       </ul>
 

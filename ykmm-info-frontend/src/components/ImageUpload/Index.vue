@@ -143,16 +143,9 @@ async function handleUpload(options: UploadRequestOptions) {
     // 3. 等一个 tick，确保 fileList 已经同步，再 emit
     await nextTick()
     syncToModel()
-  } catch (err) {
-    options.onError?.(err as Error)
-    ElMessage.error('上传失败')
+  } catch {
+    return
   }
-}
-
-/** 上传成功：回写 URL 并同步 v-model */
-function handleSuccess(response: unknown, uploadFile: UploadFile) {
-  uploadFile.url = response as string
-  syncToModel()
 }
 
 function handleError() {

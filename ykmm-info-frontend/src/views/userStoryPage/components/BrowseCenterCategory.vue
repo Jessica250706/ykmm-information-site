@@ -1,6 +1,7 @@
 <template>
-  <div>
-    <div class="mb-4">
+  <div class="flex h-full flex-col overflow-hidden">
+    <!-- 标题区：固定 -->
+    <div class="mb-4 shrink-0">
       <div class="flex justify-between items-center">
         <h2 class="text-lg font-semibold">{{ currentCategory.name }}</h2>
         <el-button v-if="currentCategory.parentId !== 0" @click="emit('goBack')">← 返回</el-button>
@@ -19,13 +20,17 @@
       </div>
     </div>
 
-    <section v-if="currentCategory.children?.length" class="mb-6">
+    <!-- 子分类区 -->
+    <section
+      v-if="currentCategory.children?.length"
+      class="mb-6 flex-1 min-h-0 overflow-y-auto app-scrollbar pr-1"
+    >
       <h3 class="mb-2 text-sm font-medium text-slate-500">子分类</h3>
       <div class="grid grid-cols-1 gap-3">
         <div
           v-for="child in currentCategory.children"
           :key="child.id"
-          class="cursor-pointer rounded-lg border bg-white p-3 transition hover:border-indigo-300 hover:shadow-sm"
+          class="cursor-pointer rounded-lg border bg-white p-3 transition hover:border-(--el-color-primary) hover:shadow-sm"
           @click="emit('goCategory', child.id!)"
         >
           <div class="font-medium">{{ child.name }}</div>
@@ -36,7 +41,8 @@
       </div>
     </section>
 
-    <section v-if="stories.length">
+    <!-- 简介 + 剧情列表 -->
+    <section v-if="stories.length" class="shrink-0">
       <h3 class="mb-2 text-sm font-medium text-slate-500">简介</h3>
       <div class="mb-2 text-sm whitespace-pre-line">{{ currentCategory.description ?? '-' }}</div>
       <h3 class="mb-2 text-sm font-medium text-slate-500">剧情列表</h3>
@@ -45,7 +51,7 @@
           <div
             v-for="s in stories"
             :key="s.id"
-            class="cursor-pointer rounded-lg border bg-white p-3 transition hover:border-indigo-300 hover:shadow-sm"
+            class="cursor-pointer rounded-lg border bg-white p-3 transition hover:border-(--el-color-primary) hover:shadow-sm"
             @click="emit('goStory', s.id!)"
           >
             <div class="font-medium">{{ s.title || `剧情 #${s.id}` }}</div>
