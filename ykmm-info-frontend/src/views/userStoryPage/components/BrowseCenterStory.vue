@@ -52,7 +52,14 @@
     <!-- 对话内容 -->
     <div class="relative flex-1 min-h-0">
       <!-- 滚动区 -->
-      <div ref="scrollerRef" class="h-full overflow-y-auto app-scrollbar">
+      <div
+        ref="scrollerRef"
+        :class="{
+          'overflow-y-auto': currentVersion?.format === VERSION_FORMAT.TEXT,
+          'overflow-hidden': currentVersion?.format === VERSION_FORMAT.IMAGE,
+        }"
+        class="h-full app-scrollbar"
+      >
         <DialogueView
           :current-option-version="currentOptionVersion"
           :current-version="currentVersion"
@@ -82,6 +89,7 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import { useScrollShadow } from '@/composables/useScrollShadow'
+import { VERSION_FORMAT } from '@/constants/index'
 import type { DialogueLineVO } from '@/types/dialogueLine'
 import type { DialogueVersionOptionVO, DialogueVersionVO } from '@/types/dialogueVersion'
 import type { StoryDetailVO } from '@/types/story'

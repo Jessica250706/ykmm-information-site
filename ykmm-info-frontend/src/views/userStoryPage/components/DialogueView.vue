@@ -1,5 +1,5 @@
 <template>
-  <div class="dialogue-view">
+  <div class="dialogue-view h-full">
     <!-- 没有选中的版本 -->
     <el-empty v-if="!currentOptionVersion" description="请选择一个对话版本" />
     <!-- 没有选中的版本 -->
@@ -66,7 +66,9 @@
         <el-empty description="暂无图片" />
       </div>
 
-      <ImageView v-else :image-list="imageUrls" :magnifier="true" />
+      <div class="overflow-hidden h-full">
+        <ImageView :image-list="imageUrls" :magnifier="false" />
+      </div>
     </template>
   </div>
 </template>
