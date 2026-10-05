@@ -27,18 +27,41 @@
       <div v-show="magnifier && !isOutside && ready" :style="layerStyle" class="layer" />
     </div>
 
-    <!-- 缩略图：点击切换 -->
-    <ul v-if="showThumbs && imageList.length > 1" class="thumbs">
-      <li
-        v-for="(img, index) in imageList"
-        :key="index"
-        :class="{ active: index === activeIndex }"
-        :style="thumbStyle"
-        @click="selectIndex(index)"
+    <!-- 缩略图：横向滚动 + 左右按钮 -->
+    <div v-if="showThumbs && imageList.length > 1" class="thumbs-wrap">
+      <!-- 左按钮 -->
+      <button
+        v-show="canScrollLeft"
+        class="thumbs-nav thumbs-nav--prev"
+        type="button"
+        @click="scrollThumbs(-1)"
       >
-        <img :src="img" alt="" />
-      </li>
-    </ul>
+        <el-icon><ArrowLeft /></el-icon>
+      </button>
+
+      <!-- 缩略图滚动区 -->
+      <ul ref="thumbsRef" class="thumbs">
+        <li
+          v-for="(img, index) in imageList"
+          :key="index"
+          :class="{ active: index === activeIndex }"
+          :style="thumbStyle"
+          @click="selectIndex(index)"
+        >
+          <img :src="img" alt="" />
+        </li>
+      </ul>
+
+      <!-- 右按钮 -->
+      <button
+        v-show="canScrollRight"
+        class="thumbs-nav thumbs-nav--next"
+        type="button"
+        @click="scrollThumbs(1)"
+      >
+        <el-icon><ArrowRight /></el-icon>
+      </button>
+    </div>
 
     <!-- 放大镜大图 -->
     <div v-show="magnifier && !isOutside && ready" :style="largeStyle" class="large" />
@@ -49,6 +72,7 @@
 import { computed, ref, watch } from 'vue'
 import { ArrowLeft, ArrowRight } from '@element-plus/icons-vue'
 import { useElementSize, useMouseInElement } from '@vueuse/core'
+import { useScroll } from '@vueuse/core'
 import { clamp } from 'lodash-es'
 
 /* -------- Props -------- */
@@ -229,6 +253,20 @@ const thumbStyle = computed(() => ({
   width: `${props.thumbSize}px`,
   height: `${props.thumbSize}px`,
 }))
+
+/* -------- 缩略图横向滚动 -------- */
+const thumbsRef = ref<HTMLElement | null>(null)
+const { arrivedState } = useScroll(thumbsRef)
+const canScrollLeft = computed(() => !arrivedState.left)
+const canScrollRight = computed(() => !arrivedState.right)
+
+/** direction: -1 向左，1 向右。滚一屏的 80% */
+function scrollThumbs(direction: -1 | 1) {
+  const el = thumbsRef.value
+  if (!el) return
+  const step = el.clientWidth * 0.8
+  el.scrollBy({ left: direction * step, behavior: 'smooth' })
+}
 </script>
 
 <style scoped lang="scss">
@@ -316,17 +354,36 @@ const thumbStyle = computed(() => ({
   pointer-events: none;
 }
 
-/* -------- 缩略图 -------- */
-.thumbs {
+/* -------- 缩略图区（横向滚动 + 两侧按钮） -------- */
+.thumbs-wrap {
+  position: relative;
   display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
-  padding: 0;
+  align-items: center;
+  gap: 4px;
+}
+
+.thumbs {
+  flex: 1;
+  display: flex;
+  flex-wrap: nowrap; /* 强制一行 */
+  gap: 8px;
+  padding: 2px; /* 给激活态的 border 留空间，别被 overflow 裁掉 */
   margin: 0;
   list-style: none;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-behavior: smooth;
+
+  /* 隐藏滚动条（Chrome/Safari/Edge） */
+  &::-webkit-scrollbar {
+    display: none;
+  }
+  /* Firefox */
+  scrollbar-width: none;
+  -ms-overflow-style: none;
 
   li {
-    flex: 0 0 auto;
+    flex: 0 0 auto; /* 不收缩，不增长 */
     cursor: pointer;
     border: 2px solid transparent;
     border-radius: 4px;
@@ -344,6 +401,27 @@ const thumbStyle = computed(() => ({
     &.active {
       border-color: var(--menu-border-bg, var(--el-color-primary));
     }
+  }
+}
+
+/* -------- 左右按钮 -------- */
+.thumbs-nav {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: var(--el-fill-color-light);
+  color: var(--el-text-color-primary);
+  cursor: pointer;
+  transition: background-color 0.2s;
+
+  &:hover {
+    background: var(--el-fill-color);
   }
 }
 </style>
