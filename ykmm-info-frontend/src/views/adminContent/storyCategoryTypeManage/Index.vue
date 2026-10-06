@@ -25,10 +25,6 @@
           <span class="text-slate-600">{{ row.description || '-' }}</span>
         </template>
 
-        <template #createdAt="{ row }">
-          {{ row.createdAt || '-' }}
-        </template>
-
         <template #action="{ row }">
           <el-button size="small" type="primary" link @click="handleEdit(row)">编辑</el-button>
         </template>
@@ -55,7 +51,7 @@ const columns: ProTableColumn<StoryCategoryTypeVO>[] = [
   { prop: 'name', label: '名称', minWidth: 140, align: 'center', slot: 'name' },
   { prop: 'description', label: '描述', minWidth: 260, slot: 'description' },
   { prop: 'sort', label: '排序', width: 100, align: 'center' },
-  { prop: 'createdAt', label: '创建时间', minWidth: 180, align: 'center', slot: 'createdAt' },
+  { prop: 'createdAt', label: '创建时间', minWidth: 180, align: 'center' },
   { label: '操作', width: 120, align: 'center', fixed: 'right', slot: 'action' },
 ]
 

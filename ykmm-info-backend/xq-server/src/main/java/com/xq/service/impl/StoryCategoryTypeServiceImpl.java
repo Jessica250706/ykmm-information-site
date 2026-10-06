@@ -98,8 +98,6 @@ public class StoryCategoryTypeServiceImpl implements StoryCategoryTypeService {
         }
         StoryCategoryTypeVO vo = new StoryCategoryTypeVO();
         BeanUtils.copyProperties(type, vo);
-        vo.setCreatedAt(type.getCreatedAt().toString());
-        vo.setUpdatedAt(type.getUpdatedAt().toString());
         return vo;
     }
 }

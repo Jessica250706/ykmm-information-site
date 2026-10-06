@@ -5,6 +5,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
+
 /**
  * 剧情分类类型
  */
@@ -36,9 +38,9 @@ public class StoryCategoryTypeVO {
     /**
      * 创建时间
      */
-    private String createdAt;
+    private LocalDateTime createdAt;
     /**
      * 更新时间
      */
-    private String updatedAt;
+    private LocalDateTime updatedAt;
 }
