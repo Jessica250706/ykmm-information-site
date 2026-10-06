@@ -120,4 +120,12 @@ public interface DialogueVersionContributorMapper {
      */
     int countByVersionAndName(@Param("versionId") Long versionId,
                               @Param("contributorName") String contributorName);
+
+    /**
+     * 根据 id 查询贡献者详情（含用户信息与展示名）
+     *
+     * @param id 主键
+     * @return 贡献者详情 VO，不存在返回 null
+     */
+    DialogueVersionContributorVO getVOById(@Param("id") Long id);
 }

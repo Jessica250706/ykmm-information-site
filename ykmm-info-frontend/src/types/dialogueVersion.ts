@@ -84,6 +84,14 @@ export interface DialogueVersionSourceDTO {
  */
 export interface DialogueVersionDTO {
   /**
+   * 无账号贡献者姓名（user_id 为空时使用）
+   */
+  contributorName?: string
+  /**
+   * 贡献者用户ID，可为空（无账号时只保留名字）
+   */
+  contributorUserId?: number
+  /**
    * 1文字 2图片
    */
   format?: number

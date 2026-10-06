@@ -304,4 +304,32 @@ public class DialogueVersionContributorServiceImpl implements DialogueVersionCon
         }
         return false;
     }
+
+    /**
+     * 查询贡献者详情
+     *
+     * @param id 主键
+     * @return 贡献者详情
+     */
+    @Override
+    public DialogueVersionContributorVO getById(Long id) {
+        if (id == null) {
+            throw new RuntimeException("贡献者ID不能为空");
+        }
+        DialogueVersionContributorVO vo = dialogueVersionContributorMapper.getVOById(id);
+        if (vo == null) {
+            throw new RuntimeException("贡献者不存在");
+        }
+        // 角色标签兜底（SQL 不算这个，Java 侧补）
+        vo.setContributorRoleLabel(ContributorRoleEnum.getLabel(vo.getContributorRole()));
+        // displayName 兜底（正常 SQL 已经算了）
+        if (vo.getDisplayName() == null || vo.getDisplayName().isBlank()) {
+            vo.setDisplayName(
+                    vo.getNickname() != null ? vo.getNickname()
+                            : vo.getContributorName() != null ? vo.getContributorName()
+                            : "匿名"
+            );
+        }
+        return vo;
+    }
 }

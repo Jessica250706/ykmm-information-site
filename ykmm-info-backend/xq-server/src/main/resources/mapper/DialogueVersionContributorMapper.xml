@@ -121,6 +121,13 @@
     </foreach>
   </delete>
 
+  <select id="countByVersionAndUser" resultType="int">
+    SELECT COUNT(*)
+    FROM dialogue_version_contributor
+    WHERE version_id = #{versionId}
+      AND user_id = #{userId}
+  </select>
+
   <select id="countByVersionAndName" resultType="int">
     SELECT COUNT(*)
     FROM dialogue_version_contributor
@@ -135,6 +142,24 @@
     WHERE version_id = #{versionId}
       AND user_id = #{userId}
       AND contributor_role = #{role}
+  </select>
+
+  <!-- 根据 id 查询贡献者详情 -->
+  <select id="getVOById" resultType="com.xq.vo.DialogueVersionContributorVO">
+    SELECT
+      dvc.id,
+      dvc.version_id        AS versionId,
+      dvc.user_id           AS userId,
+      dvc.contributor_name  AS contributorName,
+      dvc.contributor_role  AS contributorRole,
+      DATE_FORMAT(dvc.created_at, '%Y-%m-%d %H:%i:%s') AS createdAt,
+      u.uid                 AS uid,
+      u.nickname            AS nickname,
+      u.avatar              AS avatar,
+      COALESCE(u.nickname, dvc.contributor_name, '匿名') AS displayName
+    FROM dialogue_version_contributor dvc
+           LEFT JOIN sys_user u ON u.id = dvc.user_id
+    WHERE dvc.id = #{id}
   </select>
 
 </mapper>

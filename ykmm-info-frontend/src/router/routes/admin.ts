@@ -163,5 +163,26 @@ export const adminRoutes: RouteRecordRaw = {
         import('@/views/adminContent/storyCategoryTypeManage/components/EditStoryCategoryType.vue'),
       meta: { title: '编辑剧情分类类型' },
     },
+    // ---------- 贡献者管理 ----------
+    {
+      path: 'contributor',
+      name: 'AdminDialogueVersionContributorManage',
+      component: () => import('@/views/adminContent/contributorManage/Index.vue'),
+      meta: { title: '贡献者管理' },
+    },
+    {
+      path: 'contributor/create',
+      name: 'AdminDialogueVersionContributorCreate',
+      component: () =>
+        import('@/views/adminContent/contributorManage/components/EditContributor.vue'),
+      meta: { title: '新增贡献者' },
+    },
+    {
+      path: 'contributor/edit/:id',
+      name: 'AdminDialogueVersionContributorEdit',
+      component: () =>
+        import('@/views/adminContent/contributorManage/components/EditContributor.vue'),
+      meta: { title: '编辑贡献者' },
+    },
   ],
 }

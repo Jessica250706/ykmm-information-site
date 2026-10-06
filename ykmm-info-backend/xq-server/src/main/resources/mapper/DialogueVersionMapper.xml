@@ -5,12 +5,14 @@
 
   <sql id="baseColumns">
     id,
-    source_type AS sourceType,
-    source_id   AS sourceId,
+    source_type  AS sourceType,
+    source_id    AS sourceId,
     language,
     format,
     scope,
-    created_at  AS createdAt
+    creator_id   AS creatorId,
+    creator_role AS creatorRole,
+    created_at   AS createdAt
   </sql>
 
   <select id="pageQuery" resultType="com.xq.entity.DialogueVersion">
@@ -67,8 +69,8 @@
 
   <insert id="insert" parameterType="com.xq.entity.DialogueVersion"
           useGeneratedKeys="true" keyProperty="id">
-    INSERT INTO dialogue_version (source_type, source_id, language, format, scope)
-    VALUES (#{sourceType}, #{sourceId}, #{language}, #{format}, #{scope})
+    INSERT INTO dialogue_version (source_type, source_id, language, format, scope, creator_id, creator_role)
+    VALUES (#{sourceType}, #{sourceId}, #{language}, #{format}, #{scope}, #{creatorId}, #{creatorRole})
   </insert>
 
   <delete id="deleteById">

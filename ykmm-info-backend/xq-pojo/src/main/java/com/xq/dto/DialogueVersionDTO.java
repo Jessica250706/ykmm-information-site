@@ -39,4 +39,9 @@ public class DialogueVersionDTO implements Serializable {
      * 贡献者用户ID，可为空（无账号时只保留名字）
      */
     private Long contributorUserId;
+
+    /**
+     * 无账号贡献者姓名（user_id 为空时使用）
+     */
+    private String contributorName;
 }

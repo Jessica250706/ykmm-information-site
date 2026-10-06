@@ -167,12 +167,20 @@
       </template>
     </div>
   </el-card>
+
+  <!-- 创建版本弹窗 -->
+  <CreateVersionDialog
+    ref="createVersionDialogRef"
+    :confirming="creatingVersion"
+    @confirm="handleCreateVersionConfirm"
+  />
 </template>
 
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import { useVModel } from '@vueuse/core'
 import { MONOLOGUE } from '@/constants/index'
+import { useUserStore } from '@/stores/userStore'
 import type { DialogueLineVO } from '@/types/dialogueLine'
 import type { DialogueVersionOptionVO, DialogueVersionVO } from '@/types/dialogueVersion'
 import type { StoryDetailVO } from '@/types/story'
@@ -181,10 +189,18 @@ import { useEditorForm } from './composables/useEditorForm'
 import { useImageUpload } from './composables/useImageUpload'
 import { useRoleOptions } from './composables/useRoleOptions'
 import { useTxtUpload } from './composables/useTxtUpload'
+import CreateVersionDialog from './CreateVersionDialog.vue'
+import type { CreateVersionPayload } from './CreateVersionDialog.vue'
 
 /* ============================================================
  * Props / Emits
  * ============================================================ */
+
+type CreateVersionEmit = {
+  option: DialogueVersionOptionVO
+  contributorUserId: number | null
+  contributorName: string | null
+}
 
 const props = defineProps<{
   editingMode: boolean
@@ -203,7 +219,7 @@ const emit = defineEmits<{
   'add-line': [payload: { afterId: number | null; atStart: boolean }]
   refresh: []
   'select-line': [line: DialogueLineVO]
-  'create-version': [option: DialogueVersionOptionVO]
+  'create-version': [option: CreateVersionEmit]
   'delete-line': [payload: { deletedId: number; prevId: number | null; nextId: number | null }]
 }>()
 
@@ -219,6 +235,8 @@ const editingLineIndexRef = computed(() => props.editingLineIndex)
 const allLinesRef = computed(() => props.allLines)
 const currentVersionRef = computed(() => props.currentVersion)
 
+const userStore = useUserStore()
+
 /* ============================================================
  * 空版本分支
  * ============================================================ */
@@ -228,11 +246,28 @@ const emptyVersionText = computed(() => {
 })
 
 const creatingVersion = ref(false)
+const createVersionDialogRef = ref<InstanceType<typeof CreateVersionDialog> | null>(null)
 
 function onCreateVersion() {
   const option = props.currentOptionVersion
   if (!option) return
-  emit('create-version', option)
+  if (userStore.isAdmin) createVersionDialogRef.value?.open(option)
+  else if (userStore.isLogin) {
+    emit('create-version', {
+      option: option,
+      contributorUserId: null,
+      contributorName: null,
+    })
+  }
+}
+
+/** Dialog 确认后，把 payload 抛给父级 */
+function handleCreateVersionConfirm(payload: CreateVersionPayload) {
+  emit('create-version', {
+    option: payload.option,
+    contributorUserId: payload.contributorUserId,
+    contributorName: payload.contributorName,
+  })
 }
 
 /* ============================================================

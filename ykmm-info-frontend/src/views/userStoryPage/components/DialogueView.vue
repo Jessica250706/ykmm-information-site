@@ -66,7 +66,7 @@
         <el-empty description="暂无图片" />
       </div>
 
-      <div class="overflow-hidden h-full">
+      <div v-else class="overflow-hidden h-full">
         <ImageView :image-list="imageUrls" :magnifier="false" />
       </div>
     </template>

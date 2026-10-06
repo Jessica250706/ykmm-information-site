@@ -110,4 +110,12 @@ public interface DialogueVersionContributorService {
      */
     void recordCreator(Long versionId, Long uploaderId, Integer uploaderRole,
                        Long contributorId, String contributorName);
+
+    /**
+     * 查询贡献者详情
+     *
+     * @param id 主键
+     * @return 贡献者详情
+     */
+    DialogueVersionContributorVO getById(Long id);
 }

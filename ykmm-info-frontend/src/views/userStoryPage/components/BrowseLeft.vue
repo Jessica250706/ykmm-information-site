@@ -1,7 +1,10 @@
 <template>
-  <el-card class="flex w-64 shrink-0 flex-col border-r bg-white">
+  <el-card
+    body-class="flex flex-col h-full overflow-hidden p-0"
+    class="flex w-64 shrink-0 flex-col overflow-hidden border-r bg-white"
+  >
     <!-- 标题 -->
-    <div class="flex flex-col border-b px-2 py-3">
+    <div class="flex shrink-0 flex-col border-b px-2 py-3 mb-2">
       <div class="text-xs text-slate-400">剧情类型</div>
       <div class="flex items-center justify-between">
         <div class="min-w-0 flex-1 truncate font-medium">{{ typeLabel }}</div>
@@ -24,7 +27,7 @@
     </div>
 
     <!-- 目录树 -->
-    <div class="flex-1 overflow-x-hidden overflow-y-auto py-2">
+    <div class="flex-1 min-h-0 overflow-x-hidden overflow-y-auto py-2">
       <el-tree
         ref="treeRef"
         :data="categoryTree"

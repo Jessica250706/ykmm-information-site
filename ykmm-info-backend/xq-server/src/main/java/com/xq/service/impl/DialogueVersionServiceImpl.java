@@ -169,12 +169,13 @@ public class DialogueVersionServiceImpl implements DialogueVersionService {
 
         // 记录贡献者：uploader 是当前登录用户，contributorId 由 DTO 决定（管理员代传时传）
         Long uploaderId = BaseContext.getCurrentId();
-        Integer uploaderRole = BaseContext.getCurrentRole(); // 若 BaseContext 无此方法，从 sysUserMapper 查
+        Integer uploaderRole = BaseContext.getCurrentRole();
         dialogueVersionContributorService.recordCreator(
                 versionId,
                 uploaderId,
                 uploaderRole,
-                dto.getContributorUserId()
+                dto.getContributorUserId(),
+                dto.getContributorName()
         );
 
         return versionId;

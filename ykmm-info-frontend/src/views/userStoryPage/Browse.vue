@@ -230,7 +230,11 @@ async function handleAddLine(payload: { afterId: number | null; atStart: boolean
  * 为「选中但还没有内容」的版本创建内容。
  * 调用创建版本接口 → 重新拉详情 → 把新版本设为选中。
  */
-async function handleCreateVersion(option: DialogueVersionOptionVO) {
+async function handleCreateVersion(payload: {
+  option: DialogueVersionOptionVO
+  contributorUserId: number | null
+  contributorName: string | null
+}) {
   const storyId = storyDetail.value?.id
   if (!storyId) {
     ElMessage.error('当前故事不存在')
@@ -241,9 +245,11 @@ async function handleCreateVersion(option: DialogueVersionOptionVO) {
     const res = await createDialogueVersionAPI({
       sourceType: SOURCE_TYPE.STORY,
       sourceId: storyId,
-      format: option.format,
-      language: option.language,
-      scope: option.scope,
+      format: payload.option.format,
+      language: payload.option.language,
+      scope: payload.option.scope,
+      contributorUserId: payload.contributorUserId ?? undefined,
+      contributorName: payload.contributorName ?? undefined,
     })
 
     const newId = res?.data

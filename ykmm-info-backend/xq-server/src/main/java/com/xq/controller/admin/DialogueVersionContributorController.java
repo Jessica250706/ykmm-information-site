@@ -17,7 +17,7 @@ import java.util.List;
  * 对话版本贡献者管理
  */
 @RestController("AdminDialogueVersionContributorController")
-@RequestMapping("/admin/dialogue-version-contributors")
+@RequestMapping("/admin/dialogue-version-contributor")
 @Slf4j
 public class DialogueVersionContributorController {
 
@@ -58,6 +58,17 @@ public class DialogueVersionContributorController {
     public Result<List<StoryContributorVO>> listBySource(@PathVariable Integer sourceType,
                                                          @PathVariable Long sourceId) {
         return Result.success(dialogueVersionContributorService.listContributorsBySource(sourceType, sourceId));
+    }
+
+    /**
+     * 查询贡献者详情
+     *
+     * @param id 主键
+     * @return 贡献者详情
+     */
+    @GetMapping("/{id}")
+    public Result<DialogueVersionContributorVO> detail(@PathVariable Long id) {
+        return Result.success(dialogueVersionContributorService.getById(id));
     }
 
     /**
