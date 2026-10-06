@@ -10,7 +10,7 @@ import com.xq.dto.StoryPageQueryDTO;
 import com.xq.entity.Story;
 import com.xq.entity.StoryCategory;
 import com.xq.enums.StoryCategoryTypeEnum;
-import com.xq.enums.StoryStatusEnum;
+import com.xq.enums.StatusEnum;
 import com.xq.mapper.StoryCategoryMapper;
 import com.xq.mapper.StoryMapper;
 import com.xq.result.PageResult;
@@ -107,7 +107,7 @@ public class StoryServiceImpl implements StoryService {
             story.setSort(0);
         }
         // 管理端新增默认已发布
-        story.setStatus(StoryStatusEnum.PUBLISHED.getValue());
+        story.setStatus(StatusEnum.PUBLISHED.getValue());
         storyMapper.insert(story);
         log.info("新增剧情成功，id={}", story.getId());
         return story.getId();
@@ -185,8 +185,8 @@ public class StoryServiceImpl implements StoryService {
             throw new RuntimeException("审核结果不能为空");
         }
         // 只允许通过（1）或拒绝（3）
-        if (!StoryStatusEnum.PUBLISHED.getValue().equals(dto.getStatus())
-                && !StoryStatusEnum.REJECTED.getValue().equals(dto.getStatus())) {
+        if (!StatusEnum.PUBLISHED.getValue().equals(dto.getStatus())
+                && !StatusEnum.REJECTED.getValue().equals(dto.getStatus())) {
             throw new RuntimeException("审核结果不合法");
         }
         if (dto.getReviewRemark() != null
@@ -198,7 +198,7 @@ public class StoryServiceImpl implements StoryService {
         if (exist == null) {
             throw new RuntimeException("剧情不存在");
         }
-        if (!StoryStatusEnum.PENDING.getValue().equals(exist.getStatus())) {
+        if (!StatusEnum.PENDING.getValue().equals(exist.getStatus())) {
             throw new RuntimeException("该剧情不在待审核状态");
         }
 
@@ -235,7 +235,7 @@ public class StoryServiceImpl implements StoryService {
         for (Story story : stories) {
             StoryVO vo = new StoryVO();
             BeanUtils.copyProperties(story, vo);
-            vo.setStatusLabel(StoryStatusEnum.getLabel(story.getStatus()));
+            vo.setStatusLabel(StatusEnum.getLabel(story.getStatus()));
             if (category != null) {
                 vo.setCategoryName(category.getName());
                 vo.setCategoryType(category.getCategoryType());
@@ -259,7 +259,7 @@ public class StoryServiceImpl implements StoryService {
         }
         StoryVO vo = new StoryVO();
         BeanUtils.copyProperties(story, vo);
-        vo.setStatusLabel(StoryStatusEnum.getLabel(story.getStatus()));
+        vo.setStatusLabel(StatusEnum.getLabel(story.getStatus()));
 
         // 补充分类信息
         if (story.getCategoryId() != null) {

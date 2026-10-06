@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xq.mapper.CardRcMapper">
+
+  <sql id="baseColumns">
+    id,
+    card_id AS cardId,
+    role_id AS roleId,
+    episode_no AS episodeNo,
+    title,
+    created_at AS createdAt
+  </sql>
+
+  <select id="listVOByCardId" resultType="com.xq.vo.CardRcVO">
+    SELECT
+      rc.id, rc.card_id AS cardId, rc.role_id AS roleId,
+      rc.episode_no AS episodeNo, rc.title,
+      rc.created_at AS createdAt,
+      r.name AS roleName
+    FROM card_rc rc
+           LEFT JOIN role r ON r.id = rc.role_id
+    WHERE rc.card_id = #{cardId}
+    ORDER BY rc.episode_no, rc.id
+  </select>
+
+  <select id="getById" resultType="com.xq.entity.CardRc">
+    SELECT <include refid="baseColumns"/> FROM card_rc WHERE id = #{id}
+  </select>
+
+  <select id="getVOById" resultType="com.xq.vo.CardRcVO">
+    SELECT
+      rc.id, rc.card_id AS cardId, rc.role_id AS roleId,
+      rc.episode_no AS episodeNo, rc.title,
+      rc.created_at AS createdAt,
+      r.name AS roleName
+    FROM card_rc rc
+           LEFT JOIN role r ON r.id = rc.role_id
+    WHERE rc.id = #{id}
+  </select>
+
+  <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+    INSERT INTO card_rc (card_id, role_id, episode_no, title)
+    VALUES (#{cardId}, #{roleId}, #{episodeNo}, #{title})
+  </insert>
+
+  <update id="update">
+    UPDATE card_rc
+    <set>
+      <if test="roleId != null">role_id = #{roleId},</if>
+      <if test="episodeNo != null">episode_no = #{episodeNo},</if>
+      <if test="title != null">title = #{title},</if>
+    </set>
+    WHERE id = #{id}
+  </update>
+
+  <delete id="deleteById">
+    DELETE FROM card_rc WHERE id = #{id}
+  </delete>
+
+  <delete id="deleteByCardId">
+    DELETE FROM card_rc WHERE card_id = #{cardId}
+  </delete>
+
+</mapper>

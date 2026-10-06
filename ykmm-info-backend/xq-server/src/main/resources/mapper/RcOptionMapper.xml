@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xq.mapper.RcOptionMapper">
+
+  <sql id="baseColumns">
+    id, rc_id AS rcId, version_id AS versionId,
+    question_line_id AS questionLineId, answer_line_id AS answerLineId, sort
+  </sql>
+
+  <select id="listByRcId" resultType="com.xq.entity.RcOption">
+    SELECT <include refid="baseColumns"/> FROM rc_option
+    WHERE rc_id = #{rcId}
+    ORDER BY sort ASC, id ASC
+  </select>
+
+  <select id="listByVersionId" resultType="com.xq.entity.RcOption">
+    SELECT <include refid="baseColumns"/> FROM rc_option
+    WHERE version_id = #{versionId}
+    ORDER BY sort ASC, id ASC
+  </select>
+
+  <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+    INSERT INTO rc_option (rc_id, version_id, question_line_id, answer_line_id, sort)
+    VALUES (#{rcId}, #{versionId}, #{questionLineId}, #{answerLineId}, #{sort})
+  </insert>
+
+  <insert id="insertBatch" useGeneratedKeys="true" keyProperty="id">
+    INSERT INTO rc_option (rc_id, version_id, question_line_id, answer_line_id, sort)
+    VALUES
+    <foreach collection="list" item="it" separator=",">
+      (#{it.rcId}, #{it.versionId}, #{it.questionLineId}, #{it.answerLineId}, #{it.sort})
+    </foreach>
+  </insert>
+
+  <update id="update">
+    UPDATE rc_option
+    <set>
+      <if test="versionId != null">version_id = #{versionId},</if>
+      <if test="questionLineId != null">question_line_id = #{questionLineId},</if>
+      <if test="answerLineId != null">answer_line_id = #{answerLineId},</if>
+      <if test="sort != null">sort = #{sort},</if>
+    </set>
+    WHERE id = #{id}
+  </update>
+
+  <delete id="deleteById">
+    DELETE FROM rc_option WHERE id = #{id}
+  </delete>
+
+  <delete id="deleteByRcId">
+    DELETE FROM rc_option WHERE rc_id = #{rcId}
+  </delete>
+
+  <delete id="deleteByVersionId">
+    DELETE FROM rc_option WHERE version_id = #{versionId}
+  </delete>
+
+</mapper>

@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xq.mapper.CardMapper">
+
+  <sql id="baseColumns">
+    id,
+    name,
+    series_id AS seriesId,
+    category,
+    max_rarity AS maxRarity,
+    first_pool_time AS firstPoolTime,
+    attribute,
+    skill_desc AS skillDesc,
+    attached_story_type AS attachedStoryType,
+    costume_type AS costumeType,
+    chibi_id AS chibiId,
+    costume_id AS costumeId,
+    status,
+    creator_id AS creatorId,
+    reviewer_id AS reviewerId,
+    review_time AS reviewTime,
+    review_remark AS reviewRemark,
+    created_at AS createdAt,
+    updated_at AS updatedAt
+  </sql>
+
+  <select id="pageQuery" resultType="com.xq.entity.Card">
+    SELECT
+    <include refid="baseColumns"/>
+    FROM card c
+    <where>
+      <if test="query.keyword != null and query.keyword != ''">
+        AND c.name LIKE CONCAT('%', #{query.keyword}, '%')
+      </if>
+      <if test="query.seriesId != null">AND c.series_id = #{query.seriesId}</if>
+      <if test="query.maxRarity != null">AND c.max_rarity = #{query.maxRarity}</if>
+      <if test="query.attribute != null">AND c.attribute = #{query.attribute}</if>
+      <if test="query.status != null">AND c.status = #{query.status}</if>
+      <if test="query.personId != null">
+        AND c.id IN (
+        SELECT card_id FROM card_person_rel WHERE person_id = #{query.personId}
+        )
+      </if>
+    </where>
+    ORDER BY c.id DESC
+  </select>
+
+  <select id="getById" resultType="com.xq.entity.Card">
+    SELECT
+    <include refid="baseColumns"/>
+    FROM card
+    WHERE id = #{id}
+  </select>
+
+  <select id="countByName" resultType="int">
+    SELECT COUNT(*) FROM card
+    WHERE name = #{name}
+    <if test="excludeId != null">AND id != #{excludeId}</if>
+  </select>
+
+  <insert id="insert" parameterType="com.xq.entity.Card"
+          useGeneratedKeys="true" keyProperty="id">
+    INSERT INTO card (name, series_id, category, max_rarity, first_pool_time,
+                      attribute, skill_desc, attached_story_type,
+                      costume_type, chibi_id, costume_id,
+                      status, creator_id)
+    VALUES (#{name}, #{seriesId}, #{category}, #{maxRarity}, #{firstPoolTime},
+            #{attribute}, #{skillDesc}, #{attachedStoryType},
+            #{costumeType}, #{chibiId}, #{costumeId},
+            #{status}, #{creatorId})
+  </insert>
+
+  <update id="update" parameterType="com.xq.entity.Card">
+    UPDATE card
+    <set>
+      <if test="name != null">name = #{name},</if>
+      <if test="seriesId != null">series_id = #{seriesId},</if>
+      <if test="category != null">category = #{category},</if>
+      <if test="maxRarity != null">max_rarity = #{maxRarity},</if>
+      <if test="firstPoolTime != null">first_pool_time = #{firstPoolTime},</if>
+      <if test="attribute != null">attribute = #{attribute},</if>
+      <if test="skillDesc != null">skill_desc = #{skillDesc},</if>
+      <if test="attachedStoryType != null">attached_story_type = #{attachedStoryType},</if>
+      <if test="costumeType != null">costume_type = #{costumeType},</if>
+      <if test="chibiId != null">chibi_id = #{chibiId},</if>
+      <if test="costumeId != null">costume_id = #{costumeId},</if>
+      <if test="status != null">status = #{status},</if>
+      <if test="reviewerId != null">reviewer_id = #{reviewerId},</if>
+      <if test="reviewTime != null">review_time = #{reviewTime},</if>
+      <if test="reviewRemark != null">review_remark = #{reviewRemark},</if>
+    </set>
+    WHERE id = #{id}
+  </update>
+
+  <delete id="deleteById">
+    DELETE
+    FROM card
+    WHERE id = #{id}
+  </delete>
+
+</mapper>

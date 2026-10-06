@@ -1,4 +1,4 @@
-package com.xq.entity;
+package com.xq.vo;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -6,34 +6,23 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
-import java.time.LocalDateTime;
 
 /**
- * 卡面RC表
+ * 卡面 RTV 返回
  */
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class CardRc implements Serializable {
-
-    private static final long serialVersionUID = 1L;
-
+public class CardRtvVO implements Serializable {
     /** 主键 */
     private Long id;
-
-    /** 卡面ID */
+    /** 所属卡面ID */
     private Long cardId;
-
-    /** RC发起人角色ID，该角色在对话中默认 side=2（右侧） */
-    private Long roleId;
-
     /** 第几话 */
     private Integer episodeNo;
-
     /** 标题 */
     private String title;
-
     /** 创建时间 */
-    private LocalDateTime createdAt;
+    private String createdAt;
 }

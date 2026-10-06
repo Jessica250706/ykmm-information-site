@@ -3,10 +3,10 @@ package com.xq.enums;
 import lombok.Getter;
 
 /**
- * 剧情审核状态
+ * 审核状态
  */
 @Getter
-public enum StoryStatusEnum {
+public enum StatusEnum {
 
     /**
      * 已发布
@@ -26,7 +26,7 @@ public enum StoryStatusEnum {
     private final Integer value;
     private final String label;
 
-    StoryStatusEnum(Integer value, String label) {
+    StatusEnum(Integer value, String label) {
         this.value = value;
         this.label = label;
     }
@@ -41,7 +41,7 @@ public enum StoryStatusEnum {
         if (value == null) {
             return false;
         }
-        for (StoryStatusEnum e : values()) {
+        for (StatusEnum e : values()) {
             if (e.value.equals(value)) {
                 return true;
             }
@@ -59,7 +59,7 @@ public enum StoryStatusEnum {
         if (value == null) {
             return null;
         }
-        for (StoryStatusEnum e : values()) {
+        for (StatusEnum e : values()) {
             if (e.value.equals(value)) {
                 return e.label;
             }

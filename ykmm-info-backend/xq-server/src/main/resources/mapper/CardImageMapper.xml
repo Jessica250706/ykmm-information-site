@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xq.mapper.CardImageMapper">
+
+  <sql id="baseColumns">
+    id,
+    card_id AS cardId,
+    image_type AS imageType,
+    url,
+    sort
+  </sql>
+
+  <select id="listByCardId" resultType="com.xq.entity.CardImage">
+    SELECT
+    <include refid="baseColumns"/>
+    FROM card_image
+    WHERE card_id = #{cardId}
+    ORDER BY image_type ASC, sort ASC, id ASC
+  </select>
+
+  <insert id="insert" parameterType="com.xq.entity.CardImage"
+          useGeneratedKeys="true" keyProperty="id">
+    INSERT INTO card_image (card_id, image_type, url, sort)
+    VALUES (#{cardId}, #{imageType}, #{url}, #{sort})
+  </insert>
+
+  <insert id="insertBatch" useGeneratedKeys="true" keyProperty="id">
+    INSERT INTO card_image (card_id, image_type, url, sort)
+    VALUES
+    <foreach collection="list" item="it" separator=",">
+      (#{it.cardId}, #{it.imageType}, #{it.url}, #{it.sort})
+    </foreach>
+  </insert>
+
+  <delete id="deleteByCardId">
+    DELETE FROM card_image WHERE card_id = #{cardId}
+  </delete>
+
+</mapper>
