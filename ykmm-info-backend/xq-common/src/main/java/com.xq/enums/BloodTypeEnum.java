@@ -2,6 +2,10 @@ package com.xq.enums;
 
 import lombok.Getter;
 
+/**
+ * 血型
+ * 1-A 2-B 3-O 4-AB 5-其他
+ */
 @Getter
 public enum BloodTypeEnum {
 
@@ -31,6 +35,12 @@ public enum BloodTypeEnum {
         return false;
     }
 
+    /**
+     * 安全取文案
+     *
+     * @param value 枚举值
+     * @return 文案，无效值返回 null
+     */
     public static String getLabel(Integer value) {
         if (value == null) {
             return null;

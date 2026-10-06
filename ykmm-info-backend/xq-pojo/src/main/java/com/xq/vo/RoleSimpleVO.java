@@ -1,11 +1,17 @@
 package com.xq.vo;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 /**
  * 角色简要信息
  */
 @Data
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class RoleSimpleVO {
     /**
      * 主键

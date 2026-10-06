@@ -34,4 +34,9 @@ public class DialogueVersionDTO implements Serializable {
      * 1全部 2节选
      */
     private Integer scope;
+
+    /**
+     * 贡献者用户ID，可为空（无账号时只保留名字）
+     */
+    private Long contributorUserId;
 }

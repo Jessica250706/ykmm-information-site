@@ -1,11 +1,17 @@
 package com.xq.vo;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 /**
  * 剧情分类类型
  */
 @Data
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class StoryCategoryTypeVO {
     /**
      * 主键

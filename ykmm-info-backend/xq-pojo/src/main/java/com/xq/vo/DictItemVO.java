@@ -1,6 +1,7 @@
 package com.xq.vo;
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -10,6 +11,7 @@ import java.io.Serializable;
  * 通用字典项
  */
 @Data
+@Builder
 @AllArgsConstructor
 @NoArgsConstructor
 public class DictItemVO implements Serializable {

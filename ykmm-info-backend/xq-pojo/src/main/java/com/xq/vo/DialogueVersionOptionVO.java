@@ -1,11 +1,17 @@
 package com.xq.vo;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 /**
  * 对话版本选项（供下拉框使用）
  */
 @Data
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class DialogueVersionOptionVO {
     /**
      * 版本ID，当前来源下不存在时为 null

@@ -53,4 +53,14 @@ public class DialogueVersion implements Serializable {
      * 创建时间
      */
     private LocalDateTime createdAt;
+
+    /**
+     * 实际操作人ID：谁调用了创建接口（可能是管理员代传）
+     */
+    private Long creatorId;
+
+    /**
+     * 创建时的角色：1-管理员 2-普通用户
+     */
+    private Integer creatorRole;
 }

@@ -1,6 +1,9 @@
 package com.xq.vo;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.util.List;
 
@@ -8,6 +11,9 @@ import java.util.List;
  * 角色分组（按人物）
  */
 @Data
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class RoleGroupVO {
     /**
      * 人物ID，null 表示"其他"分组

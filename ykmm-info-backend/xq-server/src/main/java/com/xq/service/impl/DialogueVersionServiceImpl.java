@@ -2,21 +2,20 @@ package com.xq.service.impl;
 
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
+import com.xq.context.BaseContext;
 import com.xq.dto.DialogueVersionDTO;
 import com.xq.dto.DialogueVersionPageQueryDTO;
 import com.xq.entity.DialogueImage;
 import com.xq.entity.DialogueLine;
 import com.xq.entity.DialogueSegment;
 import com.xq.entity.DialogueVersion;
-import com.xq.enums.DialogueFormatEnum;
-import com.xq.enums.DialogueLanguageEnum;
-import com.xq.enums.DialogueScopeEnum;
-import com.xq.enums.DialogueSourceTypeEnum;
+import com.xq.enums.*;
 import com.xq.mapper.DialogueImageMapper;
 import com.xq.mapper.DialogueLineMapper;
 import com.xq.mapper.DialogueSegmentMapper;
 import com.xq.mapper.DialogueVersionMapper;
 import com.xq.result.PageResult;
+import com.xq.service.DialogueVersionContributorService;
 import com.xq.service.DialogueVersionService;
 import com.xq.vo.*;
 import lombok.extern.slf4j.Slf4j;
@@ -49,6 +48,9 @@ public class DialogueVersionServiceImpl implements DialogueVersionService {
 
     @Autowired
     private DialogueImageMapper dialogueImageMapper;
+
+    @Autowired
+    private DialogueVersionContributorService dialogueVersionContributorService;
 
     /**
      * 分页查询对话版本
@@ -158,9 +160,24 @@ public class DialogueVersionServiceImpl implements DialogueVersionService {
 
         DialogueVersion version = new DialogueVersion();
         BeanUtils.copyProperties(dto, version);
+        version.setCreatorId(BaseContext.getCurrentId());
+        version.setCreatorRole(BaseContext.getCurrentRole());
         dialogueVersionMapper.insert(version);
-        log.info("创建对话版本成功，id={}", version.getId());
-        return version.getId();
+
+        Long versionId = version.getId();
+        log.info("创建对话版本成功，id={}", versionId);
+
+        // 记录贡献者：uploader 是当前登录用户，contributorId 由 DTO 决定（管理员代传时传）
+        Long uploaderId = BaseContext.getCurrentId();
+        Integer uploaderRole = BaseContext.getCurrentRole(); // 若 BaseContext 无此方法，从 sysUserMapper 查
+        dialogueVersionContributorService.recordCreator(
+                versionId,
+                uploaderId,
+                uploaderRole,
+                dto.getContributorUserId()
+        );
+
+        return versionId;
     }
 
     /**
@@ -195,6 +212,10 @@ public class DialogueVersionServiceImpl implements DialogueVersionService {
 
         // 删除版本
         dialogueVersionMapper.deleteById(versionId);
+
+        // 级联清理贡献者
+        dialogueVersionContributorService.deleteByVersionId(versionId);
+
         log.info("删除对话版本成功，id={}", versionId);
     }
 
@@ -408,5 +429,25 @@ public class DialogueVersionServiceImpl implements DialogueVersionService {
      */
     private String keyOf(Integer language, Integer format, Integer scope) {
         return language + "-" + format + "-" + scope;
+    }
+
+    private void checkEditPermission(DialogueVersion version) {
+        Long currentUserId = BaseContext.getCurrentId();
+        if (currentUserId == null) {
+            throw new RuntimeException("未登录");
+        }
+        Integer currentRole = BaseContext.getCurrentRole();
+        // 管理员直接放行
+        if (currentRole != null && currentRole == 1) {
+            return;
+        }
+        // 是否实际操作人
+        boolean isCreator = currentUserId.equals(version.getCreatorId());
+        // 是否是内容作者（涵盖管理员代传后的原作者）
+        boolean isAuthor = dialogueVersionContributorService.hasRole(
+                version.getId(), currentUserId, ContributorRoleEnum.AUTHOR.getValue());
+        if (!isCreator && !isAuthor) {
+            throw new RuntimeException("无权修改该对话版本");
+        }
     }
 }

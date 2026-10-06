@@ -1,6 +1,9 @@
 package com.xq.vo;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.util.List;
 
@@ -8,6 +11,9 @@ import java.util.List;
  * 剧情详情（含对话）
  */
 @Data
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class StoryDetailVO {
     /**
      * 主键

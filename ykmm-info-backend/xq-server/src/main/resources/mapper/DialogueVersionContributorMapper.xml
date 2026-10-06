@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xq.mapper.DialogueVersionContributorMapper">
+
+  <sql id="baseColumns">
+    id,
+    version_id        AS versionId,
+    user_id           AS userId,
+    contributor_name  AS contributorName,
+    contributor_role  AS contributorRole,
+    created_at        AS createdAt
+  </sql>
+
+  <!-- 分页查询（PageHelper 会自动包装为分页 SQL） -->
+  <select id="pageQuery" resultType="com.xq.vo.DialogueVersionContributorVO">
+    SELECT
+    dvc.id,
+    dvc.version_id AS versionId,
+    dvc.user_id AS userId,
+    dvc.contributor_name AS contributorName,
+    dvc.contributor_role AS contributorRole,
+    DATE_FORMAT(dvc.created_at, '%Y-%m-%d %H:%i:%s') AS createdAt,
+    u.uid AS uid,
+    u.nickname AS nickname,
+    u.avatar AS avatar,
+    COALESCE(u.nickname, dvc.contributor_name, '匿名') AS displayName
+    FROM dialogue_version_contributor dvc
+    LEFT JOIN sys_user u ON u.id = dvc.user_id
+    <where>
+      <if test="query.versionId != null">
+        AND dvc.version_id = #{query.versionId}
+      </if>
+      <if test="query.userId != null">
+        AND dvc.user_id = #{query.userId}
+      </if>
+      <if test="query.contributorRole != null">
+        AND dvc.contributor_role = #{query.contributorRole}
+      </if>
+    </where>
+    ORDER BY dvc.created_at DESC, dvc.id DESC
+  </select>
+
+  <!-- 按版本ID查询贡献者列表 -->
+  <select id="listByVersionId" resultType="com.xq.vo.DialogueVersionContributorVO">
+    SELECT dvc.id,
+           dvc.version_id                                     AS versionId,
+           dvc.user_id                                        AS userId,
+           dvc.contributor_name                               AS contributorName,
+           dvc.contributor_role                               AS contributorRole,
+           DATE_FORMAT(dvc.created_at, '%Y-%m-%d %H:%i:%s')   AS createdAt,
+           u.uid                                              AS uid,
+           u.nickname                                         AS nickname,
+           u.avatar                                           AS avatar,
+           COALESCE(u.nickname, dvc.contributor_name, '匿名') AS displayName
+    FROM dialogue_version_contributor dvc
+           LEFT JOIN sys_user u ON u.id = dvc.user_id
+    WHERE dvc.version_id = #{versionId}
+    ORDER BY dvc.contributor_role, dvc.id
+  </select>
+
+  <!-- 按来源聚合贡献者（只显示内容作者） -->
+  <select id="listContributorsBySource" resultType="com.xq.vo.StoryContributorVO">
+    SELECT dvc.user_id                                             AS userId,
+           MAX(u.uid)                                              AS uid,
+           MAX(u.nickname)                                         AS nickname,
+           MAX(u.avatar)                                           AS avatar,
+           dvc.contributor_name                                    AS contributorName,
+           COALESCE(MAX(u.nickname), dvc.contributor_name, '匿名') AS displayName,
+           COUNT(DISTINCT dv.id)                                   AS versionCount
+    FROM dialogue_version dv
+           INNER JOIN dialogue_version_contributor dvc ON dvc.version_id = dv.id
+           LEFT JOIN sys_user u ON u.id = dvc.user_id
+    WHERE dv.source_type = #{sourceType}
+      AND dv.source_id = #{sourceId}
+      AND dvc.contributor_role = 1
+    GROUP BY dvc.user_id, dvc.contributor_name
+    ORDER BY versionCount DESC, userId
+  </select>
+
+  <select id="getById" resultType="com.xq.entity.DialogueVersionContributor">
+    SELECT
+    <include refid="baseColumns"/>
+    FROM dialogue_version_contributor
+    WHERE id = #{id}
+  </select>
+
+  <insert id="insert" parameterType="com.xq.entity.DialogueVersionContributor"
+          useGeneratedKeys="true" keyProperty="id">
+    INSERT INTO dialogue_version_contributor (version_id, user_id, contributor_name, contributor_role)
+    VALUES (#{versionId}, #{userId}, #{contributorName}, #{contributorRole})
+  </insert>
+
+  <update id="update" parameterType="com.xq.entity.DialogueVersionContributor">
+    UPDATE dialogue_version_contributor
+    <set>
+      <if test="versionId != null">version_id = #{versionId},</if>
+      <if test="userId != null">user_id = #{userId},</if>
+      <if test="contributorName != null">contributor_name = #{contributorName},</if>
+      <if test="contributorRole != null">contributor_role = #{contributorRole},</if>
+    </set>
+    WHERE id = #{id}
+  </update>
+
+  <delete id="deleteById">
+    DELETE
+    FROM dialogue_version_contributor
+    WHERE id = #{id}
+  </delete>
+
+  <delete id="deleteByVersionId">
+    DELETE
+    FROM dialogue_version_contributor
+    WHERE version_id = #{versionId}
+  </delete>
+
+  <delete id="deleteByIds">
+    DELETE FROM dialogue_version_contributor WHERE id IN
+    <foreach collection="ids" item="id" open="(" separator="," close=")">
+      #{id}
+    </foreach>
+  </delete>
+
+  <select id="countByVersionAndName" resultType="int">
+    SELECT COUNT(*)
+    FROM dialogue_version_contributor
+    WHERE version_id = #{versionId}
+      AND user_id IS NULL
+      AND contributor_name = #{contributorName}
+  </select>
+
+  <select id="countByVersionUserRole" resultType="int">
+    SELECT COUNT(*)
+    FROM dialogue_version_contributor
+    WHERE version_id = #{versionId}
+      AND user_id = #{userId}
+      AND contributor_role = #{role}
+  </select>
+
+</mapper>
