@@ -43,7 +43,7 @@
         )
       </if>
     </where>
-    ORDER BY c.id DESC
+    ORDER BY c.first_pool_time DESC, c.id DESC
   </select>
 
   <select id="getById" resultType="com.xq.entity.Card">

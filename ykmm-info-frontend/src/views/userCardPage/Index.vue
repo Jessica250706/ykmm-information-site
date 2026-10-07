@@ -5,7 +5,7 @@
       <h1 class="text-xl font-semibold">卡面</h1>
       <input
         v-model="keyword"
-        class="w-56 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm outline-none transition focus:border-[var(--el-color-primary)] focus:ring-2 focus:ring-[var(--el-color-primary-light-8)]"
+        class="w-56 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm outline-none transition focus:border-(--el-color-primary) focus:ring-2 focus:ring-(--el-color-primary-light-8)"
         placeholder="搜索卡面 / 系列"
         type="search"
         @keyup.enter="handleSearch"
@@ -13,14 +13,14 @@
     </div>
 
     <!-- 筛选行 -->
-    <div class="mb-5 flex flex-wrap items-center gap-3">
+    <div class="mb-5 flex items-center gap-3 col-3">
       <el-select
         v-model="filter.seriesId"
         class="w-48"
         placeholder="系列"
         clearable
         filterable
-        @change="handleSearch"
+        @change="handleFilterChange"
       >
         <el-option v-for="s in seriesOptions" :key="s.id" :label="s.name" :value="s.id!" />
       </el-select>
@@ -30,7 +30,7 @@
         class="w-32"
         placeholder="等级"
         clearable
-        @change="handleSearch"
+        @change="handleFilterChange"
       >
         <el-option
           v-for="opt in CARD_MAX_RARITY_OPTIONS"
@@ -45,7 +45,7 @@
         class="w-32"
         placeholder="属性"
         clearable
-        @change="handleSearch"
+        @change="handleFilterChange"
       >
         <el-option
           v-for="opt in CARD_ATTRIBUTE_OPTIONS"
@@ -56,8 +56,14 @@
       </el-select>
     </div>
 
-    <!-- 卡片网格 -->
-    <div v-loading="loading">
+    <!-- 卡片网格：无限滚动 -->
+    <div
+      v-infinite-scroll="load"
+      v-loading="loading && !list.length"
+      :infinite-scroll-disabled="disabled || loading"
+      :infinite-scroll-distance="80"
+      class="min-h-40"
+    >
       <div
         v-if="list.length"
         class="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5"
@@ -78,34 +84,42 @@
             <div v-else class="h-full w-full bg-linear-to-br from-slate-200 to-slate-300" />
           </div>
           <div class="p-3">
-            <div class="flex items-center gap-1 truncate">
+            <div class="flex items-center justify-between gap-1 truncate">
+              <div class="flex items-center gap-1 truncate">
+                <el-tag
+                  :type="item.maxRarity === CARD_MAX_RARITY.UR ? 'danger' : 'warning'"
+                  effect="plain"
+                  size="small"
+                >
+                  {{ item.maxRarityLabel ?? cardMaxRarityLabel(item.maxRarity) }}
+                </el-tag>
+                <p class="truncate font-medium">{{ item.name || '-' }}</p>
+              </div>
               <el-tag
-                :type="item.maxRarity === CARD_MAX_RARITY.UR ? 'danger' : 'warning'"
+                v-if="item.attribute"
+                :style="getAttributeTagStyle(item.attribute)"
                 effect="plain"
                 size="small"
               >
-                {{ item.maxRarityLabel ?? cardMaxRarityLabel(item.maxRarity) }}
+                {{ item.attributeLabel ?? cardAttributeLabel(item.attribute) }}
               </el-tag>
-              <p class="truncate font-medium">{{ item.name || '-' }}</p>
+              <span v-else class="text-slate-300">-</span>
             </div>
             <p class="mt-1 truncate text-xs text-slate-500">{{ item.seriesName || '-' }}</p>
           </div>
         </article>
       </div>
 
+      <!-- 空状态 -->
       <p v-else-if="!loading" class="py-16 text-center text-sm text-slate-400">没有找到相关卡面</p>
-    </div>
 
-    <!-- 分页 -->
-    <div v-if="total > pageSize" class="mt-6 flex justify-center">
-      <el-pagination
-        v-model:current-page="pageNum"
-        :page-size="pageSize"
-        :total="total"
-        layout="prev, pager, next"
-        background
-        @current-change="loadList"
-      />
+      <!-- 加载中 / 没有更多 -->
+      <div v-if="loading && list.length" class="py-6 text-center text-sm text-slate-400">
+        加载中...
+      </div>
+      <div v-else-if="disabled && list.length" class="py-6 text-center text-sm text-slate-400">
+        没有更多了
+      </div>
     </div>
   </section>
 </template>
@@ -119,11 +133,12 @@ import {
   CARD_ATTRIBUTE_OPTIONS,
   CARD_MAX_RARITY,
   CARD_MAX_RARITY_OPTIONS,
+  cardAttributeLabel,
   cardMaxRarityLabel,
-} from '@/constants/card'
+} from '@/constants'
 import type { CardVO } from '@/types/card'
 import type { CardSeriesVO } from '@/types/cardSeries'
-import { getCoverImage } from '@/utils'
+import { getAttributeTagStyle, getCoverImage } from '@/utils'
 
 const router = useRouter()
 
@@ -138,14 +153,16 @@ const filter = reactive<{
   attribute: undefined,
 })
 
-const loading = ref(false)
+/* -------- 无限滚动状态 -------- */
+const loading = ref(false) // 加载锁
+const disabled = ref(false) // 没有更多了
 const list = ref<CardVO[]>([])
-const total = ref(0)
 const pageNum = ref(1)
 const pageSize = ref(20)
 
 const seriesOptions = ref<CardSeriesVO[]>([])
 
+/* -------- 首次加载 / 重置后加载 -------- */
 async function loadList() {
   loading.value = true
   try {
@@ -157,19 +174,69 @@ async function loadList() {
       maxRarity: filter.maxRarity,
       attribute: filter.attribute,
     })
-    list.value = res.data.records ?? []
-    total.value = res.data.total ?? 0
+    const records = res.data.records ?? []
+    list.value = records
+    // 首页数据不足 pageSize → 没有更多
+    disabled.value = records.length < pageSize.value
   } catch {
     list.value = []
-    total.value = 0
+    disabled.value = true
   } finally {
     loading.value = false
   }
 }
 
-function handleSearch() {
+/* -------- 无限滚动触发 -------- */
+async function load() {
+  if (loading.value || disabled.value) return
+
+  loading.value = true
+  pageNum.value++
+
+  try {
+    const res = await pageUserCardAPI({
+      pageNum: pageNum.value,
+      pageSize: pageSize.value,
+      keyword: keyword.value.trim() || undefined,
+      seriesId: filter.seriesId,
+      maxRarity: filter.maxRarity,
+      attribute: filter.attribute,
+    })
+    const records = res.data.records ?? []
+
+    if (records.length === 0) {
+      disabled.value = true
+      return
+    }
+
+    list.value.push(...records)
+
+    // 本次返回不足 pageSize → 没有更多
+    if (records.length < pageSize.value) {
+      disabled.value = true
+    }
+  } catch {
+    disabled.value = true
+  } finally {
+    loading.value = false
+  }
+}
+
+/* -------- 条件变化：重置并重新加载 -------- */
+function resetAndLoad() {
   pageNum.value = 1
+  list.value = []
+  disabled.value = false
+  loading.value = false
   void loadList()
+}
+
+function handleSearch() {
+  resetAndLoad()
+}
+
+function handleFilterChange() {
+  resetAndLoad()
 }
 
 function handleDetail(row: CardVO) {
