@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 /**
@@ -35,7 +36,7 @@ public class Card implements Serializable {
     private Integer maxRarity;
 
     /** 首次入池时间 */
-    private LocalDateTime firstPoolTime;
+    private LocalDate firstPoolTime;
 
     /** 1-Shout 2-Beat 3-Melody */
     private Integer attribute;

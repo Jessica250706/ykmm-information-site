@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -26,7 +27,7 @@ public class CardDTO implements Serializable {
     /** 最高等级：1-SSR 2-UR */
     private Integer maxRarity;
     /** 首次入池时间 */
-    private LocalDateTime firstPoolTime;
+    private LocalDate firstPoolTime;
     /** 属性：1-Shout 2-Beat 3-Melody */
     private Integer attribute;
     /** 魅力技能描述 */

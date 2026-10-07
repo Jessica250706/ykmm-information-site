@@ -10,8 +10,9 @@ public enum CardImageTypeEnum {
     R(1, "R"),
     SR(2, "SR"),
     SSR(3, "SSR"),
-    UR_VERTICAL(4, "UR竖卡"),
-    UR_HORIZONTAL(5, "UR横卡");
+    SSR_HIDDEN(4, "SSR隐藏款"),
+    UR_VERTICAL(5, "UR竖卡"),
+    UR_HORIZONTAL(6, "UR横卡");
 
     private final Integer value;
     private final String label;

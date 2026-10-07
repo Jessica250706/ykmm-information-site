@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
+import java.time.LocalDateTime;
 
 /**
  * 卡面系列返回
@@ -26,7 +27,7 @@ public class CardSeriesVO implements Serializable {
     /** 关联卡面数量 */
     private Integer cardCount;
     /** 创建时间 */
-    private String createdAt;
+    private LocalDateTime createdAt;
     /** 更新时间 */
-    private String updatedAt;
+    private LocalDateTime updatedAt;
 }

@@ -19,4 +19,12 @@ public interface CardImageMapper {
     int insertBatch(@Param("list") List<CardImage> list);
     /** 根据卡面ID删除 */
     int deleteByCardId(@Param("cardId") Long cardId);
+
+    /**
+     * 根据卡面ID批量查询图片
+     *
+     * @param cardIds 卡面ID列表
+     * @return 图片列表
+     */
+    List<CardImage> listByCardIds(@Param("cardIds") List<Long> cardIds);
 }

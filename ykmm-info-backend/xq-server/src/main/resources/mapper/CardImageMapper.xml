@@ -37,4 +37,15 @@
     DELETE FROM card_image WHERE card_id = #{cardId}
   </delete>
 
+  <select id="listByCardIds" resultType="com.xq.entity.CardImage">
+    SELECT
+    <include refid="baseColumns"/>
+    FROM card_image
+    WHERE card_id IN
+    <foreach collection="cardIds" item="cid" open="(" separator="," close=")">
+      #{cid}
+    </foreach>
+    ORDER BY card_id ASC, image_type ASC, sort ASC, id ASC
+  </select>
+
 </mapper>

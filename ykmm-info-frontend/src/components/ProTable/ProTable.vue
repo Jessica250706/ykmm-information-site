@@ -17,7 +17,12 @@
         <!-- 插槽列：slot 名来自列配置，但模板里的 #default / #header 是静态的 -->
         <el-table-column v-else-if="col.slot" v-bind="columnProps(col)">
           <template #default="scope">
-            <slot :name="col.slot" v-bind="scope" />
+            <div
+              :style="{ justifyContent: alignMap[col.align] ?? 'flex-start' }"
+              class="flex items-center"
+            >
+              <slot :name="col.slot" v-bind="scope" />
+            </div>
           </template>
           <template v-if="col.headerSlot" #header="scope">
             <slot :name="col.headerSlot" v-bind="scope" />
@@ -144,6 +149,12 @@ function columnProps(col: ProTableColumn<T>) {
 
 function colKey(col: ProTableColumn<T>) {
   return col.prop || col.label || col.type || JSON.stringify(col)
+}
+
+const alignMap: Record<string, string> = {
+  left: 'flex-start',
+  center: 'center',
+  right: 'flex-end',
 }
 
 /* -------- 分页事件 -------- */

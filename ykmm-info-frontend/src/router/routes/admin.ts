@@ -74,6 +74,27 @@ export const adminRoutes: RouteRecordRaw = {
       component: () => import('@/views/adminContent/roleManage/components/EditRole.vue'),
       meta: { title: '编辑角色' },
     },
+    // ---------- 卡面系列管理 ----------
+    {
+      path: 'content/card-series',
+      name: 'AdminCardSeriesManage',
+      component: () => import('@/views/adminContent/cardSeriesManage/Index.vue'),
+      meta: { title: '卡面系列' },
+    },
+    {
+      path: 'content/card-series/create',
+      name: 'AdminCardSeriesCreate',
+      component: () =>
+        import('@/views/adminContent/cardSeriesManage/components/EditCardSeries.vue'),
+      meta: { title: '新增卡面系列' },
+    },
+    {
+      path: 'content/card-series/edit/:id',
+      name: 'AdminCardSeriesEdit',
+      component: () =>
+        import('@/views/adminContent/cardSeriesManage/components/EditCardSeries.vue'),
+      meta: { title: '编辑卡面系列' },
+    },
     // ---------- 卡面管理 ----------
     {
       path: 'content/card',
@@ -81,12 +102,31 @@ export const adminRoutes: RouteRecordRaw = {
       component: () => import('@/views/adminContent/cardManage/Index.vue'),
       meta: { title: '卡面管理' },
     },
-    // ---------- 卡面所属系列管理 ----------
     {
-      path: 'content/card-series',
-      name: 'AdminCardSeriesManage',
-      component: () => import('@/views/adminContent/cardSeriesManage/Index.vue'),
-      meta: { title: '卡面所属系列管理' },
+      path: 'content/card/create',
+      name: 'AdminCardCreate',
+      component: () => import('@/views/adminContent/cardManage/components/EditCard.vue'),
+      meta: { title: '新增卡面' },
+    },
+    {
+      path: 'content/card/edit/:id',
+      name: 'AdminCardEdit',
+      component: () => import('@/views/adminContent/cardManage/components/EditCard.vue'),
+      meta: { title: '编辑卡面' },
+    },
+    // ---------- 卡面 RC 管理 ----------
+    {
+      path: 'content/card-rc',
+      name: 'AdminCardRcManage',
+      component: () => import('@/views/adminContent/cardRCManage/Index.vue'),
+      meta: { title: 'RC 管理' },
+    },
+    // ---------- 卡面 RTV 管理 ----------
+    {
+      path: 'content/card-rtv',
+      name: 'AdminCardRtvManage',
+      component: () => import('@/views/adminContent/cardRTVManage/Index.vue'),
+      meta: { title: 'RTV 管理' },
     },
     // ---------- 偶像小人管理 ----------
     {

@@ -46,3 +46,17 @@ export function generateColorScale(base: string) {
     'dark-2': mix(base, BLACK, 0.2),
   }
 }
+
+/**
+ * 根据人物的代表色生成 el-tag 的内联样式
+ *
+ * @param color 形如 'rgb(29, 41, 81)' 的颜色字符串
+ */
+export function personTagStyle(color?: string) {
+  if (!color) return undefined
+  return {
+    borderColor: color,
+    color,
+    backgroundColor: `color-mix(in srgb, ${color} 8%, white)`,
+  }
+}

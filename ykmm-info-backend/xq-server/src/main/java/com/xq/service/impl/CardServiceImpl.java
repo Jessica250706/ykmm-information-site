@@ -24,8 +24,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * 卡面服务实现
@@ -55,9 +55,49 @@ public class CardServiceImpl implements CardService {
         List<Card> list = cardMapper.pageQuery(query);
         PageInfo<Card> page = new PageInfo<>(list);
 
+        if (page.getList().isEmpty()) {
+            return new PageResult<>(page.getTotal(), Collections.emptyList());
+        }
+
+        // 收集本页所有 cardId
+        List<Long> cardIds = page.getList().stream()
+                .map(Card::getId)
+                .filter(Objects::nonNull)
+                .toList();
+
+        // 批量查图片、人物
+        Map<Long, List<CardImage>> imageMap = cardIds.isEmpty()
+                ? Collections.emptyMap()
+                : cardImageMapper.listByCardIds(cardIds).stream()
+                .collect(Collectors.groupingBy(CardImage::getCardId));
+
+        Map<Long, List<CardPersonVO>> personMap = cardIds.isEmpty()
+                ? Collections.emptyMap()
+                : cardPersonRelMapper.listPersonsByCardIds(cardIds).stream()
+                .collect(Collectors.groupingBy(CardPersonVO::getCardId));
+
+        // 组装
         List<CardVO> voList = new ArrayList<>(page.getList().size());
         for (Card card : page.getList()) {
-            voList.add(toVO(card, false));
+            CardVO vo = toVO(card, false);
+
+            // 图片
+            List<CardImage> imgs = imageMap.getOrDefault(card.getId(), Collections.emptyList());
+            List<CardImageVO> imgVOs = new ArrayList<>(imgs.size());
+            for (CardImage img : imgs) {
+                CardImageVO ivo = new CardImageVO();
+                BeanUtils.copyProperties(img, ivo);
+                ivo.setImageTypeLabel(CardImageTypeEnum.getLabel(img.getImageType()));
+                imgVOs.add(ivo);
+            }
+            vo.setImages(imgVOs);
+
+            // 人物（★ 新的部分）
+            List<CardPersonVO> persons =
+                    personMap.getOrDefault(card.getId(), Collections.emptyList());
+            vo.setPersons(new ArrayList<>(persons));
+
+            voList.add(vo);
         }
         return new PageResult<>(page.getTotal(), voList);
     }
@@ -102,9 +142,6 @@ public class CardServiceImpl implements CardService {
         if (dto.getCostumeType() != null && !CardCostumeTypeEnum.isValid(dto.getCostumeType())) {
             throw new RuntimeException("服装类型不合法");
         }
-        if (cardMapper.countByName(dto.getName(), null) > 0) {
-            throw new RuntimeException("卡面名称已存在");
-        }
 
         Card card = new Card();
         BeanUtils.copyProperties(dto, card);
@@ -136,13 +173,8 @@ public class CardServiceImpl implements CardService {
         if (exist == null) {
             throw new RuntimeException("卡面不存在");
         }
-        if (dto.getName() != null) {
-            if (dto.getName().isBlank()) {
-                throw new RuntimeException("卡面名称不能为空");
-            }
-            if (cardMapper.countByName(dto.getName(), id) > 0) {
-                throw new RuntimeException("卡面名称已存在");
-            }
+        if (dto.getName() != null && dto.getName().isBlank()) {
+            throw new RuntimeException("卡面名称不能为空");
         }
         if (dto.getMaxRarity() != null && !CardMaxRarityEnum.isValid(dto.getMaxRarity())) {
             throw new RuntimeException("卡面最高等级不合法");
@@ -236,6 +268,10 @@ public class CardServiceImpl implements CardService {
         vo.setAttachedStoryTypeLabel(CardAttachedStoryTypeEnum.getLabel(card.getAttachedStoryType()));
         vo.setCostumeTypeLabel(CardCostumeTypeEnum.getLabel(card.getCostumeType()));
 
+        // 保证列表字段非 null
+        vo.setImages(new ArrayList<>());
+        vo.setPersons(new ArrayList<>());
+
         // 系列名
         if (card.getSeriesId() != null) {
             var series = cardSeriesMapper.getById(card.getSeriesId());
@@ -255,8 +291,7 @@ public class CardServiceImpl implements CardService {
             vo.setImages(imgVOs);
 
             // 人物
-            List<CardPersonVO> persons = cardPersonRelMapper.listPersonsByCardId(card.getId());
-            vo.setPersons(persons);
+            vo.setPersons(cardPersonRelMapper.listPersonsByCardId(card.getId()));
         }
         return vo;
     }

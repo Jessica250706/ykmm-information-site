@@ -6,6 +6,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 /**
@@ -31,7 +33,7 @@ public class CardVO implements Serializable {
     /** 最高等级标签 */
     private String maxRarityLabel;
     /** 首次入池时间 */
-    private String firstPoolTime;
+    private LocalDate firstPoolTime;
     /** 属性 */
     private Integer attribute;
     /** 属性标签 */
@@ -55,7 +57,7 @@ public class CardVO implements Serializable {
     /** 状态标签 */
     private String statusLabel;
     /** 创建时间 */
-    private String createdAt;
+    private LocalDateTime createdAt;
     /** 卡面图片列表 */
     private List<CardImageVO> images;
     /** 关联人物列表 */
