@@ -35,6 +35,7 @@
           :list="rcList"
           mode="rc"
           @delete="(ep) => handleRemove('rc', ep)"
+          @edit="(ep) => handleEdit('rc', ep)"
           @view="(id) => handleView('rc', id)"
         />
         <CardEpisodeList
@@ -42,6 +43,7 @@
           :list="rtvList"
           mode="rtv"
           @delete="(ep) => handleRemove('rtv', ep)"
+          @edit="(ep) => handleEdit('rtv', ep)"
           @view="(id) => handleView('rtv', id)"
         />
       </aside>
@@ -63,6 +65,8 @@ import { computed, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import ImageView from '@/components/ImageView/Index.vue'
 import { CARD_IMAGE_TYPE_LABEL, SOURCE_TYPE } from '@/constants'
+import type { CardRcVO } from '@/types/cardRc'
+import type { CardRtvVO } from '@/types/cardRtv'
 import AddEpisodeDialog, { type EpisodeFormData } from './components/AddEpisodeDialog.vue'
 import CardBasicInfo from './components/CardBasicInfo.vue'
 import CardDetailHeader from './components/CardDetailHeader.vue'
@@ -87,6 +91,7 @@ const {
   rtvList,
   load: loadEpisodes,
   create: createEpisode,
+  update: updateEpisode,
   remove: removeEpisode,
   currentEpisodes,
 } = useEpisodeManagement(cardId, attachedType)
@@ -110,10 +115,19 @@ function handleAddEpisode(mode: 'rc' | 'rtv') {
   episodeDialogRef.value?.open(mode)
 }
 
-async function handleSubmitEpisode(payload: { mode: 'rc' | 'rtv'; data: EpisodeFormData }) {
+/** 提交：根据 id 是否为空区分新增 / 编辑 */
+async function handleSubmitEpisode(payload: {
+  mode: 'rc' | 'rtv'
+  id: number | null
+  data: EpisodeFormData
+}) {
   episodeSaving.value = true
   try {
-    await createEpisode(payload.mode, payload.data)
+    if (payload.id == null) {
+      await createEpisode(payload.mode, payload.data)
+    } else {
+      await updateEpisode(payload.mode, payload.id, payload.data)
+    }
     episodeDialogRef.value?.close()
   } finally {
     episodeSaving.value = false
@@ -128,7 +142,18 @@ function handleView(mode: 'rc' | 'rtv', id: number) {
   })
 }
 
-function handleRemove(mode: 'rc' | 'rtv', ep: any) {
+/** 打开编辑弹窗 */
+function handleEdit(mode: 'rc' | 'rtv', ep: CardRcVO | CardRtvVO) {
+  episodeDialogRef.value?.open(mode, {
+    id: ep.id,
+    episodeNo: ep.episodeNo,
+    title: ep.title,
+    // RTV 没有 roleId，RC 有；类型断言或 optional 都行
+    roleId: (ep as CardRcVO).roleId,
+  })
+}
+
+function handleRemove(mode: 'rc' | 'rtv', ep: CardRcVO | CardRtvVO) {
   void removeEpisode(mode, ep)
 }
 

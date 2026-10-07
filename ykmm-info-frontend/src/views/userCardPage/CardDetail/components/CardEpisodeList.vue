@@ -23,21 +23,29 @@
           </div>
         </div>
 
-        <el-button
-          class="opacity-0 transition group-hover:opacity-100"
-          size="small"
-          type="danger"
-          link
-          @click.stop="emit('delete', ep)"
-        >
-          删除
-        </el-button>
+        <div class="flex items-center gap-1 opacity-0 transition group-hover:opacity-100">
+          <el-button
+            :icon="Edit"
+            size="small"
+            type="primary"
+            circle
+            @click.stop="emit('edit', ep)"
+          />
+          <el-button
+            :icon="Delete"
+            size="small"
+            type="danger"
+            circle
+            @click.stop="emit('delete', ep)"
+          />
+        </div>
       </li>
     </ul>
   </div>
 </template>
 
 <script setup lang="ts">
+import { Delete, Edit } from '@element-plus/icons-vue'
 import type { CardRcVO } from '@/types/cardRc'
 import type { CardRtvVO } from '@/types/cardRtv'
 
@@ -48,6 +56,7 @@ defineProps<{
 
 const emit = defineEmits<{
   view: [id: number]
+  edit: [ep: CardRcVO | CardRtvVO]
   delete: [ep: CardRcVO | CardRtvVO]
 }>()
 </script>

@@ -1,7 +1,17 @@
 import { computed, ref, type Ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { createCardRcAPI, deleteCardRcAPI, listCardRcByCardAPI } from '@/api/cardRc'
-import { createCardRtvAPI, deleteCardRtvAPI, listCardRtvByCardAPI } from '@/api/cardRtv'
+import {
+  createCardRcAPI,
+  deleteCardRcAPI,
+  listCardRcByCardAPI,
+  updateCardRcAPI,
+} from '@/api/cardRc'
+import {
+  createCardRtvAPI,
+  deleteCardRtvAPI,
+  listCardRtvByCardAPI,
+  updateCardRtvAPI,
+} from '@/api/cardRtv'
 import { CARD_ATTACHED_STORY_TYPE } from '@/constants/card'
 import type { CardRcVO } from '@/types/cardRc'
 import type { CardRtvVO } from '@/types/cardRtv'
@@ -31,6 +41,7 @@ export function useEpisodeManagement(cardId: Ref<number>, attachedType: Ref<numb
     }
   }
 
+  /** 新增 */
   async function create(mode: 'rc' | 'rtv', data: EpisodeFormData) {
     if (mode === 'rc') {
       await createCardRcAPI({
@@ -51,6 +62,28 @@ export function useEpisodeManagement(cardId: Ref<number>, attachedType: Ref<numb
     await load()
   }
 
+  /** 更新 */
+  async function update(mode: 'rc' | 'rtv', id: number, data: EpisodeFormData) {
+    if (mode === 'rc') {
+      await updateCardRcAPI(id, {
+        cardId: cardId.value,
+        episodeNo: data.episodeNo,
+        title: data.title,
+        roleId: data.roleId,
+      })
+      ElMessage.success('更新 RC 成功')
+    } else {
+      await updateCardRtvAPI(id, {
+        cardId: cardId.value,
+        episodeNo: data.episodeNo,
+        title: data.title,
+      })
+      ElMessage.success('更新 RTV 成功')
+    }
+    await load()
+  }
+
+  /** 删除 */
   async function remove(mode: 'rc' | 'rtv', ep: CardRcVO | CardRtvVO) {
     try {
       await ElMessageBox.confirm(
@@ -78,6 +111,7 @@ export function useEpisodeManagement(cardId: Ref<number>, attachedType: Ref<numb
     currentEpisodes,
     load,
     create,
+    update,
     remove,
   }
 }

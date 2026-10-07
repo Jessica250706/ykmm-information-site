@@ -1,10 +1,5 @@
 <template>
-  <el-dialog
-    v-model="visible"
-    :title="mode === 'rc' ? '新增 RC' : '新增 RTV'"
-    width="480px"
-    @closed="handleClosed"
-  >
+  <el-dialog v-model="visible" :title="title" width="480px" @closed="handleClosed">
     <el-form ref="formRef" :model="form" :rules="rules" label-width="80px">
       <el-form-item label="话数" prop="episodeNo">
         <el-input-number
@@ -53,30 +48,44 @@ import type { FormInstance, FormRules } from 'element-plus'
 
 type Mode = 'rc' | 'rtv'
 
+/** 话数表单数据 */
 export interface EpisodeFormData {
   episodeNo?: number
   title?: string
   roleId?: number
 }
 
+/** 编辑时传入的原始话数数据（含 id） */
+export interface EpisodeItemData extends EpisodeFormData {
+  id?: number
+}
+
 const props = defineProps<{
   saving?: boolean
-  /** 已有话数列表，用于计算默认话数 */
+  /** 已有话数列表，用于计算新增时的默认话数 */
   existingEpisodes: { episodeNo?: number }[]
 }>()
 
 const emit = defineEmits<{
-  submit: [payload: { mode: Mode; data: EpisodeFormData }]
+  submit: [payload: { mode: Mode; id: number | null; data: EpisodeFormData }]
 }>()
 
 const visible = ref(false)
 const mode = ref<Mode>('rc')
+/** 编辑时的 id：null 表示新增 */
+const editingId = ref<number | null>(null)
 const formRef = ref<FormInstance>()
 
 const form = reactive<EpisodeFormData>({
   episodeNo: undefined,
   title: '',
   roleId: undefined,
+})
+
+const title = computed(() => {
+  const action = editingId.value == null ? '新增' : '编辑'
+  const kind = mode.value === 'rc' ? 'RC' : 'RTV'
+  return `${action} ${kind}`
 })
 
 const rules = computed<FormRules>(() => ({
@@ -123,24 +132,46 @@ watch(mode, (m) => {
 })
 
 /* -------- 对外打开 -------- */
-function open(m: Mode) {
+/**
+ * 打开弹窗
+ *
+ * @param m 模式：rc / rtv
+ * @param episode 传入则表示编辑，不传表示新增
+ */
+function open(m: Mode, episode?: EpisodeItemData) {
   mode.value = m
-  form.episodeNo = (props.existingEpisodes.at(-1)?.episodeNo ?? 0) + 1
-  form.title = ''
-  form.roleId = undefined
+  editingId.value = episode?.id ?? null
+
+  if (episode) {
+    // 编辑：回填
+    form.episodeNo = episode.episodeNo
+    form.title = episode.title ?? ''
+    form.roleId = episode.roleId
+  } else {
+    // 新增：默认话数 = 已有最大话数 + 1
+    form.episodeNo = (props.existingEpisodes.at(-1)?.episodeNo ?? 0) + 1
+    form.title = ''
+    form.roleId = undefined
+  }
+
   visible.value = true
   if (m === 'rc') void loadRoles()
 }
 
 function handleClosed() {
   formRef.value?.clearValidate()
+  editingId.value = null
 }
 
 async function handleSubmit() {
   if (!formRef.value) return
   const valid = await formRef.value.validate().catch(() => false)
   if (!valid) return
-  emit('submit', { mode: mode.value, data: { ...form } })
+  emit('submit', {
+    mode: mode.value,
+    id: editingId.value,
+    data: { ...form },
+  })
 }
 
 /** 供父组件在保存成功后关闭 */
