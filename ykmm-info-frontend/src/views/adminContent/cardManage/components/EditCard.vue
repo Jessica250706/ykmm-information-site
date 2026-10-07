@@ -75,11 +75,7 @@
         <!-- -------- 附属剧情 -------- -->
         <el-form-item label="附属剧情" prop="attachedStoryType">
           <el-radio-group v-model="form.attachedStoryType">
-            <el-radio
-              v-for="opt in CARD_ATTACHED_STORY_TYPE_OPTIONS"
-              :key="opt.value"
-              :value="opt.value"
-            >
+            <el-radio v-for="opt in SOURCE_TYPE_OPTIONS" :key="opt.value" :value="opt.value">
               {{ opt.label }}
             </el-radio>
           </el-radio-group>
@@ -130,14 +126,14 @@ import { useRoute, useRouter } from 'vue-router'
 import { createCardAPI, getCardDetailAPI, updateCardAPI } from '@/api/card'
 import { findOrCreateCardSeriesAPI, listCardSeriesOptionsAPI } from '@/api/cardSeries'
 import {
-  CARD_ATTACHED_STORY_TYPE_OPTIONS,
   CARD_ATTRIBUTE_OPTIONS,
   CARD_COSTUME_TYPE_OPTIONS,
   CARD_IMAGE_TYPE,
   CARD_IMAGE_TYPE_OPTIONS,
   CARD_MAX_RARITY,
   CARD_MAX_RARITY_OPTIONS,
-} from '@/constants/card'
+  SOURCE_TYPE_OPTIONS,
+} from '@/constants'
 import { usePersonStore } from '@/stores/personStore'
 import type { CardDTO } from '@/types/card'
 import type { CardSeriesVO } from '@/types/cardSeries'

@@ -93,33 +93,6 @@ export const CARD_IMAGE_TYPE_OPTIONS = [
 ] as const
 
 /**
- * 附属剧情类型
- */
-export const CARD_ATTACHED_STORY_TYPE = {
-  NONE: 0,
-  RC: 1,
-  RTV: 2,
-  RABBITTER: 3,
-} as const
-
-export type CardAttachedStoryTypeValue =
-  (typeof CARD_ATTACHED_STORY_TYPE)[keyof typeof CARD_ATTACHED_STORY_TYPE]
-
-export const CARD_ATTACHED_STORY_TYPE_LABEL: Record<CardAttachedStoryTypeValue, string> = {
-  [CARD_ATTACHED_STORY_TYPE.NONE]: '无',
-  [CARD_ATTACHED_STORY_TYPE.RC]: 'RC',
-  [CARD_ATTACHED_STORY_TYPE.RTV]: 'RTV',
-  [CARD_ATTACHED_STORY_TYPE.RABBITTER]: 'Rabbiter',
-}
-
-export const CARD_ATTACHED_STORY_TYPE_OPTIONS = [
-  { value: CARD_ATTACHED_STORY_TYPE.NONE, label: CARD_ATTACHED_STORY_TYPE_LABEL[0] },
-  { value: CARD_ATTACHED_STORY_TYPE.RC, label: CARD_ATTACHED_STORY_TYPE_LABEL[1] },
-  { value: CARD_ATTACHED_STORY_TYPE.RTV, label: CARD_ATTACHED_STORY_TYPE_LABEL[2] },
-  { value: CARD_ATTACHED_STORY_TYPE.RABBITTER, label: CARD_ATTACHED_STORY_TYPE_LABEL[3] },
-] as const
-
-/**
  * 服装类型
  */
 export const CARD_COSTUME_TYPE = {
@@ -155,11 +128,6 @@ export function cardAttributeLabel(v?: number | null): string {
 export function cardImageTypeLabel(v?: number | null): string {
   if (v == null) return '未知'
   return CARD_IMAGE_TYPE_LABEL[v as CardImageTypeValue] ?? '未知'
-}
-
-export function cardAttachedStoryTypeLabel(v?: number | null): string {
-  if (v == null) return '未知'
-  return CARD_ATTACHED_STORY_TYPE_LABEL[v as CardAttachedStoryTypeValue] ?? '未知'
 }
 
 export function cardCostumeTypeLabel(v?: number | null): string {

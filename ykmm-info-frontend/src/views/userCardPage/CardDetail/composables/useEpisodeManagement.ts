@@ -12,7 +12,7 @@ import {
   listCardRtvByCardAPI,
   updateCardRtvAPI,
 } from '@/api/cardRtv'
-import { CARD_ATTACHED_STORY_TYPE } from '@/constants/card'
+import { SOURCE_TYPE } from '@/constants'
 import type { CardRcVO } from '@/types/cardRc'
 import type { CardRtvVO } from '@/types/cardRtv'
 import type { EpisodeFormData } from '../components/AddEpisodeDialog.vue'
@@ -23,16 +23,16 @@ export function useEpisodeManagement(cardId: Ref<number>, attachedType: Ref<numb
 
   /** 当前 attachedType 对应的话数列表，用于 dialog 里计算默认话数 */
   const currentEpisodes = computed(() =>
-    attachedType.value === CARD_ATTACHED_STORY_TYPE.RC ? rcList.value : rtvList.value,
+    attachedType.value === SOURCE_TYPE.RC ? rcList.value : rtvList.value,
   )
 
   async function load() {
     if (!cardId.value || !attachedType.value) return
     try {
-      if (attachedType.value === CARD_ATTACHED_STORY_TYPE.RC) {
+      if (attachedType.value === SOURCE_TYPE.RC) {
         const res = await listCardRcByCardAPI(cardId.value)
         rcList.value = res.data ?? []
-      } else if (attachedType.value === CARD_ATTACHED_STORY_TYPE.RTV) {
+      } else if (attachedType.value === SOURCE_TYPE.RTV) {
         const res = await listCardRtvByCardAPI(cardId.value)
         rtvList.value = res.data ?? []
       }

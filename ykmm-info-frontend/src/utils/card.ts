@@ -1,5 +1,4 @@
 import {
-  CARD_ATTACHED_STORY_TYPE,
   CARD_ATTRIBUTE_TAG_TYPE,
   CARD_IMAGE_TYPE,
   CARD_MAX_RARITY,
@@ -41,21 +40,4 @@ export function getCoverImage(row: CardVO): string | undefined {
 
 export function getImageUrls(row: CardVO): string[] {
   return (row.images ?? []).map((i) => i.url!).filter((u) => !!u)
-}
-
-/* -------- 附属剧情 -------- */
-
-export function attachedStoryTypeTag(
-  type: number,
-): 'primary' | 'success' | 'warning' | 'danger' | 'info' {
-  switch (type) {
-    case CARD_ATTACHED_STORY_TYPE.RC:
-      return 'success'
-    case CARD_ATTACHED_STORY_TYPE.RTV:
-      return 'warning'
-    case CARD_ATTACHED_STORY_TYPE.RABBITTER:
-      return 'info'
-    default:
-      return 'info'
-  }
 }

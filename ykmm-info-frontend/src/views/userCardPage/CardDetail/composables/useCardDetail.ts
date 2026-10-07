@@ -1,6 +1,6 @@
 import { computed, ref } from 'vue'
 import { getUserCardDetailAPI } from '@/api/card'
-import { CARD_ATTACHED_STORY_TYPE } from '@/constants/card'
+import { SOURCE_TYPE } from '@/constants'
 import type { CardVO } from '@/types/card'
 
 export function useCardDetail() {
@@ -13,8 +13,8 @@ export function useCardDetail() {
   /** 图片 URL 列表 */
   const imageUrls = computed(() => (card.value?.images ?? []).map((i) => i.url!).filter((u) => !!u))
 
-  const isRc = computed(() => attachedType.value === CARD_ATTACHED_STORY_TYPE.RC)
-  const isRtv = computed(() => attachedType.value === CARD_ATTACHED_STORY_TYPE.RTV)
+  const isRc = computed(() => attachedType.value === SOURCE_TYPE.RC)
+  const isRtv = computed(() => attachedType.value === SOURCE_TYPE.RTV)
 
   async function load(id: number) {
     if (!id) return

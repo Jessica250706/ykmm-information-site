@@ -14,7 +14,7 @@
 
     <div class="flex items-center gap-2">
       <el-button
-        v-if="attachedType === CARD_ATTACHED_STORY_TYPE.RC"
+        v-if="attachedType === SOURCE_TYPE.RC"
         type="primary"
         @click="emit('addEpisode', 'rc')"
       >
@@ -23,7 +23,7 @@
       </el-button>
 
       <el-button
-        v-if="attachedType === CARD_ATTACHED_STORY_TYPE.RTV"
+        v-if="attachedType === SOURCE_TYPE.RTV"
         type="primary"
         @click="emit('addEpisode', 'rtv')"
       >
@@ -40,7 +40,7 @@
 
 <script setup lang="ts">
 import { Plus } from '@element-plus/icons-vue'
-import { CARD_ATTACHED_STORY_TYPE, CARD_MAX_RARITY, cardMaxRarityLabel } from '@/constants/card'
+import { CARD_MAX_RARITY, cardMaxRarityLabel, SOURCE_TYPE } from '@/constants'
 import type { CardVO } from '@/types/card'
 
 defineProps<{
