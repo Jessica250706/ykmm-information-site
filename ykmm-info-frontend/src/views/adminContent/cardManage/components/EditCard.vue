@@ -165,7 +165,6 @@ const form = reactive<CardDTO>({
 })
 
 /** 每种图片类型独立的 URL 列表 */
-/** 每种图片类型对应的单张 URL */
 const imageMap = reactive<Record<number, string>>({
   [CARD_IMAGE_TYPE.R]: '',
   [CARD_IMAGE_TYPE.SR]: '',

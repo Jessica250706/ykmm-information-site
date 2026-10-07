@@ -27,7 +27,7 @@
         <RouterLink
           :style="{ backgroundColor: 'var(--menu-hover-bg)', color: 'var(--menu-text)' }"
           class="flex items-center justify-center gap-1 rounded-lg px-3 py-2 text-sm transition hover:brightness-95"
-          to="/cards"
+          to="/card"
         >
           前往用户端 →
         </RouterLink>

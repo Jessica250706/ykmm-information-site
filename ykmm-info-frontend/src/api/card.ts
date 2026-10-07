@@ -36,3 +36,17 @@ export const updateCardAPI = (id: number, data: CardDTO) => {
 export const deleteCardAPI = (id: number) => {
   return request.delete(`/admin/card/${id}`)
 }
+
+/**
+ * @description: 用户端 - 分页查询已发布卡面
+ */
+export const pageUserCardAPI = (params: CardPageQueryDTO) => {
+  return request.get<PageResult<CardVO>>('/user/card/page', { params })
+}
+
+/**
+ * @description: 用户端 - 查询卡面详情
+ */
+export const getUserCardDetailAPI = (id: number) => {
+  return request.get<CardVO>(`/user/card/${id}`)
+}

@@ -2,7 +2,9 @@ package com.xq.service.impl;
 
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
+import com.xq.constant.UserRoleConstant;
 import com.xq.context.BaseContext;
+import com.xq.context.RoleContext;
 import com.xq.dto.CardDTO;
 import com.xq.dto.CardImageDTO;
 import com.xq.dto.CardPageQueryDTO;
@@ -51,6 +53,10 @@ public class CardServiceImpl implements CardService {
         if (query == null) {
             throw new RuntimeException("查询条件不能为空");
         }
+
+        // 强制只查已发布
+        RoleContext.restrictToPublishedIfUser(query::setStatus);
+
         PageHelper.startPage(query.getPageNum(), query.getPageSize());
         List<Card> list = cardMapper.pageQuery(query);
         PageInfo<Card> page = new PageInfo<>(list);
@@ -114,6 +120,14 @@ public class CardServiceImpl implements CardService {
         if (card == null) {
             throw new RuntimeException("卡面不存在");
         }
+
+        if (RoleContext.isUser()) {
+            // 未发布的不允许用户查看
+            if (!StatusEnum.PUBLISHED.getValue().equals(card.getStatus())) {
+                throw new RuntimeException("卡面不存在");
+            }
+        }
+
         return toVO(card, true);
     }
 

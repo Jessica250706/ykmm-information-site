@@ -3,20 +3,22 @@ import type { RouteRecordRaw } from 'vue-router'
 export const userRoutes: RouteRecordRaw = {
   path: '/',
   component: () => import('@/layout/UserLayout.vue'),
-  redirect: '/cards',
+  redirect: '/card',
   children: [
+    // ---------- 卡面 ----------
     {
-      path: 'cards',
-      name: 'UserCards',
+      path: 'card',
+      name: 'UserCardList',
       component: () => import('@/views/userCardPage/Index.vue'),
       meta: { title: '卡面' },
     },
     {
-      path: 'story',
-      name: 'UserStory',
-      component: () => import('@/views/userStoryPage/Index.vue'),
-      meta: { title: '剧情' },
+      path: 'card/:id',
+      name: 'UserCardDetail',
+      component: () => import('@/views/userCardPage/CardDetail.vue'),
+      meta: { title: '卡面详情' },
     },
+    // ---------- 剧情 ----------
     {
       path: 'story/browse/:type',
       name: 'UserStoryBrowse',
