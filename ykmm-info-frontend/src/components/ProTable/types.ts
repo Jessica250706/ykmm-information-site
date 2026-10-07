@@ -66,6 +66,8 @@ export interface ProTableColumn<T extends AnyRow = AnyRow> {
   hidden?: boolean
   /** 多级表头 */
   children?: ProTableColumn<T>[]
+  /** 是否采用 flex 布局 */
+  displayFlex?: boolean
   /** 透传给 el-table-column 的其他属性 */
   [key: string]: unknown
 }

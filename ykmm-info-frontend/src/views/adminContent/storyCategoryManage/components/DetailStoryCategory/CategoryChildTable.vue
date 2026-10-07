@@ -51,7 +51,7 @@ import {
 } from '@/components/ProTable'
 import { useStoryCategoryTypeStore } from '@/stores/storyCategoryTypeStore'
 import type { StoryCategoryPageQueryDTO, StoryCategoryVO } from '@/types/storyCategory'
-import { categoryTagStyle } from '@/utils/helpers'
+import { categoryTagStyle } from '@/utils/index'
 
 const props = defineProps<{
   /** 父分类 ID：请求子分类时带上 */

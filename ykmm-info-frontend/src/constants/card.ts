@@ -1,3 +1,6 @@
+import { categoryTagStyle } from '@/utils'
+import { type PaletteKey } from './index'
+
 /**
  * 卡面最高等级
  */
@@ -42,13 +45,24 @@ export const CARD_ATTRIBUTE_OPTIONS = [
 ] as const
 
 /** 属性对应颜色（视觉区分） */
-export const CARD_ATTRIBUTE_TAG_TYPE: Record<
-  CardAttributeValue,
-  'primary' | 'success' | 'warning' | 'danger' | 'info'
-> = {
-  [CARD_ATTRIBUTE.SHOUT]: 'danger',
-  [CARD_ATTRIBUTE.BEAT]: 'success',
-  [CARD_ATTRIBUTE.MELODY]: 'primary',
+export const CARD_ATTRIBUTE_TAG_TYPE: Record<CardAttributeValue, PaletteKey> = {
+  [CARD_ATTRIBUTE.SHOUT]: 'red',
+  [CARD_ATTRIBUTE.BEAT]: 'lime',
+  [CARD_ATTRIBUTE.MELODY]: 'blue',
+}
+
+/**
+ * 根据属性值生成 tag 样式
+ *
+ * @param attribute 属性值：1-Shout 2-Beat 3-Melody
+ * @returns 内联样式对象，无效值返回 undefined
+ */
+export function getAttributeTagStyle(attribute?: number | null) {
+  if (attribute == null) return undefined
+  const key = attribute as CardAttributeValue
+  const paletteKey = CARD_ATTRIBUTE_TAG_TYPE[key]
+  if (!paletteKey) return undefined
+  return categoryTagStyle(paletteKey)
 }
 
 /**
@@ -140,29 +154,6 @@ export const CARD_COSTUME_TYPE_OPTIONS = [
   { value: CARD_COSTUME_TYPE.MODEL_3D, label: CARD_COSTUME_TYPE_LABEL[CARD_COSTUME_TYPE.MODEL_3D] },
 ] as const
 
-/**
- * 卡面状态
- */
-export const CARD_STATUS = {
-  PUBLISHED: 1,
-  PENDING: 2,
-  REJECTED: 3,
-} as const
-
-export type CardStatusValue = (typeof CARD_STATUS)[keyof typeof CARD_STATUS]
-
-export const CARD_STATUS_LABEL: Record<CardStatusValue, string> = {
-  [CARD_STATUS.PUBLISHED]: '已发布',
-  [CARD_STATUS.PENDING]: '待审核',
-  [CARD_STATUS.REJECTED]: '已拒绝',
-}
-
-export const CARD_STATUS_OPTIONS = [
-  { value: CARD_STATUS.PUBLISHED, label: CARD_STATUS_LABEL[CARD_STATUS.PUBLISHED] },
-  { value: CARD_STATUS.PENDING, label: CARD_STATUS_LABEL[CARD_STATUS.PENDING] },
-  { value: CARD_STATUS.REJECTED, label: CARD_STATUS_LABEL[CARD_STATUS.REJECTED] },
-] as const
-
 /** 安全取文案 */
 export function cardMaxRarityLabel(v?: number | null): string {
   return v != null && (v === 1 || v === 2) ? CARD_MAX_RARITY_LABEL[v] : '未知'
@@ -186,9 +177,4 @@ export function cardAttachedStoryTypeLabel(v?: number | null): string {
 export function cardCostumeTypeLabel(v?: number | null): string {
   if (v == null) return '未知'
   return CARD_COSTUME_TYPE_LABEL[v as CardCostumeTypeValue] ?? '未知'
-}
-
-export function cardStatusLabel(v?: number | null): string {
-  if (v == null) return '未知'
-  return CARD_STATUS_LABEL[v as CardStatusValue] ?? '未知'
 }

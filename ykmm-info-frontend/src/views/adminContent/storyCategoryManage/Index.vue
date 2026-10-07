@@ -83,7 +83,7 @@ import {
 import { STORY_CATEGORY_TYPE_LABEL, type StoryCategoryTypeValue } from '@/constants/story'
 import { useStoryCategoryTypeStore } from '@/stores/storyCategoryTypeStore'
 import type { StoryCategoryPageQueryDTO, StoryCategoryVO } from '@/types/storyCategory'
-import { categoryTagStyle } from '@/utils/helpers'
+import { categoryTagStyle } from '@/utils/index'
 
 const router = useRouter()
 const storyCategoryTypeStore = useStoryCategoryTypeStore()

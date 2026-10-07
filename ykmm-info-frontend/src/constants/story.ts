@@ -37,34 +37,6 @@ export const STORY_CATEGORY_TYPE_OPTIONS = [
   },
 ] as const
 
-/* -------- 剧情审核状态 -------- */
-export const STORY_STATUS = {
-  PUBLISHED: 1,
-  PENDING: 2,
-  REJECTED: 3,
-} as const
-
-export type StoryStatusValue = (typeof STORY_STATUS)[keyof typeof STORY_STATUS]
-
-export const STORY_STATUS_LABEL: Record<StoryStatusValue, string> = {
-  [STORY_STATUS.PUBLISHED]: '已发布',
-  [STORY_STATUS.PENDING]: '待审核',
-  [STORY_STATUS.REJECTED]: '已拒绝',
-}
-
-export const STORY_STATUS_OPTIONS = [
-  { value: STORY_STATUS.PUBLISHED, label: STORY_STATUS_LABEL[STORY_STATUS.PUBLISHED] },
-  { value: STORY_STATUS.PENDING, label: STORY_STATUS_LABEL[STORY_STATUS.PENDING] },
-  { value: STORY_STATUS.REJECTED, label: STORY_STATUS_LABEL[STORY_STATUS.REJECTED] },
-] as const
-
-/** el-tag 的 type 映射 */
-export const STORY_STATUS_TAG_TYPE: Record<StoryStatusValue, 'success' | 'warning' | 'danger'> = {
-  [STORY_STATUS.PUBLISHED]: 'success',
-  [STORY_STATUS.PENDING]: 'warning',
-  [STORY_STATUS.REJECTED]: 'danger',
-}
-
 /* -------- 审核操作 -------- */
 export const STORY_AUDIT_ACTION = {
   APPROVE: 1,

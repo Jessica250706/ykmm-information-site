@@ -24,7 +24,7 @@
 <script setup lang="ts">
 import { useStoryCategoryTypeStore } from '@/stores/storyCategoryTypeStore'
 import type { StoryCategoryVO } from '@/types/storyCategory'
-import { categoryTagStyle } from '@/utils/helpers'
+import { categoryTagStyle } from '@/utils/index'
 
 defineProps<{
   detail: StoryCategoryVO

@@ -9,7 +9,7 @@
     </template>
 
     <template #storyStatus="{ row }">
-      <el-tag :type="storyStatusTag(row.status)" effect="plain">
+      <el-tag :type="statusLabel(row.status)" effect="plain">
         {{ row.statusLabel ?? '未知' }}
       </el-tag>
     </template>
@@ -31,8 +31,8 @@ import {
   type ProTableColumn,
   type ProTableExpose,
 } from '@/components/ProTable'
+import { statusLabel } from '@/constants/index'
 import type { StoryVO } from '@/types/story'
-import { storyStatusTag } from '@/utils/helpers'
 
 const props = defineProps<{
   /** 分类 ID：请求该分类下的剧情 */

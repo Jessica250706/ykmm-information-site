@@ -107,7 +107,7 @@
 
         <!-- 属性 -->
         <template #attribute="{ row }">
-          <el-tag v-if="row.attribute" :type="cardAttributeTagType(row.attribute)" effect="plain">
+          <el-tag v-if="row.attribute" :style="getAttributeTagStyle(row.attribute)" effect="plain">
             {{ row.attributeLabel ?? cardAttributeLabel(row.attribute) }}
           </el-tag>
           <span v-else class="text-slate-300">-</span>
@@ -144,8 +144,8 @@
 
         <!-- 状态 -->
         <template #status="{ row }">
-          <el-tag :type="statusTagType(row.status)" effect="plain">
-            {{ row.statusLabel ?? cardStatusLabel(row.status) }}
+          <el-tag :type="getStatusTagType(row.status)" effect="plain">
+            {{ row.statusLabel ?? statusLabel(row.status) }}
           </el-tag>
         </template>
 
@@ -186,17 +186,17 @@ import {
 } from '@/components/ProTable'
 import {
   CARD_ATTACHED_STORY_TYPE,
-  CARD_ATTRIBUTE,
   CARD_ATTRIBUTE_OPTIONS,
   CARD_IMAGE_TYPE,
   CARD_MAX_RARITY,
   CARD_MAX_RARITY_OPTIONS,
-  CARD_STATUS,
   cardAttachedStoryTypeLabel,
   cardAttributeLabel,
   cardMaxRarityLabel,
-  cardStatusLabel,
-} from '@/constants/card'
+  getAttributeTagStyle,
+  getStatusTagType,
+  statusLabel,
+} from '@/constants'
 import { usePersonStore } from '@/stores/personStore'
 import type { CardPageQueryDTO, CardVO } from '@/types/card'
 import type { CardSeriesVO } from '@/types/cardSeries'
@@ -239,7 +239,7 @@ const columns: ProTableColumn<CardVO>[] = [
     align: 'center',
     showOverflowTooltip: true,
   },
-  { label: '操作', width: 180, align: 'center', fixed: 'right', slot: 'action' },
+  { label: '操作', width: 180, align: 'center', fixed: 'right', slot: 'action', displayFlex: true },
 ]
 
 /* -------- 按 maxRarity 决定封面 -------- */
@@ -262,19 +262,6 @@ function getImageUrls(row: CardVO): string[] {
 }
 
 /* -------- tag 类型 -------- */
-function cardAttributeTagType(attr: number): 'primary' | 'success' | 'warning' | 'danger' | 'info' {
-  switch (attr) {
-    case CARD_ATTRIBUTE.SHOUT:
-      return 'danger'
-    case CARD_ATTRIBUTE.BEAT:
-      return 'success'
-    case CARD_ATTRIBUTE.MELODY:
-      return 'primary'
-    default:
-      return 'info'
-  }
-}
-
 function attachedStoryTypeTag(type: number): 'primary' | 'success' | 'warning' | 'danger' | 'info' {
   switch (type) {
     case CARD_ATTACHED_STORY_TYPE.RC:
@@ -283,19 +270,6 @@ function attachedStoryTypeTag(type: number): 'primary' | 'success' | 'warning' |
       return 'warning'
     case CARD_ATTACHED_STORY_TYPE.RABBITTER:
       return 'info'
-    default:
-      return 'info'
-  }
-}
-
-function statusTagType(status?: number): 'primary' | 'success' | 'warning' | 'danger' | 'info' {
-  switch (status) {
-    case CARD_STATUS.PUBLISHED:
-      return 'success'
-    case CARD_STATUS.PENDING:
-      return 'warning'
-    case CARD_STATUS.REJECTED:
-      return 'danger'
     default:
       return 'info'
   }

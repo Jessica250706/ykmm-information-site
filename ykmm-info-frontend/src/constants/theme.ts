@@ -245,3 +245,6 @@ export const PALETTE_COLOR_OPTIONS = [
   { label: '紫色', value: 'purple' },
   { label: '粉色', value: 'pink' },
 ]
+
+/** 调色板键名的联合类型：'red' | 'orange' | ... | 'pink' */
+export type PaletteKey = (typeof PALETTE_KEYS)[number]

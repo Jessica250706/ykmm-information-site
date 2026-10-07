@@ -2,8 +2,7 @@ import { ref } from 'vue'
 import { ElMessage } from 'element-plus'
 import { listDialogueVersionOptionsAPI } from '@/api/dialogueVersion'
 import { getUserStoryDetailAPI, pageUserStoryAPI } from '@/api/story'
-import { SOURCE_TYPE } from '@/constants'
-import { STORY_STATUS } from '@/constants/story'
+import { SOURCE_TYPE, STATUS } from '@/constants/index'
 import type { DialogueVersionOptionVO } from '@/types/dialogueVersion'
 import type { StoryDetailVO, StoryVO } from '@/types/story'
 
@@ -39,7 +38,7 @@ export function useStoryDetail() {
     try {
       const res = await pageUserStoryAPI({
         categoryId,
-        status: STORY_STATUS.PUBLISHED,
+        status: STATUS.PUBLISHED,
         pageNum: 1,
         pageSize: 50,
       })

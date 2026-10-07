@@ -38,7 +38,7 @@
       <el-form-item label="状态">
         <el-select v-model="query.status" placeholder="全部" style="width: 140px" clearable>
           <el-option
-            v-for="opt in STORY_STATUS_OPTIONS"
+            v-for="opt in STATUS_OPTIONS"
             :key="opt.value"
             :label="opt.label"
             :value="opt.value"
@@ -76,22 +76,25 @@
 
         <!-- 分类类型 -->
         <template #categoryType="{ row }">
-          <el-tag :type="categoryTypeTag(row.categoryType)" effect="plain">
-            {{ row.categoryTypeLabel ?? '未知' }}
+          <el-tag
+            :style="categoryTagStyle(storyCategoryTypeStore.getTypeColor(row.categoryType))"
+            effect="plain"
+          >
+            {{ STORY_CATEGORY_TYPE_LABEL[row.categoryType as StoryCategoryTypeValue] ?? '未知' }}
           </el-tag>
         </template>
 
         <!-- 状态 -->
         <template #status="{ row }">
-          <el-tag :type="STORY_STATUS_TAG_TYPE[row.status as StoryStatusValue] ?? 'info'">
-            {{ row.statusLabel ?? STORY_STATUS_LABEL[row.status as StoryStatusValue] ?? '未知' }}
+          <el-tag :type="STATUS_TAG_TYPE[row.status as StatusValue] ?? 'info'">
+            {{ row.statusLabel ?? STATUS_LABEL[row.status as StatusValue] ?? '未知' }}
           </el-tag>
         </template>
 
         <!-- 操作 -->
         <template #action="{ row }">
           <el-button
-            v-if="row.status === STORY_STATUS.PENDING"
+            v-if="row.status === STATUS.PENDING"
             size="small"
             type="warning"
             link
@@ -127,17 +130,18 @@ import {
   type ProTableExpose,
 } from '@/components/ProTable'
 import {
-  STORY_CATEGORY_TYPE,
-  STORY_STATUS,
-  STORY_STATUS_LABEL,
-  STORY_STATUS_OPTIONS,
-  STORY_STATUS_TAG_TYPE,
+  STATUS,
+  STATUS_LABEL,
+  STATUS_OPTIONS,
+  STATUS_TAG_TYPE,
+  type StatusValue,
+  STORY_CATEGORY_TYPE_LABEL,
   type StoryCategoryTypeValue,
-  type StoryStatusValue,
-} from '@/constants/story'
+} from '@/constants/index'
 import { useStoryCategoryTypeStore } from '@/stores/storyCategoryTypeStore'
 import type { StoryPageQueryDTO, StoryVO } from '@/types/story'
 import type { StoryCategoryVO } from '@/types/storyCategory'
+import { categoryTagStyle } from '@/utils/index'
 import AuditDialog from './components/AuditDialog.vue'
 
 const router = useRouter()
@@ -150,7 +154,7 @@ const query = reactive<{
   keyword?: string
   categoryType?: StoryCategoryTypeValue
   categoryId?: number
-  status?: StoryStatusValue
+  status?: StatusValue
 }>({
   keyword: '',
   categoryType: undefined,
@@ -175,23 +179,6 @@ const columns: ProTableColumn<StoryVO>[] = [
   },
   { label: '操作', width: 180, align: 'center', fixed: 'right', slot: 'action' },
 ]
-
-function categoryTypeTag(type?: number): 'primary' | 'success' | 'warning' | 'danger' | 'info' {
-  switch (type) {
-    case STORY_CATEGORY_TYPE.MAIN:
-      return 'danger'
-    case STORY_CATEGORY_TYPE.RAINBOW_CITY:
-      return 'warning'
-    case STORY_CATEGORY_TYPE.SPECIAL:
-      return 'success'
-    case STORY_CATEGORY_TYPE.ACTIVITY:
-      return 'primary'
-    case STORY_CATEGORY_TYPE.DRAMA:
-      return 'info'
-    default:
-      return 'info'
-  }
-}
 
 async function fetchList(
   params: StoryPageQueryDTO & { pageNum: number; pageSize: number },

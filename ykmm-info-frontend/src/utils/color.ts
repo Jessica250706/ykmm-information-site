@@ -60,3 +60,15 @@ export function personTagStyle(color?: string) {
     backgroundColor: `color-mix(in srgb, ${color} 8%, white)`,
   }
 }
+
+/**
+ * 按颜色变量生成 el-tag 的内联样式：
+ * <el-tag :style="categoryTagStyle(color)" effect="plain">
+ * → borderColor: var(--color-xxx); color: var(--color-xxx)
+ */
+export function categoryTagStyle(color: string) {
+  return {
+    borderColor: `var(--color-${color})`,
+    color: `var(--color-${color})`,
+  }
+}

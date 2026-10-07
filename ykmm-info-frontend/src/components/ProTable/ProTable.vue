@@ -17,12 +17,14 @@
         <!-- 插槽列：slot 名来自列配置，但模板里的 #default / #header 是静态的 -->
         <el-table-column v-else-if="col.slot" v-bind="columnProps(col)">
           <template #default="scope">
-            <div
-              :style="{ justifyContent: alignMap[col.align] ?? 'flex-start' }"
+            <span
+              v-if="col.displayFlex"
+              :style="{ justifyContent: alignMap[col.align ?? ''] ?? 'flex-start' }"
               class="flex items-center"
             >
               <slot :name="col.slot" v-bind="scope" />
-            </div>
+            </span>
+            <slot v-else :name="col.slot" v-bind="scope" />
           </template>
           <template v-if="col.headerSlot" #header="scope">
             <slot :name="col.headerSlot" v-bind="scope" />
@@ -117,6 +119,7 @@ const props = withDefaults(defineProps<ProTableProps<T, P>>(), {
   defaultPageNum: 1,
   paginationLayout: 'total, sizes, prev, pager, next, jumper',
   immediate: true,
+  displayFlex: false,
 })
 
 const emit = defineEmits<{
