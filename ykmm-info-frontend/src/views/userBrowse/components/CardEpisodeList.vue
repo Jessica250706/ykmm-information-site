@@ -7,9 +7,10 @@
     <div class="flex shrink-0 items-center justify-between border-b px-3 py-3">
       <div class="min-w-0">
         <div class="text-xs text-slate-400">{{ sourceLabel }}</div>
-        <div class="truncate font-medium">{{ cardName || '-' }}</div>
+        <div class="truncate font-medium">
+          {{ cardInfo.name || '-' }}[{{ cardInfo.seriesName }}]
+        </div>
       </div>
-      <el-button link @click="emit('back')">返回</el-button>
     </div>
 
     <!-- 话数列表 -->
@@ -39,6 +40,8 @@
 </template>
 
 <script setup lang="ts">
+import type { CardVO } from '@/types/card'
+
 interface EpisodeItem {
   id?: number
   episodeNo?: number
@@ -49,7 +52,7 @@ defineProps<{
   /** 来源标签，如"卡面RC" */
   sourceLabel: string
   /** 卡面名 */
-  cardName: string
+  cardInfo: CardVO
   /** 话数列表 */
   episodes: EpisodeItem[]
   /** 当前选中话数 id */

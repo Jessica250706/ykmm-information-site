@@ -2,7 +2,7 @@
   <div class="card-dialogue-editor flex h-full gap-4 overflow-hidden">
     <!-- 左侧：话数列表 -->
     <CardEpisodeList
-      :card-name="cardName"
+      :card-info="cardInfo"
       :current-id="currentEpisodeId"
       :episodes="episodes"
       :source-label="sourceLabel"
@@ -92,7 +92,6 @@ const emit = defineEmits<{
 }>()
 
 /* -------- 卡面信息 -------- */
-const cardName = ref('')
 const color = ref('blue')
 const cardInfo = ref<CardVO>({})
 
@@ -101,7 +100,6 @@ async function loadCardInfo() {
   try {
     const res = await getCardDetailAPI(props.cardId)
     cardInfo.value = res.data ?? {}
-    cardName.value = cardInfo.value.name ?? ''
     // 用卡面属性对应的颜色
     const attrColorMap: Record<number, string> = { 1: 'red', 2: 'lime', 3: 'blue' }
     color.value = cardInfo.value.attribute

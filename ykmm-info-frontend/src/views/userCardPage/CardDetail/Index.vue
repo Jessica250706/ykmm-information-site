@@ -65,6 +65,7 @@ import { computed, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import ImageView from '@/components/ImageView/Index.vue'
 import { CARD_IMAGE_TYPE_LABEL, SOURCE_TYPE } from '@/constants'
+import { useUserStore } from '@/stores/userStore'
 import type { CardRcVO } from '@/types/cardRc'
 import type { CardRtvVO } from '@/types/cardRtv'
 import AddEpisodeDialog, { type EpisodeFormData } from './components/AddEpisodeDialog.vue'
@@ -81,6 +82,8 @@ const route = useRoute()
 const router = useRouter()
 
 const cardId = computed(() => Number(route.params.id ?? 0))
+
+const userStore = useUserStore()
 
 /* -------- 卡面 -------- */
 const { loading, card, attachedType, imageUrls, isRc, isRtv, load } = useCardDetail()
@@ -137,7 +140,7 @@ async function handleSubmitEpisode(payload: {
 /* -------- 查看 / 删除 -------- */
 function handleView(mode: 'rc' | 'rtv', id: number) {
   router.push({
-    name: mode === 'rc' ? 'AdminCardRcEdit' : 'AdminCardRtvEdit',
+    name: mode === 'rc' ? 'UserCardRcEdit' : 'UserCardRtvEdit',
     query: { cardId: String(cardId.value), episodeId: String(id) },
   })
 }
