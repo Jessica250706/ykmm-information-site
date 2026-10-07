@@ -3,8 +3,8 @@ package com.xq.service.impl;
 import com.xq.constant.RedisConstant;
 import com.xq.entity.CardCategory;
 import com.xq.entity.Sticker;
-import com.xq.enums.AttributeEnum;
-import com.xq.enums.RarityEnum;
+import com.xq.enums.CardAttributeEnum;
+import com.xq.enums.CardMaxRarityEnum;
 import com.xq.enums.StoryCategoryTypeEnum;
 import com.xq.mapper.CardCategoryMapper;
 import com.xq.mapper.StickerMapper;
@@ -68,7 +68,7 @@ public class CommonServiceImpl implements CommonService {
     // ---------------------------------------------------
     @Override
     public List<DictItemVO> getAttributeDict() {
-        return AttributeEnum.listAll().stream()
+        return CardAttributeEnum.listAll().stream()
                 .map(e -> new DictItemVO(e.getValue(), e.getLabel()))
                 .collect(Collectors.toList());
     }
@@ -78,7 +78,7 @@ public class CommonServiceImpl implements CommonService {
     // ---------------------------------------------------
     @Override
     public List<DictItemVO> getRarityDict() {
-        return RarityEnum.listAll().stream()
+        return CardMaxRarityEnum.listAll().stream()
                 .map(e -> new DictItemVO(e.getValue(), e.getLabel()))
                 .collect(Collectors.toList());
     }

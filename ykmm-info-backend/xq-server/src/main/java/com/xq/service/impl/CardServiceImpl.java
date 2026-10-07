@@ -150,7 +150,7 @@ public class CardServiceImpl implements CardService {
             throw new RuntimeException("属性不合法");
         }
         if (dto.getAttachedStoryType() != null
-                && !CardAttachedStoryTypeEnum.isValid(dto.getAttachedStoryType())) {
+                && !DialogueSourceTypeEnum.isValid(dto.getAttachedStoryType())) {
             throw new RuntimeException("附属剧情类型不合法");
         }
         if (dto.getCostumeType() != null && !CardCostumeTypeEnum.isValid(dto.getCostumeType())) {
@@ -279,7 +279,7 @@ public class CardServiceImpl implements CardService {
         BeanUtils.copyProperties(card, vo);
         vo.setMaxRarityLabel(CardMaxRarityEnum.getLabel(card.getMaxRarity()));
         vo.setAttributeLabel(CardAttributeEnum.getLabel(card.getAttribute()));
-        vo.setAttachedStoryTypeLabel(CardAttachedStoryTypeEnum.getLabel(card.getAttachedStoryType()));
+        vo.setAttachedStoryTypeLabel(DialogueSourceTypeEnum.getLabel(card.getAttachedStoryType()));
         vo.setCostumeTypeLabel(CardCostumeTypeEnum.getLabel(card.getCostumeType()));
 
         // 保证列表字段非 null

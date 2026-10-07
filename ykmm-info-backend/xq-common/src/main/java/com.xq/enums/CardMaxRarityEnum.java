@@ -2,6 +2,10 @@ package com.xq.enums;
 
 import lombok.Getter;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 /**
  * 卡面最高等级
  */
@@ -24,5 +28,9 @@ public enum CardMaxRarityEnum {
     public static boolean isValid(Integer value) {
         for (CardMaxRarityEnum e : values()) if (e.value.equals(value)) return true;
         return false;
+    }
+
+    public static List<CardMaxRarityEnum> listAll() {
+        return new ArrayList<>(Arrays.asList(values()));
     }
 }

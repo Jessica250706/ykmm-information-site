@@ -2,6 +2,11 @@ package com.xq.enums;
 
 import lombok.Getter;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
+
 /**
  * 卡面属性
  */
@@ -25,5 +30,9 @@ public enum CardAttributeEnum {
     public static boolean isValid(Integer value) {
         for (CardAttributeEnum e : values()) if (e.value.equals(value)) return true;
         return false;
+    }
+
+    public static List<CardAttributeEnum> listAll() {
+        return new ArrayList<>(Arrays.asList(values()));
     }
 }

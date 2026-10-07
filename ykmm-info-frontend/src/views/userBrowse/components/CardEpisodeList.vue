@@ -4,7 +4,7 @@
     class="flex w-56 shrink-0 flex-col overflow-hidden border-r bg-white"
   >
     <!-- 标题 -->
-    <div class="flex shrink-0 items-center justify-between border-b px-3 py-3">
+    <div class="flex shrink-0 items-center justify-between border-b py-3">
       <div class="min-w-0">
         <div class="text-xs text-slate-400">{{ sourceLabel }}</div>
         <div class="truncate font-medium">
@@ -15,7 +15,7 @@
 
     <!-- 话数列表 -->
     <div class="flex-1 min-h-0 overflow-y-auto py-2 app-scrollbar">
-      <ul class="px-2">
+      <ul>
         <li
           v-for="ep in episodes"
           :key="ep.id"

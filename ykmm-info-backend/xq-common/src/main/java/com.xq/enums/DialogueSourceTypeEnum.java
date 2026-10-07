@@ -9,19 +9,29 @@ import lombok.Getter;
 public enum DialogueSourceTypeEnum {
 
     /**
-     * 剧情
+     * 无
      */
-    STORY(1, "剧情"),
-
-    /**
-     * 卡面 RTV
-     */
-    RTV(2, "卡面RTV"),
+    NONE(0, "无"),
 
     /**
      * 卡面 RC
      */
-    RC(3, "卡面RC");
+    RC(1, "RC"),
+
+    /**
+     * 卡面 RTV
+     */
+    RTV(2, "RTV"),
+
+    /**
+     * 剧情
+     */
+    RABBITTER(3, "Rabbitter"),
+
+    /**
+     * 剧情
+     */
+    STORY(4, "剧情");
 
     private final Integer value;
     private final String label;
@@ -57,13 +67,13 @@ public enum DialogueSourceTypeEnum {
      */
     public static String getLabel(Integer value) {
         if (value == null) {
-            return null;
+            return "未知";
         }
         for (DialogueSourceTypeEnum e : values()) {
             if (e.value.equals(value)) {
                 return e.label;
             }
         }
-        return null;
+        return "未知";
     }
 }
