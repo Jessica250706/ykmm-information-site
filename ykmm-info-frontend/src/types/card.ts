@@ -14,9 +14,9 @@ export interface CardPageQueryDTO extends PageRequest {
    */
   maxRarity?: number
   /**
-   * 关联人物ID
+   * 关联人物ID列表（多选，任选其一即匹配）
    */
-  personId?: number
+  personIds?: number[]
   /**
    * 所属系列ID
    */

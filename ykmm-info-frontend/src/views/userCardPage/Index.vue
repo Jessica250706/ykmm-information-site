@@ -13,7 +13,27 @@
     </div>
 
     <!-- 筛选行 -->
-    <div class="mb-5 flex items-center gap-3 col-3">
+    <div class="mb-5 flex items-center gap-3 col-4">
+      <el-select
+        v-model="filter.personIds"
+        :max-collapse-tags="2"
+        class="w-64"
+        placeholder="人物"
+        clearable
+        collapse-tags
+        collapse-tags-tooltip
+        filterable
+        multiple
+        @change="handleFilterChange"
+      >
+        <el-option
+          v-for="p in personStore.persons"
+          :key="p.id"
+          :label="p.nameCn || p.nameJp || `#${p.id}`"
+          :value="p.id!"
+        />
+      </el-select>
+
       <el-select
         v-model="filter.seriesId"
         class="w-48"
@@ -136,6 +156,7 @@ import {
   cardAttributeLabel,
   cardMaxRarityLabel,
 } from '@/constants'
+import { usePersonStore } from '@/stores/personStore'
 import type { CardVO } from '@/types/card'
 import type { CardSeriesVO } from '@/types/cardSeries'
 import { getAttributeTagStyle, getCoverImage } from '@/utils'
@@ -147,11 +168,15 @@ const filter = reactive<{
   seriesId?: number
   maxRarity?: number
   attribute?: number
+  personIds: number[]
 }>({
   seriesId: undefined,
   maxRarity: undefined,
   attribute: undefined,
+  personIds: [],
 })
+
+const personStore = usePersonStore()
 
 /* -------- 无限滚动状态 -------- */
 const loading = ref(false) // 加载锁
@@ -173,6 +198,7 @@ async function loadList() {
       seriesId: filter.seriesId,
       maxRarity: filter.maxRarity,
       attribute: filter.attribute,
+      personIds: filter.personIds.length ? filter.personIds : undefined,
     })
     const records = res.data.records ?? []
     list.value = records

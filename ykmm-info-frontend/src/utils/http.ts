@@ -1,5 +1,6 @@
 import axios from 'axios'
 import { ElMessage } from 'element-plus'
+import qs from 'qs'
 import router from '@/router'
 import { useUserStore } from '@/stores/userStore'
 import type { AxiosRequestConfig } from 'axios'
@@ -39,6 +40,13 @@ interface HttpInstance {
 const httpInstance = axios.create({
   baseURL: '/api',
   timeout: 10000,
+  paramsSerializer: {
+    serialize: (params) =>
+      qs.stringify(params, {
+        arrayFormat: 'repeat',
+        skipNulls: true,
+      }),
+  },
 })
 
 httpInstance.interceptors.request.use(

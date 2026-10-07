@@ -37,9 +37,13 @@
       <if test="query.maxRarity != null">AND c.max_rarity = #{query.maxRarity}</if>
       <if test="query.attribute != null">AND c.attribute = #{query.attribute}</if>
       <if test="query.status != null">AND c.status = #{query.status}</if>
-      <if test="query.personId != null">
+      <if test="query.personIds != null and query.personIds.size() > 0">
         AND c.id IN (
-        SELECT card_id FROM card_person_rel WHERE person_id = #{query.personId}
+        SELECT card_id FROM card_person_rel
+        WHERE person_id IN
+        <foreach collection="query.personIds" item="pid" open="(" separator="," close=")">
+          #{pid}
+        </foreach>
         )
       </if>
     </where>
