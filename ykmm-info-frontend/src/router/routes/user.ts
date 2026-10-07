@@ -15,7 +15,7 @@ export const userRoutes: RouteRecordRaw = {
     {
       path: 'card/:id',
       name: 'UserCardDetail',
-      component: () => import('@/views/userCardPage/CardDetail.vue'),
+      component: () => import('@/views/userCardPage/CardDetail/Index.vue'),
       meta: { title: '卡面详情' },
     },
     {
