@@ -123,6 +123,7 @@ export const CARD_ATTACHED_STORY_TYPE_OPTIONS = [
  * 服装类型
  */
 export const CARD_COSTUME_TYPE = {
+  NONE: 0,
   CHIBI: 1,
   MODEL_3D: 2,
 } as const
@@ -130,11 +131,13 @@ export const CARD_COSTUME_TYPE = {
 export type CardCostumeTypeValue = (typeof CARD_COSTUME_TYPE)[keyof typeof CARD_COSTUME_TYPE]
 
 export const CARD_COSTUME_TYPE_LABEL: Record<CardCostumeTypeValue, string> = {
+  [CARD_COSTUME_TYPE.NONE]: '无',
   [CARD_COSTUME_TYPE.CHIBI]: '偶像小人',
   [CARD_COSTUME_TYPE.MODEL_3D]: '3D造型',
 }
 
 export const CARD_COSTUME_TYPE_OPTIONS = [
+  { value: CARD_COSTUME_TYPE.NONE, label: CARD_COSTUME_TYPE_LABEL[CARD_COSTUME_TYPE.NONE] },
   { value: CARD_COSTUME_TYPE.CHIBI, label: CARD_COSTUME_TYPE_LABEL[CARD_COSTUME_TYPE.CHIBI] },
   { value: CARD_COSTUME_TYPE.MODEL_3D, label: CARD_COSTUME_TYPE_LABEL[CARD_COSTUME_TYPE.MODEL_3D] },
 ] as const

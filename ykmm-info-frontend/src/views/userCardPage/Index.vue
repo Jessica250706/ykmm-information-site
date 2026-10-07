@@ -173,7 +173,7 @@ const filter = reactive<{
   seriesId: undefined,
   maxRarity: undefined,
   attribute: undefined,
-  personIds: [],
+  personIds: [11, 12], // 默认百和千
 })
 
 const personStore = usePersonStore()

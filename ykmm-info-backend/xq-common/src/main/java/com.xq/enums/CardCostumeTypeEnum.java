@@ -7,6 +7,7 @@ import lombok.Getter;
  */
 @Getter
 public enum CardCostumeTypeEnum {
+    NONE(0, "无"),
     CHIBI(1, "偶像小人"),
     MODEL_3D(2, "3D造型");
 

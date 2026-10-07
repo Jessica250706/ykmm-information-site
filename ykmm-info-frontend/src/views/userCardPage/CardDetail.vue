@@ -1,6 +1,6 @@
 <template>
-  <section v-loading="loading" class="card-detail">
-    <div class="mb-5 flex items-center gap-3">
+  <section v-loading="loading" class="card-detail flex h-full min-h-0 flex-col">
+    <div class="mb-5 flex shrink-0 items-center gap-3">
       <el-button @click="handleBack">← 返回</el-button>
       <h1 class="text-xl font-semibold">{{ card?.name || '卡面详情' }}</h1>
       <el-tag
@@ -12,9 +12,9 @@
       </el-tag>
     </div>
 
-    <div v-if="card" class="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_320px]">
+    <div v-if="card" class="grid min-h-0 flex-1 grid-cols-1 gap-6 lg:grid-cols-[1fr_320px]">
       <!-- 左侧：图片 -->
-      <div class="rounded-xl bg-white p-4 shadow-sm">
+      <div class="min-h-0">
         <ImageView
           v-if="imageUrls.length"
           :image-list="imageUrls"
@@ -27,11 +27,17 @@
       </div>
 
       <!-- 右侧：信息 -->
-      <aside class="flex flex-col gap-4">
+      <aside class="flex min-h-0 flex-col gap-4">
         <!-- 基本信息 -->
-        <div class="rounded-xl bg-white p-4 shadow-sm">
+        <div>
           <h2 class="mb-3 text-sm font-medium text-slate-500">基本信息</h2>
           <dl class="space-y-2 text-sm">
+            <div class="flex justify-between gap-3">
+              <dt class="shrink-0 text-slate-400">名称</dt>
+              <dd class="truncate text-right">
+                {{ card.name || '-' }}[{{ card.seriesName || '-' }}]
+              </dd>
+            </div>
             <div class="flex justify-between gap-3">
               <dt class="shrink-0 text-slate-400">系列</dt>
               <dd class="truncate text-right">{{ card.seriesName || '-' }}</dd>
@@ -81,7 +87,7 @@
         </div>
 
         <!-- 关联人物 -->
-        <div v-if="card.persons?.length" class="rounded-xl bg-white p-4 shadow-sm">
+        <div v-if="card.persons?.length">
           <h2 class="mb-3 text-sm font-medium text-slate-500">关联人物</h2>
           <div class="flex flex-wrap gap-2">
             <el-tag
@@ -89,18 +95,19 @@
               :key="p.personId"
               :style="personTagStyle(p.themeColor)"
               effect="plain"
-              size="small"
             >
-              <el-avatar :size="18" :src="p.avatar" class="mr-1 align-middle">
-                {{ p.nameCn?.charAt(0) || '?' }}
-              </el-avatar>
-              {{ p.nameCn }}
+              <div class="flex items-center justify-center">
+                <el-avatar :size="18" :src="p.avatar" class="mr-2 align-middle">
+                  {{ p.nameCn?.charAt(0) || '?' }}
+                </el-avatar>
+                <span>{{ p.nameCn }}</span>
+              </div>
             </el-tag>
           </div>
         </div>
 
         <!-- 魅力技能 -->
-        <div v-if="card.skillDesc" class="rounded-xl bg-white p-4 shadow-sm">
+        <div v-if="card.skillDesc">
           <h2 class="mb-3 text-sm font-medium text-slate-500">魅力技能</h2>
           <p class="whitespace-pre-line text-sm leading-relaxed text-slate-700">
             {{ card.skillDesc }}
@@ -108,17 +115,11 @@
         </div>
 
         <!-- 图片类型图例 -->
-        <div v-if="imageLegend.length" class="rounded-xl bg-white p-4 shadow-sm">
+        <div v-if="imageLegend.length">
           <h2 class="mb-3 text-sm font-medium text-slate-500">图片类型</h2>
           <div class="flex flex-wrap gap-2">
-            <el-tag
-              v-for="(l, i) in imageLegend"
-              :key="l.type"
-              effect="plain"
-              size="small"
-              type="info"
-            >
-              {{ i + 1 }}. {{ l.label }}
+            <el-tag v-for="l in imageLegend" :key="l.type" effect="plain" size="small" type="info">
+              {{ l.label }}
             </el-tag>
           </div>
           <p class="mt-2 text-xs text-slate-400">左侧图片顺序与上方编号一致，点击缩略图切换</p>
