@@ -72,12 +72,12 @@ import type { StoryCategoryVO } from '@/types/storyCategory'
 import BrowseCenter from './components/BrowseCenter.vue'
 import BrowseLeft from './components/BrowseLeft.vue'
 import BrowseRight from './components/BrowseRight/Index.vue'
-import { useBrowseNavigation } from './composables/useBrowseNavigation'
-import { useBrowseRoute } from './composables/useBrowseRoute'
-import { useCategoryTree } from './composables/useCategoryTree'
-import { useDialogueEdit } from './composables/useDialogueEdit'
-import { useStoryDetail } from './composables/useStoryDetail'
-import { useVersionSelection } from './composables/useVersionSelection'
+import { useBrowseNavigation } from './composables/useBrowseNavigation.ts'
+import { useBrowseRoute } from './composables/useBrowseRoute.ts'
+import { useCategoryTree } from './composables/useCategoryTree.ts'
+import { useDialogueEdit } from './composables/useDialogueEdit.ts'
+import { useStoryDetail } from './composables/useStoryDetail.ts'
+import { useVersionSelection } from './composables/useVersionSelection.ts'
 
 const storyCategoryTypeStore = useStoryCategoryTypeStore()
 

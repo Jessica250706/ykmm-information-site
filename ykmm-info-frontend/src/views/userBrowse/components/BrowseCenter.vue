@@ -43,7 +43,7 @@ import type { StoryDetailVO, StoryVO } from '@/types/story'
 import type { StoryCategoryVO } from '@/types/storyCategory'
 import BrowseCenterCategory from './BrowseCenterCategory.vue'
 import BrowseCenterStory from './BrowseCenterStory.vue'
-import type { VersionSelectItem } from '../composables/useVersionSelection'
+import type { VersionSelectItem } from '../composables/useVersionSelection.ts'
 
 const props = defineProps<{
   /** 详情加载中 */

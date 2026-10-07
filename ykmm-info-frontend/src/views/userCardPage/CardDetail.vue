@@ -1,15 +1,22 @@
 <template>
   <section v-loading="loading" class="card-detail flex h-full min-h-0 flex-col">
-    <div class="mb-5 flex shrink-0 items-center gap-3">
-      <el-button @click="handleBack">← 返回</el-button>
-      <h1 class="text-xl font-semibold">{{ card?.name || '卡面详情' }}</h1>
-      <el-tag
-        v-if="card?.maxRarity"
-        :type="card.maxRarity === CARD_MAX_RARITY.UR ? 'danger' : 'warning'"
-        effect="plain"
-      >
-        {{ card.maxRarityLabel ?? cardMaxRarityLabel(card.maxRarity) }}
-      </el-tag>
+    <div class="mb-5 flex shrink-0 items-center justify-between">
+      <div class="flex items-center gap-3">
+        <el-button @click="handleBack">← 返回</el-button>
+        <h1 class="text-xl font-semibold">{{ card?.name || '卡面详情' }}</h1>
+        <el-tag
+          v-if="card?.maxRarity"
+          :type="card.maxRarity === CARD_MAX_RARITY.UR ? 'danger' : 'warning'"
+          effect="plain"
+        >
+          {{ card.maxRarityLabel ?? cardMaxRarityLabel(card.maxRarity) }}
+        </el-tag>
+      </div>
+      <div>
+        <el-button v-if="card?.attachedStoryTypeLabel" type="primary" @click="handleGoto">
+          查看{{ card?.attachedStoryTypeLabel }}
+        </el-button>
+      </div>
     </div>
 
     <div v-if="card" class="grid min-h-0 flex-1 grid-cols-1 gap-6 lg:grid-cols-[1fr_320px]">
@@ -143,7 +150,8 @@ import {
   cardAttributeLabel,
   cardCostumeTypeLabel,
   cardMaxRarityLabel,
-} from '@/constants/card'
+  SOURCE_TYPE,
+} from '@/constants'
 import type { CardVO } from '@/types/card'
 import { attachedStoryTypeTag, getAttributeTagStyle, personTagStyle } from '@/utils'
 
@@ -185,6 +193,13 @@ async function loadDetail() {
 
 function handleBack() {
   router.back()
+}
+
+function handleGoto() {
+  router.push({
+    name: 'UserCardRcEdit',
+    query: { sourceType: SOURCE_TYPE.RC, cardId: String(cardId.value) },
+  })
 }
 
 onMounted(() => {

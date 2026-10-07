@@ -123,6 +123,7 @@ import {
   updateCardRcAPI,
 } from '@/api/cardRc'
 import { listGroupedRolesAPI } from '@/api/role'
+import { SOURCE_TYPE } from '@/constants'
 import type { CardVO } from '@/types/card'
 import type { CardRcDTO, CardRcVO } from '@/types/cardRc'
 import type { RoleGroupVO } from '@/types/role'
@@ -290,11 +291,10 @@ async function handleDelete(row: CardRcVO) {
  */
 function handleManageDialogue(row: CardRcVO) {
   ElMessage.info('对话编辑入口待接入，请使用对应的对话编辑页面')
-  // 后续可改为：
-  // router.push({
-  //   name: 'AdminDialogueEdit',
-  //   query: { sourceType: 3, sourceId: String(row.id) },
-  // })
+  router.push({
+    name: 'UserCardRcEdit',
+    query: { sourceType: SOURCE_TYPE.RC, sourceId: String(row.id) },
+  })
 }
 
 function handleBack() {

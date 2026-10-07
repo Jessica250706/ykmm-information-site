@@ -94,7 +94,7 @@ import type { DialogueLineVO } from '@/types/dialogueLine'
 import type { DialogueVersionOptionVO, DialogueVersionVO } from '@/types/dialogueVersion'
 import type { StoryDetailVO } from '@/types/story'
 import DialogueView from './DialogueView.vue'
-import type { VersionSelectItem } from '../composables/useVersionSelection'
+import type { VersionSelectItem } from '../composables/useVersionSelection.ts'
 
 /* -------- Props / Emits -------- */
 

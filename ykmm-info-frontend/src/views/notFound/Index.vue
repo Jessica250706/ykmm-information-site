@@ -5,7 +5,7 @@
       <p class="mt-3 text-slate-500">页面不存在</p>
       <button
         class="mt-5 rounded-lg bg-indigo-600 px-4 py-2 text-sm text-white"
-        @click="router.replace('/cards')"
+        @click="router.replace('/card')"
       >
         返回首页
       </button>
