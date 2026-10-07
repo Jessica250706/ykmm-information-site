@@ -1,4 +1,3 @@
-import { categoryTagStyle } from '@/utils'
 import { type PaletteKey } from './index'
 
 /**
@@ -49,20 +48,6 @@ export const CARD_ATTRIBUTE_TAG_TYPE: Record<CardAttributeValue, PaletteKey> = {
   [CARD_ATTRIBUTE.SHOUT]: 'red',
   [CARD_ATTRIBUTE.BEAT]: 'lime',
   [CARD_ATTRIBUTE.MELODY]: 'blue',
-}
-
-/**
- * 根据属性值生成 tag 样式
- *
- * @param attribute 属性值：1-Shout 2-Beat 3-Melody
- * @returns 内联样式对象，无效值返回 undefined
- */
-export function getAttributeTagStyle(attribute?: number | null) {
-  if (attribute == null) return undefined
-  const key = attribute as CardAttributeValue
-  const paletteKey = CARD_ATTRIBUTE_TAG_TYPE[key]
-  if (!paletteKey) return undefined
-  return categoryTagStyle(paletteKey)
 }
 
 /**

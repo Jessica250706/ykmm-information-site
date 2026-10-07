@@ -185,22 +185,25 @@ import {
   type ProTableExpose,
 } from '@/components/ProTable'
 import {
-  CARD_ATTACHED_STORY_TYPE,
   CARD_ATTRIBUTE_OPTIONS,
-  CARD_IMAGE_TYPE,
   CARD_MAX_RARITY,
   CARD_MAX_RARITY_OPTIONS,
   cardAttachedStoryTypeLabel,
   cardAttributeLabel,
   cardMaxRarityLabel,
-  getAttributeTagStyle,
-  getStatusTagType,
   statusLabel,
 } from '@/constants'
 import { usePersonStore } from '@/stores/personStore'
 import type { CardPageQueryDTO, CardVO } from '@/types/card'
 import type { CardSeriesVO } from '@/types/cardSeries'
-import { personTagStyle } from '@/utils'
+import {
+  attachedStoryTypeTag,
+  getAttributeTagStyle,
+  getCoverImage,
+  getImageUrls,
+  getStatusTagType,
+  personTagStyle,
+} from '@/utils'
 
 const router = useRouter()
 const personStore = usePersonStore()
@@ -241,39 +244,6 @@ const columns: ProTableColumn<CardVO>[] = [
   },
   { label: '操作', width: 180, align: 'center', fixed: 'right', slot: 'action', displayFlex: true },
 ]
-
-/* -------- 按 maxRarity 决定封面 -------- */
-function getCoverImage(row: CardVO): string | undefined {
-  const images = row.images ?? []
-  const byType = (t: number) => images.find((i) => i.imageType === t)?.url
-
-  if (row.maxRarity === CARD_MAX_RARITY.UR) {
-    // UR：优先竖卡 → 横卡
-    return byType(CARD_IMAGE_TYPE.UR_VERTICAL) ?? byType(CARD_IMAGE_TYPE.UR_HORIZONTAL)
-  }
-  // 非 UR：优先普通 SSR → SSR隐藏款 → SR
-  return (
-    byType(CARD_IMAGE_TYPE.SSR) ?? byType(CARD_IMAGE_TYPE.SSR_HIDDEN) ?? byType(CARD_IMAGE_TYPE.SR)
-  )
-}
-
-function getImageUrls(row: CardVO): string[] {
-  return (row.images ?? []).map((i) => i.url!).filter((u) => !!u)
-}
-
-/* -------- tag 类型 -------- */
-function attachedStoryTypeTag(type: number): 'primary' | 'success' | 'warning' | 'danger' | 'info' {
-  switch (type) {
-    case CARD_ATTACHED_STORY_TYPE.RC:
-      return 'success'
-    case CARD_ATTACHED_STORY_TYPE.RTV:
-      return 'warning'
-    case CARD_ATTACHED_STORY_TYPE.RABBITTER:
-      return 'info'
-    default:
-      return 'info'
-  }
-}
 
 /* -------- 请求适配 -------- */
 async function fetchList(
