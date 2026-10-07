@@ -2,7 +2,21 @@
   <section class="card-list">
     <!-- 标题 + 搜索 -->
     <div class="mb-5 flex flex-wrap items-center justify-between gap-3">
-      <h1 class="text-xl font-semibold">卡面</h1>
+      <div class="flex items-center gap-3">
+        <h1 class="text-xl font-semibold">卡面</h1>
+        <!-- 卡片大小切换 -->
+        <el-radio-group v-model="cardSize" size="small">
+          <el-radio-button value="small">
+            <el-icon><Grid /></el-icon>
+          </el-radio-button>
+          <el-radio-button value="normal">
+            <el-icon><Menu /></el-icon>
+          </el-radio-button>
+          <el-radio-button value="big">
+            <el-icon><FullScreen /></el-icon>
+          </el-radio-button>
+        </el-radio-group>
+      </div>
       <input
         v-model="keyword"
         class="w-56 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm outline-none transition focus:border-(--el-color-primary) focus:ring-2 focus:ring-(--el-color-primary-light-8)"
@@ -84,10 +98,7 @@
       :infinite-scroll-distance="80"
       class="min-h-40"
     >
-      <div
-        v-if="list.length"
-        class="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5"
-      >
+      <div v-if="list.length" :class="['grid gap-4', gridClass]">
         <article
           v-for="item in list"
           :key="item.id"
@@ -145,7 +156,8 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, reactive, ref } from 'vue'
+import { computed, onMounted, reactive, ref, watch } from 'vue'
+import { FullScreen, Grid, Menu } from '@element-plus/icons-vue'
 import { useRouter } from 'vue-router'
 import { pageUserCardAPI } from '@/api/card'
 import { listCardSeriesOptionsAPI } from '@/api/cardSeries'
@@ -177,6 +189,33 @@ const filter = reactive<{
 })
 
 const personStore = usePersonStore()
+
+/* -------- 卡片大小 -------- */
+type CardSize = 'small' | 'normal' | 'big'
+
+const CARD_SIZE_STORAGE_KEY = 'user-card-size'
+
+const cardSize = ref<CardSize>(
+  (localStorage.getItem(CARD_SIZE_STORAGE_KEY) as CardSize) || 'normal',
+)
+
+/** 记住用户选择 */
+watch(cardSize, (v) => {
+  localStorage.setItem(CARD_SIZE_STORAGE_KEY, v)
+})
+
+/** 不同档位对应的 grid 列数 */
+const gridClass = computed(() => {
+  switch (cardSize.value) {
+    case 'small':
+      return 'grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 xl:grid-cols-10'
+    case 'big':
+      return 'grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4'
+    case 'normal':
+    default:
+      return 'grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5'
+  }
+})
 
 /* -------- 无限滚动状态 -------- */
 const loading = ref(false) // 加载锁
@@ -227,6 +266,7 @@ async function load() {
       seriesId: filter.seriesId,
       maxRarity: filter.maxRarity,
       attribute: filter.attribute,
+      personIds: filter.personIds.length ? filter.personIds : undefined,
     })
     const records = res.data.records ?? []
 
