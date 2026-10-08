@@ -1,8 +1,6 @@
 import { ref } from 'vue'
 import { getCardEpisodeDialogueAPI } from '@/api/card'
 import { listDialogueVersionOptionsAPI } from '@/api/dialogueVersion'
-import { SOURCE_TYPE, STATUS } from '@/constants'
-import type { CardEpisodeVO } from '@/types/card'
 import type { DialogueVersionOptionVO } from '@/types/dialogueVersion'
 import type { StoryDetailVO } from '@/types/story'
 
@@ -43,25 +41,7 @@ export function useCardEpisodeDetail() {
     loading.value = true
     try {
       const res = await getCardEpisodeDialogueAPI({ sourceType, sourceId })
-      const data = res.data as CardEpisodeVO | null
-
-      if (!data) {
-        episodeDetail.value = null
-        return
-      }
-
-      /**
-       * 适配为 StoryDetailVO 形状
-       * - id：话数ID，useDialogueEdit 用它做 key
-       * - title：话标题
-       * - versions：对话版本（含 lines / images / options / contributors）
-       * - categoryId / categoryType：卡面语境下无意义，留空
-       */
-      episodeDetail.value = {
-        id: data.id,
-        title: data.title,
-        versions: data.versions ?? [],
-      } as unknown as StoryDetailVO
+      episodeDetail.value = res.data
     } finally {
       loading.value = false
     }

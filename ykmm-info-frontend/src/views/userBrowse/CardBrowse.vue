@@ -14,6 +14,7 @@
     <BrowseCenter
       v-model:current-version-id="currentVersionId"
       :card-detail="episodeDetail"
+      :card-name="cardName"
       :color="color"
       :current-category="null"
       :editing-line-id="editingLineId"
@@ -57,7 +58,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { ElMessage } from 'element-plus'
 import { getCardDetailAPI } from '@/api/card'
 import { createDialogueVersionAPI } from '@/api/dialogueVersion'
@@ -80,7 +81,7 @@ interface EpisodeItem {
 
 /* -------- Props -------- */
 const props = defineProps<{
-  /** 来源类型：1-RC 2-RTV 3-Rabitter */
+  /** 来源类型：1-RC 2-RTV 3-Rabitter 4-story */
   sourceType: number
   /** 卡面ID */
   cardId: number
@@ -97,6 +98,7 @@ const emit = defineEmits<{
 /* -------- 卡面信息 -------- */
 const color = ref('blue')
 const cardInfo = ref<CardVO>({})
+const cardName = computed(() => cardInfo.value.name + '[' + cardInfo.value.seriesName + ']')
 
 async function loadCardInfo() {
   if (!props.cardId) return

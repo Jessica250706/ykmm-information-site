@@ -1,30 +1,30 @@
 <template>
   <div class="flex flex-col h-full min-h-0">
     <!-- 标题区域 -->
-    <div class="mb-4 shrink-0">
-      <div class="flex justify-between items-center">
-        <h2 class="text-lg font-semibold">
-          {{ storyDetail?.title || `剧情 #${storyDetail?.id}` }}
-        </h2>
-        <el-button @click="emit('goBack')">← 返回</el-button>
-      </div>
-      <div class="mt-1 flex flex-wrap items-center gap-2 text-xs text-slate-400">
-        <el-tag
-          :style="{
-            borderColor: `var(--color-${color})`,
-            color: `var(--color-${color})`,
-          }"
-          effect="plain"
-          size="small"
-        >
-          {{ storyDetail?.categoryTypeLabel }}
-        </el-tag>
-        <span>{{ storyDetail?.categoryName }}</span>
-      </div>
-      <p v-if="storyDetail?.description" class="mt-3 whitespace-pre-line text-sm text-slate-600">
-        {{ storyDetail.description }}
-      </p>
-    </div>
+    <BrowseHeader
+      v-if="sourceType === SOURCE_TYPE.STORY"
+      :color="color"
+      :description="storyDetail?.description"
+      :subtitle="storyDetail?.categoryName"
+      :tag="storyDetail?.categoryTypeLabel"
+      :title="storyDetail?.title || `剧情 #${storyDetail?.id}`"
+      @go-back="emit('goBack')"
+    />
+    <BrowseHeader
+      v-else-if="sourceType === SOURCE_TYPE.RC"
+      :color="color"
+      :subtitle="
+        cardDetail?.initiatorRoleName
+          ? `${cardName} · 发起人：${cardDetail.initiatorRoleName}`
+          : cardDetail?.name
+      "
+      :tag="SOURCE_TYPE_LABEL[sourceType]"
+      :title="
+        `第${cardDetail?.episodeNo}话 ${cardDetail?.title}` ||
+        `${SOURCE_TYPE_LABEL[sourceType]} #${cardDetail?.id}`
+      "
+      @go-back="emit('goBack')"
+    />
 
     <!-- 版本选择 -->
     <div class="mb-4 flex items-center gap-2 shrink-0">
@@ -89,13 +89,14 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import { useScrollShadow } from '@/composables/useScrollShadow'
-import { VERSION_FORMAT } from '@/constants'
+import { SOURCE_TYPE, SOURCE_TYPE_LABEL, VERSION_FORMAT } from '@/constants'
 import type { CardEpisodeVO } from '@/types/card'
 import type { DialogueLineVO } from '@/types/dialogueLine'
 import type { DialogueVersionOptionVO, DialogueVersionVO } from '@/types/dialogueVersion'
 import type { StoryDetailVO } from '@/types/story'
+import type { VersionSelectItem } from '@/views/userBrowse/composables/useVersionSelection'
+import BrowseHeader from './BrowseHeader.vue'
 import DialogueView from './DialogueView.vue'
-import type { VersionSelectItem } from '../../composables/useVersionSelection.ts'
 
 /* -------- Props / Emits -------- */
 
@@ -113,6 +114,10 @@ const props = defineProps<{
   selectedVersionKey: string
   /** 预计算的下拉项（由父级统一管理） */
   versionSelectItems: VersionSelectItem[]
+  /** 来源类型：1-RC 2-RTV 3-Rabitter 4-story */
+  sourceType: number
+  /** 卡片名称 */
+  cardName?: string
 }>()
 
 const emit = defineEmits<{

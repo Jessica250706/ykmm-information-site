@@ -12,6 +12,7 @@
       :color="color"
       :editing-line-id="editingLineId"
       :editing-mode="editingMode"
+      :source-type="sourceType"
       :story-detail="storyDetail"
       :version-options="versionOptions"
       :version-select-items="versionSelectItems"
@@ -36,9 +37,11 @@
       v-model:current-version-id="currentVersionIdComputed"
       v-model:selected-version-key="selectedVersionKeyComputed"
       :card-detail="cardDetail"
+      :card-name="cardName"
       :color="color"
       :editing-line-id="editingLineId"
       :editing-mode="editingMode"
+      :source-type="sourceType"
       :version-options="versionOptions"
       :version-select-items="versionSelectItems"
       @go-back="emit('goBack')"
@@ -92,6 +95,8 @@ const props = defineProps<{
   versionSelectItems: VersionSelectItem[]
   /** 来源类型：1-RC 2-RTV 3-Rabitter 4-story */
   sourceType: SourceTypeValue
+  /** 卡片名称 */
+  cardName: string
 }>()
 
 const emit = defineEmits<{
