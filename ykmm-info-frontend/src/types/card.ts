@@ -180,7 +180,7 @@ export interface CardPersonVO {
  */
 export interface CardDTO {
   /**
-   * 附属剧情类型：0无 1RC 2RTV 3Rabbiter
+   * 附属剧情类型：0无 1RC 2RTV 3Rabitter
    */
   attachedStoryType?: number
   /**

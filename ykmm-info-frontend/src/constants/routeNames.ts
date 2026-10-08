@@ -25,7 +25,7 @@ export const UserRouteName = {
   CARD_RC_BROWSE: 'UserCardRcBrowse',
   /** RTV 对话浏览 */
   CARD_RTV_BROWSE: 'UserCardRtvBrowse',
-  /** Rabbitter 对话浏览 */
+  /** Rabitter 对话浏览 */
   CARD_RABITTER_BROWSE: 'UserCardRabitterBrowse',
 
   // ---------- 剧情 ----------

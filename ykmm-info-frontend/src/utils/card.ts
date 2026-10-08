@@ -2,7 +2,14 @@ import {
   CARD_ATTRIBUTE_TAG_TYPE,
   CARD_IMAGE_TYPE,
   CARD_MAX_RARITY,
+  CARD_MAX_RARITY_TAG_TYPE,
   type CardAttributeValue,
+  DEFAULT_TAG_TYPE,
+  SOURCE_TYPE_LABEL,
+  SOURCE_TYPE_SMALL_LABEL,
+  type SourceTypeSmallLabelValue,
+  type SourceTypeValue,
+  type TagType,
 } from '@/constants'
 import type { CardVO } from '@/types/card'
 import { categoryTagStyle } from '@/utils'
@@ -40,4 +47,39 @@ export function getCoverImage(row: CardVO): string | undefined {
 
 export function getImageUrls(row: CardVO): string[] {
   return (row.images ?? []).map((i) => i.url!).filter((u) => !!u)
+}
+
+/**
+ * 根据卡面最高等级获取 Tag type
+ *
+ * @param maxRarity 卡面最高等级
+ * @returns Element Plus Tag type：'danger' | 'warning' | 'info' | ...
+ */
+export function getCardRarityTagType(maxRarity?: number | null): TagType {
+  if (maxRarity == null) return DEFAULT_TAG_TYPE
+  return CARD_MAX_RARITY_TAG_TYPE[maxRarity] ?? DEFAULT_TAG_TYPE
+}
+
+/**
+ * small label → 完整 label 反查表
+ * 由 SOURCE_TYPE_SMALL_LABEL 和 SOURCE_TYPE_LABEL 自动生成，避免两处维护
+ */
+export const SOURCE_TYPE_LABEL_BY_SMALL: Record<SourceTypeSmallLabelValue, string> = (
+  Object.keys(SOURCE_TYPE_SMALL_LABEL) as unknown as SourceTypeValue[]
+).reduce(
+  (acc, key) => {
+    acc[SOURCE_TYPE_SMALL_LABEL[key]] = SOURCE_TYPE_LABEL[key]
+    return acc
+  },
+  {} as Record<SourceTypeSmallLabelValue, string>,
+)
+
+/**
+ * 根据 small label 获取完整 label
+ *
+ * @param mode small label，如 'rc' / 'rtv'
+ * @returns 完整 label，如 'RC' / 'RTV'；未知返回 ''
+ */
+export function getSourceTypeLabel(mode: SourceTypeSmallLabelValue): string {
+  return SOURCE_TYPE_LABEL_BY_SMALL[mode] ?? ''
 }

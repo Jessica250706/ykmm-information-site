@@ -5,30 +5,22 @@
 
   <sql id="baseColumns">
     id,
-    card_id AS cardId,
+    card_id    AS cardId,
     episode_no AS episodeNo,
     title,
     created_at AS createdAt
   </sql>
 
   <select id="listByCardId" resultType="com.xq.entity.CardRabitter">
-    SELECT
-    <include refid="baseColumns"/>
+    SELECT <include refid="baseColumns"/>
     FROM card_rabitter
     WHERE card_id = #{cardId}
     ORDER BY episode_no, id
   </select>
 
   <select id="getById" resultType="com.xq.entity.CardRabitter">
-    SELECT
-    <include refid="baseColumns"/>
-    FROM card_rabitter WHERE id = #{id}
-  </select>
-
-  <select id="getVOById" resultType="com.xq.vo.CardRabitterVO">
-    SELECT
-    <include refid="baseColumns"/>
-    FROM card_rabitter
+    SELECT <include refid="baseColumns"/>
+    FROM card_rabbiter
     WHERE id = #{id}
   </select>
 
@@ -47,15 +39,11 @@
   </update>
 
   <delete id="deleteById">
-    DELETE
-    FROM card_rabitter
-    WHERE id = #{id}
+    DELETE FROM card_rabitter WHERE id = #{id}
   </delete>
 
   <delete id="deleteByCardId">
-    DELETE
-    FROM card_rabitter
-    WHERE card_id = #{cardId}
+    DELETE FROM card_rabitter WHERE card_id = #{cardId}
   </delete>
 
 </mapper>

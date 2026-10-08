@@ -1,10 +1,10 @@
 <template>
   <div>
-    <h2 class="mb-3 text-sm font-medium text-slate-500">{{ mode === 'rc' ? 'RC' : 'RTV' }} 列表</h2>
+    <h2 class="mb-3 text-sm font-medium text-slate-500">{{ getSourceTypeLabel(mode) }} 列表</h2>
 
     <el-empty
       v-if="!list.length"
-      :description="`暂无 ${mode === 'rc' ? 'RC' : 'RTV'}`"
+      :description="`暂无 ${getSourceTypeLabel(mode)}`"
       :image-size="60"
     />
 
@@ -18,7 +18,10 @@
           <div class="truncate text-sm font-medium">
             第 {{ ep.episodeNo }} 话{{ ep.title ? ` · ${ep.title}` : '' }}
           </div>
-          <div v-if="mode === 'rc'" class="mt-0.5 truncate text-xs text-slate-400">
+          <div
+            v-if="mode === SOURCE_TYPE_SMALL_LABEL[SOURCE_TYPE.RC]"
+            class="mt-0.5 truncate text-xs text-slate-400"
+          >
             发起人：{{ (ep as CardRcVO).roleName || '-' }}
           </div>
         </div>
@@ -46,11 +49,13 @@
 
 <script setup lang="ts">
 import { Delete, Edit } from '@element-plus/icons-vue'
+import { SOURCE_TYPE, SOURCE_TYPE_SMALL_LABEL, type SourceTypeSmallLabelValue } from '@/constants'
 import type { CardRcVO } from '@/types/cardRc'
 import type { CardRtvVO } from '@/types/cardRtv'
+import { getSourceTypeLabel } from '@/utils'
 
 defineProps<{
-  mode: 'rc' | 'rtv'
+  mode: SourceTypeSmallLabelValue
   list: (CardRcVO | CardRtvVO)[]
 }>()
 

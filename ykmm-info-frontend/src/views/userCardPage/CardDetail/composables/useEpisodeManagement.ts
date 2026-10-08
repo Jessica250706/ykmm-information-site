@@ -1,6 +1,12 @@
 import { computed, ref, type Ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import {
+  createCardRabitterAPI,
+  deleteCardRabitterAPI,
+  listCardRabitterByCardAPI,
+  updateCardRabitterAPI,
+} from '@/api/cardRabitter'
+import {
   createCardRcAPI,
   deleteCardRcAPI,
   listCardRcByCardAPI,
@@ -12,7 +18,8 @@ import {
   listCardRtvByCardAPI,
   updateCardRtvAPI,
 } from '@/api/cardRtv'
-import { SOURCE_TYPE } from '@/constants'
+import { SOURCE_TYPE, SOURCE_TYPE_SMALL_LABEL, type SourceTypeSmallLabelValue } from '@/constants'
+import type { CardRabitterVO } from '@/types/cardRabitter'
 import type { CardRcVO } from '@/types/cardRc'
 import type { CardRtvVO } from '@/types/cardRtv'
 import type { EpisodeFormData } from '../components/AddEpisodeDialog.vue'
@@ -20,6 +27,7 @@ import type { EpisodeFormData } from '../components/AddEpisodeDialog.vue'
 export function useEpisodeManagement(cardId: Ref<number>, attachedType: Ref<number>) {
   const rcList = ref<CardRcVO[]>([])
   const rtvList = ref<CardRtvVO[]>([])
+  const rabitterList = ref<CardRabitterVO[]>([])
 
   /** 当前 attachedType 对应的话数列表，用于 dialog 里计算默认话数 */
   const currentEpisodes = computed(() =>
@@ -35,6 +43,9 @@ export function useEpisodeManagement(cardId: Ref<number>, attachedType: Ref<numb
       } else if (attachedType.value === SOURCE_TYPE.RTV) {
         const res = await listCardRtvByCardAPI(cardId.value)
         rtvList.value = res.data ?? []
+      } else if (attachedType.value === SOURCE_TYPE.RABITTER) {
+        const res = await listCardRabitterByCardAPI(cardId.value)
+        rabitterList.value = res.data ?? []
       }
     } catch {
       // 忽略
@@ -42,8 +53,8 @@ export function useEpisodeManagement(cardId: Ref<number>, attachedType: Ref<numb
   }
 
   /** 新增 */
-  async function create(mode: 'rc' | 'rtv', data: EpisodeFormData) {
-    if (mode === 'rc') {
+  async function create(mode: SourceTypeSmallLabelValue, data: EpisodeFormData) {
+    if (mode === SOURCE_TYPE_SMALL_LABEL[SOURCE_TYPE.RC]) {
       await createCardRcAPI({
         cardId: cardId.value,
         episodeNo: data.episodeNo,
@@ -51,20 +62,27 @@ export function useEpisodeManagement(cardId: Ref<number>, attachedType: Ref<numb
         roleId: data.roleId,
       })
       ElMessage.success('新增 RC 成功')
-    } else {
+    } else if (mode === SOURCE_TYPE_SMALL_LABEL[SOURCE_TYPE.RTV]) {
       await createCardRtvAPI({
         cardId: cardId.value,
         episodeNo: data.episodeNo,
         title: data.title,
       })
       ElMessage.success('新增 RTV 成功')
+    } else if (mode === SOURCE_TYPE_SMALL_LABEL[SOURCE_TYPE.RABITTER]) {
+      await createCardRabitterAPI({
+        cardId: cardId.value,
+        episodeNo: data.episodeNo,
+        title: data.title,
+      })
+      ElMessage.success('新增 Rabitter 成功')
     }
     await load()
   }
 
   /** 更新 */
-  async function update(mode: 'rc' | 'rtv', id: number, data: EpisodeFormData) {
-    if (mode === 'rc') {
+  async function update(mode: SourceTypeSmallLabelValue, id: number, data: EpisodeFormData) {
+    if (mode === SOURCE_TYPE_SMALL_LABEL[SOURCE_TYPE.RC]) {
       await updateCardRcAPI(id, {
         cardId: cardId.value,
         episodeNo: data.episodeNo,
@@ -72,19 +90,29 @@ export function useEpisodeManagement(cardId: Ref<number>, attachedType: Ref<numb
         roleId: data.roleId,
       })
       ElMessage.success('更新 RC 成功')
-    } else {
+    } else if (mode === SOURCE_TYPE_SMALL_LABEL[SOURCE_TYPE.RTV]) {
       await updateCardRtvAPI(id, {
         cardId: cardId.value,
         episodeNo: data.episodeNo,
         title: data.title,
       })
       ElMessage.success('更新 RTV 成功')
+    } else if (mode === SOURCE_TYPE_SMALL_LABEL[SOURCE_TYPE.RABITTER]) {
+      await updateCardRabitterAPI(id, {
+        cardId: cardId.value,
+        episodeNo: data.episodeNo,
+        title: data.title,
+      })
+      ElMessage.success('更新 Rabitter 成功')
     }
     await load()
   }
 
   /** 删除 */
-  async function remove(mode: 'rc' | 'rtv', ep: CardRcVO | CardRtvVO) {
+  async function remove(
+    mode: SourceTypeSmallLabelValue,
+    ep: CardRcVO | CardRtvVO | CardRabitterVO,
+  ) {
     try {
       await ElMessageBox.confirm(
         `确定要删除第 ${ep.episodeNo} 话「${ep.title ?? ''}」吗？删除后不可恢复。`,
@@ -96,8 +124,10 @@ export function useEpisodeManagement(cardId: Ref<number>, attachedType: Ref<numb
     }
 
     try {
-      if (mode === 'rc') await deleteCardRcAPI(ep.id!)
-      else await deleteCardRtvAPI(ep.id!)
+      if (mode === SOURCE_TYPE_SMALL_LABEL[SOURCE_TYPE.RC]) await deleteCardRcAPI(ep.id!)
+      else if (mode === SOURCE_TYPE_SMALL_LABEL[SOURCE_TYPE.RTV]) await deleteCardRtvAPI(ep.id!)
+      else if (mode === SOURCE_TYPE_SMALL_LABEL[SOURCE_TYPE.RABITTER])
+        await deleteCardRabitterAPI(ep.id!)
       ElMessage.success('删除成功')
       await load()
     } catch {

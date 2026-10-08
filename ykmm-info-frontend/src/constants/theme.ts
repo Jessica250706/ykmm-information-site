@@ -248,3 +248,5 @@ export const PALETTE_COLOR_OPTIONS = [
 
 /** 调色板键名的联合类型：'red' | 'orange' | ... | 'pink' */
 export type PaletteKey = (typeof PALETTE_KEYS)[number]
+
+export type TagType = 'primary' | 'success' | 'warning' | 'info' | 'danger'

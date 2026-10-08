@@ -3,11 +3,7 @@
     <div class="flex items-center gap-3">
       <el-button @click="emit('back')">← 返回</el-button>
       <h1 class="text-xl font-semibold">{{ card?.name || '卡面详情' }}</h1>
-      <el-tag
-        v-if="card?.maxRarity"
-        :type="card.maxRarity === CARD_MAX_RARITY.UR ? 'danger' : 'warning'"
-        effect="plain"
-      >
+      <el-tag v-if="card?.maxRarity" :type="getCardRarityTagType(card.maxRarity)" effect="plain">
         {{ card.maxRarityLabel ?? cardMaxRarityLabel(card.maxRarity) }}
       </el-tag>
     </div>
@@ -16,7 +12,7 @@
       <el-button
         v-if="attachedType === SOURCE_TYPE.RC"
         type="primary"
-        @click="emit('addEpisode', 'rc')"
+        @click="emit('addEpisode', SOURCE_TYPE_SMALL_LABEL[SOURCE_TYPE.RC])"
       >
         <el-icon><Plus /></el-icon>
         新增 RC
@@ -25,7 +21,7 @@
       <el-button
         v-if="attachedType === SOURCE_TYPE.RTV"
         type="primary"
-        @click="emit('addEpisode', 'rtv')"
+        @click="emit('addEpisode', SOURCE_TYPE_SMALL_LABEL[SOURCE_TYPE.RTV])"
       >
         <el-icon><Plus /></el-icon>
         新增 RTV
@@ -40,8 +36,14 @@
 
 <script setup lang="ts">
 import { Plus } from '@element-plus/icons-vue'
-import { CARD_MAX_RARITY, cardMaxRarityLabel, SOURCE_TYPE } from '@/constants'
+import {
+  cardMaxRarityLabel,
+  SOURCE_TYPE,
+  SOURCE_TYPE_SMALL_LABEL,
+  type SourceTypeSmallLabelValue,
+} from '@/constants'
 import type { CardVO } from '@/types/card'
+import { getCardRarityTagType } from '@/utils'
 
 defineProps<{
   card: CardVO | null
@@ -51,6 +53,6 @@ defineProps<{
 const emit = defineEmits<{
   back: []
   goto: []
-  addEpisode: [mode: 'rc' | 'rtv']
+  addEpisode: [mode: SourceTypeSmallLabelValue]
 }>()
 </script>

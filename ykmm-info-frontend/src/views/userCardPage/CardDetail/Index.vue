@@ -34,17 +34,17 @@
           v-if="isRc"
           :list="rcList"
           mode="rc"
-          @delete="(ep) => handleRemove('rc', ep)"
-          @edit="(ep) => handleEdit('rc', ep)"
-          @view="(id) => handleView('rc', id)"
+          @delete="(ep) => handleRemove(SOURCE_TYPE_SMALL_LABEL[SOURCE_TYPE.RC], ep)"
+          @edit="(ep) => handleEdit(SOURCE_TYPE_SMALL_LABEL[SOURCE_TYPE.RC], ep)"
+          @view="(id) => handleView(SOURCE_TYPE_SMALL_LABEL[SOURCE_TYPE.RC], id)"
         />
         <CardEpisodeList
           v-if="isRtv"
           :list="rtvList"
           mode="rtv"
-          @delete="(ep) => handleRemove('rtv', ep)"
-          @edit="(ep) => handleEdit('rtv', ep)"
-          @view="(id) => handleView('rtv', id)"
+          @delete="(ep) => handleRemove(SOURCE_TYPE_SMALL_LABEL[SOURCE_TYPE.RTV], ep)"
+          @edit="(ep) => handleEdit(SOURCE_TYPE_SMALL_LABEL[SOURCE_TYPE.RTV], ep)"
+          @view="(id) => handleView(SOURCE_TYPE_SMALL_LABEL[SOURCE_TYPE.RTV], id)"
         />
       </aside>
     </div>
@@ -68,7 +68,9 @@ import {
   CARD_IMAGE_TYPE_LABEL,
   SOURCE_TYPE,
   SOURCE_TYPE_LABEL,
+  SOURCE_TYPE_SMALL_LABEL,
   type SourceTypeLabelValue,
+  type SourceTypeSmallLabelValue,
   UserRouteName,
 } from '@/constants'
 import type { CardRcVO } from '@/types/cardRc'
@@ -117,13 +119,13 @@ const imageLegend = computed(() =>
 const episodeDialogRef = ref<InstanceType<typeof AddEpisodeDialog> | null>(null)
 const episodeSaving = ref(false)
 
-function handleAddEpisode(mode: 'rc' | 'rtv') {
+function handleAddEpisode(mode: SourceTypeSmallLabelValue) {
   episodeDialogRef.value?.open(mode)
 }
 
 /** 提交：根据 id 是否为空区分新增 / 编辑 */
 async function handleSubmitEpisode(payload: {
-  mode: 'rc' | 'rtv'
+  mode: SourceTypeSmallLabelValue
   id: number | null
   data: EpisodeFormData
 }) {
@@ -159,7 +161,7 @@ function handleView(mode: SourceTypeLabelValue, id: number) {
 }
 
 /** 打开编辑弹窗 */
-function handleEdit(mode: 'rc' | 'rtv', ep: CardRcVO | CardRtvVO) {
+function handleEdit(mode: SourceTypeSmallLabelValue, ep: CardRcVO | CardRtvVO) {
   episodeDialogRef.value?.open(mode, {
     id: ep.id,
     episodeNo: ep.episodeNo,
@@ -169,7 +171,7 @@ function handleEdit(mode: 'rc' | 'rtv', ep: CardRcVO | CardRtvVO) {
   })
 }
 
-function handleRemove(mode: 'rc' | 'rtv', ep: CardRcVO | CardRtvVO) {
+function handleRemove(mode: SourceTypeSmallLabelValue, ep: CardRcVO | CardRtvVO) {
   void removeEpisode(mode, ep)
 }
 

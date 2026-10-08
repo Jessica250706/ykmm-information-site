@@ -1,3 +1,5 @@
+import { type TagType } from './index'
+
 /**
  * 来源类型
  * 0-无 1-RC 2-RTV 3-Rabitter 4-剧情
@@ -21,6 +23,17 @@ export const SOURCE_TYPE_LABEL: Record<SourceTypeValue, string> = {
 }
 export type SourceTypeLabelValue = (typeof SOURCE_TYPE_LABEL)[keyof typeof SOURCE_TYPE_LABEL]
 
+export const SOURCE_TYPE_SMALL_LABEL: Record<SourceTypeValue, string> = {
+  [SOURCE_TYPE.NONE]: 'none',
+  [SOURCE_TYPE.RC]: 'rc',
+  [SOURCE_TYPE.RTV]: 'rtv',
+  [SOURCE_TYPE.RABITTER]: 'rabitter',
+  [SOURCE_TYPE.STORY]: 'story',
+}
+
+export type SourceTypeSmallLabelValue =
+  (typeof SOURCE_TYPE_SMALL_LABEL)[keyof typeof SOURCE_TYPE_SMALL_LABEL]
+
 /** 下拉选项，给 el-select 直接用 */
 export const SOURCE_TYPE_OPTIONS = [
   { value: SOURCE_TYPE.NONE, label: SOURCE_TYPE_LABEL[SOURCE_TYPE.NONE] },
@@ -31,10 +44,7 @@ export const SOURCE_TYPE_OPTIONS = [
 ] as const
 
 /** el-tag 的 type 映射（可选，视视觉需要调整） */
-export const SOURCE_TYPE_TAG_TYPE: Record<
-  SourceTypeValue,
-  'primary' | 'success' | 'warning' | 'danger' | 'info'
-> = {
+export const SOURCE_TYPE_TAG_TYPE: Record<SourceTypeValue, TagType> = {
   [SOURCE_TYPE.NONE]: 'info',
   [SOURCE_TYPE.RC]: 'warning',
   [SOURCE_TYPE.RTV]: 'success',
@@ -58,9 +68,7 @@ export function cardAttachedStoryTypeLabel(v?: number | null): string {
   return SOURCE_TYPE_LABEL[v as SourceTypeValue] ?? '未知'
 }
 
-export function cardAttachedStoryTypeTagLabel(
-  v?: number | null,
-): 'primary' | 'success' | 'warning' | 'danger' | 'info' {
+export function cardAttachedStoryTypeTagLabel(v?: number | null): TagType {
   if (v == null) return 'info'
   return SOURCE_TYPE_TAG_TYPE[v as SourceTypeValue] ?? 'info'
 }

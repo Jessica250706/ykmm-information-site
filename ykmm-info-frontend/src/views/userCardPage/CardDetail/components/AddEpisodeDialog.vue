@@ -12,7 +12,11 @@
         />
       </el-form-item>
 
-      <el-form-item v-if="mode === 'rc'" label="发起人" prop="roleId">
+      <el-form-item
+        v-if="mode === SOURCE_TYPE_SMALL_LABEL[SOURCE_TYPE.RC]"
+        label="发起人"
+        prop="roleId"
+      >
         <el-cascader
           v-model="form.roleId"
           :options="roleOptions"
@@ -43,10 +47,11 @@
 <script setup lang="ts">
 import { computed, reactive, ref, watch } from 'vue'
 import { listGroupedRolesAPI } from '@/api/role'
+import { SOURCE_TYPE, SOURCE_TYPE_SMALL_LABEL, type SourceTypeSmallLabelValue } from '@/constants'
 import type { RoleGroupVO } from '@/types/role'
 import type { FormInstance, FormRules } from 'element-plus'
 
-type Mode = 'rc' | 'rtv'
+type Mode = SourceTypeSmallLabelValue
 
 /** 话数表单数据 */
 export interface EpisodeFormData {
@@ -71,7 +76,7 @@ const emit = defineEmits<{
 }>()
 
 const visible = ref(false)
-const mode = ref<Mode>('rc')
+const mode = ref<Mode>(SOURCE_TYPE_SMALL_LABEL[SOURCE_TYPE.RC])
 /** 编辑时的 id：null 表示新增 */
 const editingId = ref<number | null>(null)
 const formRef = ref<FormInstance>()
@@ -84,13 +89,13 @@ const form = reactive<EpisodeFormData>({
 
 const title = computed(() => {
   const action = editingId.value == null ? '新增' : '编辑'
-  const kind = mode.value === 'rc' ? 'RC' : 'RTV'
+  const kind = mode.value === SOURCE_TYPE_SMALL_LABEL[SOURCE_TYPE.RC] ? 'RC' : 'RTV'
   return `${action} ${kind}`
 })
 
 const rules = computed<FormRules>(() => ({
   episodeNo: [{ required: true, message: '请输入话数', trigger: 'blur' }],
-  ...(mode.value === 'rc'
+  ...(mode.value === SOURCE_TYPE_SMALL_LABEL[SOURCE_TYPE.RC]
     ? { roleId: [{ required: true, message: '请选择发起人', trigger: 'change' }] }
     : {}),
 }))
@@ -128,7 +133,8 @@ async function loadRoles() {
 }
 
 watch(mode, (m) => {
-  if (m === 'rc' && roleGroups.value.length === 0) void loadRoles()
+  if (m === SOURCE_TYPE_SMALL_LABEL[SOURCE_TYPE.RC] && roleGroups.value.length === 0)
+    void loadRoles()
 })
 
 /* -------- 对外打开 -------- */
@@ -155,7 +161,7 @@ function open(m: Mode, episode?: EpisodeItemData) {
   }
 
   visible.value = true
-  if (m === 'rc') void loadRoles()
+  if (m === SOURCE_TYPE_SMALL_LABEL[SOURCE_TYPE.RC]) void loadRoles()
 }
 
 function handleClosed() {

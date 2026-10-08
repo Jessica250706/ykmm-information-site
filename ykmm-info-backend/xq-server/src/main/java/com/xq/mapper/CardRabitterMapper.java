@@ -1,7 +1,6 @@
 package com.xq.mapper;
 
 import com.xq.entity.CardRabitter;
-import com.xq.vo.CardRabitterVO;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
@@ -12,38 +11,52 @@ import java.util.List;
  */
 @Mapper
 public interface CardRabitterMapper {
+
     /**
-     * 根据卡面ID查询 Rabitter 列表
+     * 查询卡面下的 Rabitter 列表
+     *
+     * @param cardId 卡面ID
+     * @return Rabitter 列表
      */
     List<CardRabitter> listByCardId(@Param("cardId") Long cardId);
 
     /**
-     * 根据 id 查询实体
+     * 根据主键查询
+     *
+     * @param id 主键
+     * @return Rabitter 实体
      */
     CardRabitter getById(@Param("id") Long id);
 
     /**
-     * 根据 id 查询 VO
-     */
-    CardRabitterVO getVOById(@Param("id") Long id);
-
-    /**
      * 新增
+     *
+     * @param rabiter Rabitter 实体
+     * @return 影响行数
      */
-    int insert(CardRabitter rabitter);
+    int insert(CardRabitter rabiter);
 
     /**
      * 更新
+     *
+     * @param rabiter Rabitter 实体
+     * @return 影响行数
      */
-    int update(CardRabitter rabitter);
+    int update(CardRabitter rabiter);
 
     /**
-     * 删除
+     * 根据主键删除
+     *
+     * @param id 主键
+     * @return 影响行数
      */
     int deleteById(@Param("id") Long id);
 
     /**
-     * 删除卡面下的全部 Rabitter
+     * 根据卡面ID删除
+     *
+     * @param cardId 卡面ID
+     * @return 影响行数
      */
     int deleteByCardId(@Param("cardId") Long cardId);
 }

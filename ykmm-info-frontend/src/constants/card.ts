@@ -1,4 +1,4 @@
-import { type PaletteKey } from './index'
+import { type PaletteKey, type TagType } from './index'
 
 /**
  * 卡面最高等级
@@ -19,6 +19,20 @@ export const CARD_MAX_RARITY_OPTIONS = [
   { value: CARD_MAX_RARITY.SSR, label: CARD_MAX_RARITY_LABEL[CARD_MAX_RARITY.SSR] },
   { value: CARD_MAX_RARITY.UR, label: CARD_MAX_RARITY_LABEL[CARD_MAX_RARITY.UR] },
 ] as const
+
+/**
+ * 卡面最高等级 → Element Plus Tag type
+ * SSR: warning
+ * UR:  danger
+ * 其他/未知: info
+ */
+export const CARD_MAX_RARITY_TAG_TYPE: Record<number, TagType> = {
+  [CARD_MAX_RARITY.SSR]: 'warning',
+  [CARD_MAX_RARITY.UR]: 'danger',
+}
+
+/** 默认 type（未知时） */
+export const DEFAULT_TAG_TYPE = 'info'
 
 /**
  * 卡面属性

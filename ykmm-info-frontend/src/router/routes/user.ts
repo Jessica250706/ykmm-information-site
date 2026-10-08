@@ -35,7 +35,7 @@ export const userRoutes: RouteRecordRaw = {
       path: 'card-rabitter/browse',
       name: UserRouteName.CARD_RABITTER_BROWSE,
       component: () => import('@/views/userCardPage/components/CardRabitterBrowse.vue'),
-      meta: { title: 'Rabbitter 对话浏览' },
+      meta: { title: 'Rabitter 对话浏览' },
     },
 
     // ---------- 剧情 ----------
