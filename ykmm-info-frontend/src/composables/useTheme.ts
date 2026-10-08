@@ -1,12 +1,6 @@
 import { readonly, ref } from 'vue'
-import {
-  DEFAULT_THEME,
-  PALETTE_KEYS,
-  type ThemeConfig,
-  type ThemeName,
-  THEMES,
-} from '@/constants/theme'
-import { generateColorScale } from '@/utils/color'
+import { DEFAULT_THEME, PALETTE_KEYS, type ThemeConfig, type ThemeName, THEMES } from '@/constants'
+import { generateColorScale } from '@/utils'
 
 const STORAGE_KEY = 'app-theme'
 const currentTheme = ref<ThemeName>(DEFAULT_THEME)

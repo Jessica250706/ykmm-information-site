@@ -1,6 +1,6 @@
 import { computed } from 'vue'
 import { useRoute } from 'vue-router'
-import { STORY_CATEGORY_TYPE_LABEL, type StoryCategoryTypeValue } from '@/constants/story'
+import { STORY_CATEGORY_TYPE_LABEL, type StoryCategoryTypeValue } from '@/constants'
 
 export function useBrowseRoute() {
   const route = useRoute()

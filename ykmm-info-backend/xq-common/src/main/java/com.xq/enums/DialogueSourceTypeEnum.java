@@ -26,7 +26,7 @@ public enum DialogueSourceTypeEnum {
     /**
      * 剧情
      */
-    RABBITTER(3, "Rabbitter"),
+    RABITTER(3, "Rabitter"),
 
     /**
      * 剧情

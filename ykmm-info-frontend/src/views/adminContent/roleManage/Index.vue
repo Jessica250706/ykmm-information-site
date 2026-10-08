@@ -110,7 +110,8 @@ import {
   type ProTableColumn,
   type ProTableExpose,
 } from '@/components/ProTable'
-import { usePersonStore } from '@/stores/personStore'
+import { AdminRouteName } from '@/constants'
+import { usePersonStore } from '@/stores'
 import type { RolePageQueryDTO, RoleVO } from '@/types/role'
 import type { StoryCategoryVO } from '@/types/storyCategory'
 
@@ -173,12 +174,12 @@ function handleReset() {
 
 /* -------- 新增 / 编辑 -------- */
 function handleCreate() {
-  router.push({ name: 'AdminRoleCreate' })
+  router.push({ name: AdminRouteName.ROLE_CREATE })
 }
 
 function handleEdit(row: RoleVO) {
   router.push({
-    name: 'AdminRoleEdit',
+    name: AdminRouteName.ROLE_EDIT,
     params: { id: String(row.id) },
   })
 }

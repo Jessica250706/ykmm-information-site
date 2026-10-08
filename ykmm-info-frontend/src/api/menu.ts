@@ -1,4 +1,4 @@
-import { type MenuTypeValue } from '@/constants/index'
+import { type MenuTypeValue } from '@/constants'
 import type { MenuDTO, MenuVO } from '@/types/menu'
 import request from '@/utils/http'
 

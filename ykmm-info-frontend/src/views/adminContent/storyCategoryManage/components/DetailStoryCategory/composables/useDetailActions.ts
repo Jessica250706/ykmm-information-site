@@ -2,6 +2,7 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import { useRouter } from 'vue-router'
 import { deleteStoryAPI } from '@/api/story'
 import { deleteStoryCategoryAPI } from '@/api/storyCategory'
+import { AdminRouteName, UserRouteName } from '@/constants'
 import type { StoryVO } from '@/types/story'
 import type { StoryCategoryVO } from '@/types/storyCategory'
 
@@ -22,7 +23,7 @@ export function useDetailActions(opts: Options) {
   /* -------- 分类导航 -------- */
   function goCreateCategory(parent?: StoryCategoryVO) {
     router.push({
-      name: 'AdminStoryCategoryCreate',
+      name: AdminRouteName.STORY_CATEGORY_CREATE,
       query: {
         parentId: String(parent?.id ?? opts.detailId()),
         categoryType: String(parent?.categoryType ?? opts.detail()?.categoryType ?? ''),
@@ -34,14 +35,14 @@ export function useDetailActions(opts: Options) {
 
   function goCategoryDetail(row: StoryCategoryVO) {
     router.push({
-      name: 'AdminStoryCategoryDetail',
+      name: AdminRouteName.STORY_CATEGORY_DETAIL,
       params: { id: String(row.id) },
     })
   }
 
   function goEditCategory(row: StoryCategoryVO) {
     router.push({
-      name: 'AdminStoryCategoryEdit',
+      name: AdminRouteName.STORY_CATEGORY_EDIT,
       params: { id: String(row.id) },
       query: { from: 'detail', detailId: String(opts.detailId()) },
     })
@@ -51,7 +52,7 @@ export function useDetailActions(opts: Options) {
     const current = opts.detail()
     if (!current?.id) return
     router.push({
-      name: 'AdminStoryCategoryEdit',
+      name: AdminRouteName.STORY_CATEGORY_EDIT,
       params: { id: String(current.id) },
       query: { from: 'detail', detailId: String(current.id) },
     })
@@ -75,7 +76,7 @@ export function useDetailActions(opts: Options) {
   /* -------- 剧情导航 -------- */
   function goCreateStory(row?: StoryCategoryVO) {
     router.push({
-      name: 'AdminStoryCreate',
+      name: AdminRouteName.STORY_CREATE,
       query: {
         categoryId: String(row?.id ?? opts.detailId()),
         categoryType: String(row?.categoryType ?? opts.detail()?.categoryType ?? ''),
@@ -87,7 +88,7 @@ export function useDetailActions(opts: Options) {
 
   function goEditStory(row: StoryVO) {
     router.push({
-      name: 'AdminStoryEdit',
+      name: AdminRouteName.STORY_EDIT,
       params: { id: String(row.id) },
       query: { from: 'storyCategoryDetail', detailId: String(opts.detailId()) },
     })
@@ -96,7 +97,7 @@ export function useDetailActions(opts: Options) {
   /** 新标签页打开用户端剧情浏览 */
   function openStoryInNewTab(row: StoryVO) {
     const { href } = router.resolve({
-      name: 'UserStoryBrowseDetail',
+      name: UserRouteName.STORY_BROWSE_DETAIL,
       params: { type: String(row.categoryType ?? 1), kind: 'story', id: String(row.id) },
     })
     window.open(href, '_blank', 'noopener,noreferrer')
@@ -119,7 +120,7 @@ export function useDetailActions(opts: Options) {
 
   /* -------- 返回列表 -------- */
   function goBack() {
-    router.push({ name: 'AdminStoryCategoryManage' })
+    router.push({ name: AdminRouteName.STORY_CATEGORY_MANAGE })
   }
 
   return {

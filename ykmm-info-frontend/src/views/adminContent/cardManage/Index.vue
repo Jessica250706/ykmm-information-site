@@ -133,7 +133,7 @@
         <template #attachedStoryType="{ row }">
           <el-tag
             v-if="row.attachedStoryType"
-            :type="attachedStoryTypeTag(row.attachedStoryType)"
+            :type="cardAttachedStoryTypeTagLabel(row.attachedStoryType)"
             effect="plain"
             size="small"
           >
@@ -185,19 +185,20 @@ import {
   type ProTableExpose,
 } from '@/components/ProTable'
 import {
+  AdminRouteName,
   CARD_ATTRIBUTE_OPTIONS,
   CARD_MAX_RARITY,
   CARD_MAX_RARITY_OPTIONS,
   cardAttachedStoryTypeLabel,
+  cardAttachedStoryTypeTagLabel,
   cardAttributeLabel,
   cardMaxRarityLabel,
   statusLabel,
 } from '@/constants'
-import { usePersonStore } from '@/stores/personStore'
+import { usePersonStore } from '@/stores'
 import type { CardPageQueryDTO, CardVO } from '@/types/card'
 import type { CardSeriesVO } from '@/types/cardSeries'
 import {
-  attachedStoryTypeTag,
   getAttributeTagStyle,
   getCoverImage,
   getImageUrls,
@@ -278,12 +279,12 @@ function handleReset() {
 
 /* -------- 新增 / 编辑 -------- */
 function handleCreate() {
-  router.push({ name: 'AdminCardCreate' })
+  router.push({ name: AdminRouteName.CARD_CREATE })
 }
 
 function handleEdit(row: CardVO) {
   router.push({
-    name: 'AdminCardEdit',
+    name: AdminRouteName.CARD_EDIT,
     params: { id: String(row.id) },
   })
 }
@@ -291,7 +292,7 @@ function handleEdit(row: CardVO) {
 /** 管理 RC */
 function handleManageRc(row: CardVO) {
   router.push({
-    name: 'AdminCardRcManage',
+    name: AdminRouteName.CARD_RC_MANAGE,
     query: { cardId: String(row.id) },
   })
 }
@@ -299,7 +300,7 @@ function handleManageRc(row: CardVO) {
 /** 管理 RTV */
 function handleManageRtv(row: CardVO) {
   router.push({
-    name: 'AdminCardRtvManage',
+    name: AdminRouteName.CARD_RTV_MANAGE,
     query: { cardId: String(row.id) },
   })
 }

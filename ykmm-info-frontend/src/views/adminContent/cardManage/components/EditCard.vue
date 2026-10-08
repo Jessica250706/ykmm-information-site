@@ -126,6 +126,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { createCardAPI, getCardDetailAPI, updateCardAPI } from '@/api/card'
 import { findOrCreateCardSeriesAPI, listCardSeriesOptionsAPI } from '@/api/cardSeries'
 import {
+  AdminRouteName,
   CARD_ATTRIBUTE_OPTIONS,
   CARD_COSTUME_TYPE_OPTIONS,
   CARD_IMAGE_TYPE,
@@ -134,7 +135,7 @@ import {
   CARD_MAX_RARITY_OPTIONS,
   SOURCE_TYPE_OPTIONS,
 } from '@/constants'
-import { usePersonStore } from '@/stores/personStore'
+import { usePersonStore } from '@/stores'
 import type { CardDTO } from '@/types/card'
 import type { CardSeriesVO } from '@/types/cardSeries'
 
@@ -293,7 +294,7 @@ async function handleSubmit() {
 }
 
 function handleBack() {
-  router.push({ name: 'AdminCardManage' })
+  router.push({ name: AdminRouteName.CARD_MANAGE })
 }
 
 /* -------- 初始化 -------- */

@@ -75,8 +75,14 @@ import { computed, onMounted, reactive, ref } from 'vue'
 import { ElMessage, type FormInstance, type FormRules } from 'element-plus'
 import { useRoute, useRouter } from 'vue-router'
 import { createMenuAPI, getMenuTreeAPI, updateMenuAPI } from '@/api/menu'
-import { MENU_TYPE, MENU_TYPE_OPTIONS, MENU_VISIBLE, type MenuTypeValue } from '@/constants/menu'
-import { useMenuStore } from '@/stores/menuStore'
+import {
+  AdminRouteName,
+  MENU_TYPE,
+  MENU_TYPE_OPTIONS,
+  MENU_VISIBLE,
+  type MenuTypeValue,
+} from '@/constants'
+import { useMenuStore } from '@/stores'
 import type { MenuDTO, MenuVO } from '@/types/menu'
 
 const route = useRoute()
@@ -198,7 +204,7 @@ async function handleSubmit() {
 }
 
 function handleBack() {
-  router.push({ name: 'AdminMenuManage' })
+  router.push({ name: AdminRouteName.MENU_MANAGE })
 }
 
 /* -------- 初始化 -------- */

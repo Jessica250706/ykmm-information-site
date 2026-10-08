@@ -44,6 +44,7 @@ import { computed, onMounted, reactive, ref } from 'vue'
 import { ElMessage, type FormInstance, type FormRules } from 'element-plus'
 import { useRoute, useRouter } from 'vue-router'
 import { createCardSeriesAPI, getCardSeriesDetailAPI, updateCardSeriesAPI } from '@/api/cardSeries'
+import { AdminRouteName } from '@/constants'
 import type { CardSeriesDTO } from '@/types/cardSeries'
 
 const route = useRoute()
@@ -100,7 +101,7 @@ async function handleSubmit() {
 }
 
 function handleBack() {
-  router.push({ name: 'AdminCardSeriesManage' })
+  router.push({ name: AdminRouteName.CARD_SERIES_MANAGE })
 }
 
 onMounted(async () => {

@@ -33,7 +33,7 @@
         <dd class="text-right">
           <el-tag
             v-if="card.attachedStoryType"
-            :type="attachedStoryTypeTag(card.attachedStoryType)"
+            :type="cardAttachedStoryTypeTagLabel(card.attachedStoryType)"
             effect="plain"
             size="small"
           >
@@ -55,11 +55,12 @@
 <script setup lang="ts">
 import {
   cardAttachedStoryTypeLabel,
+  cardAttachedStoryTypeTagLabel,
   cardAttributeLabel,
   cardCostumeTypeLabel,
-} from '@/constants/card'
+} from '@/constants'
 import type { CardVO } from '@/types/card'
-import { attachedStoryTypeTag, getAttributeTagStyle } from '@/utils'
+import { getAttributeTagStyle } from '@/utils'
 
 defineProps<{
   card: CardVO

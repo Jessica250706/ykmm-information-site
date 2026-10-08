@@ -1,5 +1,5 @@
 import type { PageRequest } from './common'
-import type { UserStatusValue, RoleValue } from '@/constants/index.ts'
+import type { UserStatusValue, RoleValue } from '@/constants'
 
 /** 用户查询请求 */
 export interface UserRequest extends PageRequest {

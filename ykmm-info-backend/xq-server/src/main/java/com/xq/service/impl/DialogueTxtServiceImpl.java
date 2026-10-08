@@ -276,7 +276,7 @@ public class DialogueTxtServiceImpl implements DialogueTxtService {
             seg.setStickerLabel(label);
             if (sticker != null) {
                 seg.setStickerId(sticker.getId());
-                seg.setStickerUrl(sticker.getImageUrl());
+                seg.setStickerImageUrl(sticker.getImageUrl());
                 seg.setStickerEmoji(sticker.getEmoji());
             } else {
                 unmatchedStickers.add(label);

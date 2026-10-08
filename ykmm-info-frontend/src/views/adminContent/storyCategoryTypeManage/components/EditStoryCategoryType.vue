@@ -70,7 +70,7 @@ import { computed, onMounted, reactive, ref } from 'vue'
 import { ElMessage, type FormInstance, type FormRules } from 'element-plus'
 import { useRoute, useRouter } from 'vue-router'
 import { getStoryCategoryTypeDetailAPI, updateStoryCategoryTypeAPI } from '@/api/storyCategoryType'
-import { PALETTE_COLOR_OPTIONS } from '@/constants/index'
+import { AdminRouteName, PALETTE_COLOR_OPTIONS } from '@/constants'
 import type { StoryCategoryTypeDTO } from '@/types/storyCategoryType'
 
 const route = useRoute()
@@ -123,7 +123,7 @@ async function handleSubmit() {
 }
 
 function handleBack() {
-  router.push({ name: 'AdminStoryCategoryTypeManage' })
+  router.push({ name: AdminRouteName.STORY_CATEGORY_TYPE_MANAGE })
 }
 
 onMounted(loadDetail)

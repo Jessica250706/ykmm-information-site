@@ -19,21 +19,33 @@ public class CardRc implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    /** 主键 */
+    /**
+     * 主键
+     */
     private Long id;
 
-    /** 卡面ID */
+    /**
+     * 卡面ID
+     */
     private Long cardId;
 
-    /** RC发起人角色ID，该角色在对话中默认 side=2（右侧） */
+    /**
+     * RC发起人角色ID，该角色在对话中默认 side=2（右侧）
+     */
     private Long roleId;
 
-    /** 第几话 */
+    /**
+     * 第几话
+     */
     private Integer episodeNo;
 
-    /** 标题 */
+    /**
+     * 标题
+     */
     private String title;
 
-    /** 创建时间 */
+    /**
+     * 创建时间
+     */
     private LocalDateTime createdAt;
 }

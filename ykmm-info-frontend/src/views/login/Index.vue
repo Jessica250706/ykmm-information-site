@@ -64,8 +64,8 @@ import { reactive, ref } from 'vue'
 import { Lock, Message } from '@element-plus/icons-vue'
 import { ElMessage, type FormInstance, type FormRules } from 'element-plus'
 import { useRoute, useRouter } from 'vue-router'
-import { ROLE } from '@/constants/index'
-import { useUserStore } from '@/stores/userStore'
+import { AdminRouteName, CommonRouteName, ROLE, UserRouteName } from '@/constants'
+import { useUserStore } from '@/stores'
 import type { LoginRequest } from '@/types/auth'
 
 const route = useRoute()
@@ -119,7 +119,9 @@ async function handleSubmit() {
     if (redirect) {
       await router.replace(redirect)
     } else {
-      await router.replace(user?.role === ROLE.ADMIN ? '/admin' : '/cards')
+      await router.replace({
+        name: user?.role === ROLE.ADMIN ? AdminRouteName.PERSON_MANAGE : UserRouteName.CARD_LIST,
+      })
     }
   } catch (err: unknown) {
     console.error('[login] failed:', err)
@@ -129,7 +131,7 @@ async function handleSubmit() {
 }
 
 function goRegister() {
-  router.replace({ name: 'Register' })
+  router.replace({ name: CommonRouteName.REGISTER })
 }
 
 // 优先用 URL 里带过来的邮箱（从注册页跳回来）

@@ -1,8 +1,9 @@
 import axios from 'axios'
 import { ElMessage } from 'element-plus'
 import qs from 'qs'
+import { CommonRouteName } from '@/constants'
 import router from '@/router'
-import { useUserStore } from '@/stores/userStore'
+import { useUserStore } from '@/stores'
 import type { AxiosRequestConfig } from 'axios'
 import 'element-plus/theme-chalk/el-message.css'
 
@@ -81,7 +82,7 @@ httpInstance.interceptors.response.use(
       const userStore = useUserStore()
       userStore.clearUserInfo()
       // 2. 跳转到登录页
-      router.replace('/login')
+      router.replace({ name: CommonRouteName.LOGIN })
     }
     return Promise.reject(e)
   },

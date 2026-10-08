@@ -29,6 +29,7 @@
 
 <script setup lang="ts">
 import { useRouter } from 'vue-router'
+import { CommonRouteName } from '@/constants'
 import { useUserStore } from '@/stores/userStore'
 
 const router = useRouter()
@@ -36,7 +37,7 @@ const { isAdmin, logout } = useUserStore()
 
 function handleLogout() {
   logout()
-  router.replace({ name: 'Login' })
+  router.replace({ name: CommonRouteName.LOGIN })
 }
 </script>
 

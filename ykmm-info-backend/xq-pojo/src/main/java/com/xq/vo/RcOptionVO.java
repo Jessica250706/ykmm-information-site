@@ -15,16 +15,28 @@ import java.io.Serializable;
 @NoArgsConstructor
 @AllArgsConstructor
 public class RcOptionVO implements Serializable {
-    /** 主键 */
+    /**
+     * 主键
+     */
     private Long id;
-    /** RC ID */
+    /**
+     * RC ID
+     */
     private Long rcId;
-    /** 版本ID */
+    /**
+     * 版本ID
+     */
     private Long versionId;
-    /** 问句ID */
+    /**
+     * 问句ID
+     */
     private Long questionLineId;
-    /** 答句ID */
+    /**
+     * 答句ID
+     */
     private Long answerLineId;
-    /** 排序 */
+    /**
+     * 排序
+     */
     private Integer sort;
 }

@@ -4,20 +4,28 @@
 <mapper namespace="com.xq.mapper.RcOptionMapper">
 
   <sql id="baseColumns">
-    id, rc_id AS rcId, version_id AS versionId,
-    question_line_id AS questionLineId, answer_line_id AS answerLineId, sort
+    id,
+    rc_id            AS rcId,
+    version_id       AS versionId,
+    question_line_id AS questionLineId,
+    answer_line_id   AS answerLineId,
+    sort
   </sql>
 
   <select id="listByRcId" resultType="com.xq.entity.RcOption">
-    SELECT <include refid="baseColumns"/> FROM rc_option
+    SELECT
+    <include refid="baseColumns"/>
+    FROM rc_option
     WHERE rc_id = #{rcId}
-    ORDER BY sort ASC, id ASC
+    ORDER BY sort, id
   </select>
 
   <select id="listByVersionId" resultType="com.xq.entity.RcOption">
-    SELECT <include refid="baseColumns"/> FROM rc_option
+    SELECT
+    <include refid="baseColumns"/>
+    FROM rc_option
     WHERE version_id = #{versionId}
-    ORDER BY sort ASC, id ASC
+    ORDER BY sort , id
   </select>
 
   <insert id="insert" useGeneratedKeys="true" keyProperty="id">
@@ -45,15 +53,32 @@
   </update>
 
   <delete id="deleteById">
-    DELETE FROM rc_option WHERE id = #{id}
+    DELETE
+    FROM rc_option
+    WHERE id = #{id}
   </delete>
 
   <delete id="deleteByRcId">
-    DELETE FROM rc_option WHERE rc_id = #{rcId}
+    DELETE
+    FROM rc_option
+    WHERE rc_id = #{rcId}
   </delete>
 
   <delete id="deleteByVersionId">
-    DELETE FROM rc_option WHERE version_id = #{versionId}
+    DELETE
+    FROM rc_option
+    WHERE version_id = #{versionId}
   </delete>
+
+  <select id="listByVersionIds" resultType="com.xq.entity.RcOption">
+    SELECT
+    <include refid="baseColumns"/>
+    FROM rc_option
+    WHERE version_id IN
+    <foreach collection="versionIds" item="vid" open="(" separator="," close=")">
+      #{vid}
+    </foreach>
+    ORDER BY version_id, sort, id
+  </select>
 
 </mapper>

@@ -38,7 +38,7 @@
               class="hidden sm:inline-flex"
               size="small"
               plain
-              @click="router.push('/admin')"
+              @click="router.push({ name: AdminRouteName.PERSON_MANAGE })"
             >
               前往管理端 →
             </el-button>
@@ -74,8 +74,8 @@
 <script setup lang="ts">
 import { computed, onMounted } from 'vue'
 import { RouterLink, RouterView, useRoute, useRouter } from 'vue-router'
-import { useMenuStore } from '@/stores/menuStore.ts'
-import { useUserStore } from '@/stores/userStore.ts'
+import { AdminRouteName } from '@/constants'
+import { useMenuStore, useUserStore } from '@/stores'
 import ChangeColor from './components/ChangeColor.vue'
 
 const route = useRoute()

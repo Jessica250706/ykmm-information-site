@@ -22,6 +22,11 @@ public class DialogueImageVO implements Serializable {
     private Long id;
 
     /**
+     * 版本ID
+     */
+    private Long versionId;
+
+    /**
      * 图片地址
      */
     private String url;

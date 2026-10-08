@@ -90,7 +90,7 @@ import {
   USER_STATUS_ACTION_LABEL,
   USER_STATUS_LABEL,
   type UserStatusValue,
-} from '@/constants/index.ts'
+} from '@/constants'
 import type { UserInfo, UserRequest } from '@/types/user'
 import UserEditDialog from './components/UserEditDialog.vue'
 

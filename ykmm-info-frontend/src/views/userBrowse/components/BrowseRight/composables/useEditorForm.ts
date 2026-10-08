@@ -1,5 +1,5 @@
 import { type ComputedRef, reactive, ref, watch } from 'vue'
-import { MONOLOGUE } from '@/constants/index'
+import { MONOLOGUE } from '@/constants'
 import type { DialogueLineVO } from '@/types/dialogueLine'
 
 export type EditorMode = 'edit' | 'create'

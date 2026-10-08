@@ -13,11 +13,13 @@
   </sql>
 
   <select id="listVOByCardId" resultType="com.xq.vo.CardRcVO">
-    SELECT
-      rc.id, rc.card_id AS cardId, rc.role_id AS roleId,
-      rc.episode_no AS episodeNo, rc.title,
-      rc.created_at AS createdAt,
-      r.name AS roleName
+    SELECT rc.id,
+           rc.card_id    AS cardId,
+           rc.role_id    AS roleId,
+           rc.episode_no AS episodeNo,
+           rc.title,
+           rc.created_at AS createdAt,
+           r.name        AS roleName
     FROM card_rc rc
            LEFT JOIN role r ON r.id = rc.role_id
     WHERE rc.card_id = #{cardId}
@@ -25,15 +27,19 @@
   </select>
 
   <select id="getById" resultType="com.xq.entity.CardRc">
-    SELECT <include refid="baseColumns"/> FROM card_rc WHERE id = #{id}
+    SELECT
+    <include refid="baseColumns"/>
+    FROM card_rc WHERE id = #{id}
   </select>
 
   <select id="getVOById" resultType="com.xq.vo.CardRcVO">
-    SELECT
-      rc.id, rc.card_id AS cardId, rc.role_id AS roleId,
-      rc.episode_no AS episodeNo, rc.title,
-      rc.created_at AS createdAt,
-      r.name AS roleName
+    SELECT rc.id,
+           rc.card_id    AS cardId,
+           rc.role_id    AS roleId,
+           rc.episode_no AS episodeNo,
+           rc.title,
+           rc.created_at AS createdAt,
+           r.name        AS roleName
     FROM card_rc rc
            LEFT JOIN role r ON r.id = rc.role_id
     WHERE rc.id = #{id}
@@ -55,11 +61,15 @@
   </update>
 
   <delete id="deleteById">
-    DELETE FROM card_rc WHERE id = #{id}
+    DELETE
+    FROM card_rc
+    WHERE id = #{id}
   </delete>
 
   <delete id="deleteByCardId">
-    DELETE FROM card_rc WHERE card_id = #{cardId}
+    DELETE
+    FROM card_rc
+    WHERE card_id = #{cardId}
   </delete>
 
 </mapper>

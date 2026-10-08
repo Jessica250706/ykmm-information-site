@@ -19,18 +19,43 @@ public class LikeRecord implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    /** 主键 */
+    /**
+     * 主键
+     */
     private Long id;
 
-    /** 用户ID */
+    /**
+     * 用户ID
+     */
     private Long userId;
 
-    /** 1剧情对话句子 2RC对话句子 */
+    /**
+     * 1剧情对话句子 2RC对话句子
+     */
     private Integer targetType;
 
-    /** dialogue_line.id */
+    /**
+     * dialogue_line.id
+     */
     private Long targetId;
 
-    /** 创建时间 */
+    /**
+     * 版本ID
+     */
+    private Integer versionId;
+
+    /**
+     * 来源
+     */
+    private Integer sourceType;
+
+    /**
+     * 来源ID
+     */
+    private Integer sourceId;
+
+    /**
+     * 创建时间
+     */
     private LocalDateTime createdAt;
 }

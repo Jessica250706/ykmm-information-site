@@ -2,7 +2,7 @@ import { ref } from 'vue'
 import { ElMessage } from 'element-plus'
 import { listDialogueVersionOptionsAPI } from '@/api/dialogueVersion'
 import { getUserStoryDetailAPI, pageUserStoryAPI } from '@/api/story'
-import { SOURCE_TYPE, STATUS } from '@/constants/index'
+import { SOURCE_TYPE, STATUS } from '@/constants'
 import type { DialogueVersionOptionVO } from '@/types/dialogueVersion'
 import type { StoryDetailVO, StoryVO } from '@/types/story'
 

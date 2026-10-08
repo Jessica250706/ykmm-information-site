@@ -69,8 +69,8 @@
 <script setup lang="ts">
 import { computed, onMounted } from 'vue'
 import { RouterLink, RouterView, useRoute, useRouter } from 'vue-router'
-import { useMenuStore } from '@/stores/menuStore.ts'
-import { useUserStore } from '@/stores/userStore.ts'
+import { CommonRouteName } from '@/constants'
+import { useMenuStore, useUserStore } from '@/stores'
 import AdminMenuItem from './components/AdminMenuItem.vue'
 import ChangeColor from './components/ChangeColor.vue'
 
@@ -114,7 +114,7 @@ onMounted(() => {
 
 function handleLogout() {
   userStore.logout()
-  router.replace({ name: 'Login' })
+  router.replace({ name: CommonRouteName.LOGIN })
 }
 </script>
 

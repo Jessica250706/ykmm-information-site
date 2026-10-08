@@ -179,7 +179,7 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import { useVModel } from '@vueuse/core'
-import { MONOLOGUE } from '@/constants/index'
+import { MONOLOGUE } from '@/constants'
 import { useUserStore } from '@/stores/userStore'
 import type { DialogueLineVO } from '@/types/dialogueLine'
 import type { DialogueVersionOptionVO, DialogueVersionVO } from '@/types/dialogueVersion'

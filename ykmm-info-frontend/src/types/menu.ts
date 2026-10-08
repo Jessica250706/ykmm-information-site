@@ -1,4 +1,4 @@
-import type { MenuTypeValue } from '@/constants/index'
+import type { MenuTypeValue } from '@/constants'
 
 /**
  * 菜单表

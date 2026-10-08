@@ -39,6 +39,7 @@ import { ElMessage } from 'element-plus'
 import { useRouter } from 'vue-router'
 import { listStoryCategoryTypeAPI } from '@/api/storyCategoryType'
 import { ProTable, type ProTableColumn } from '@/components/ProTable'
+import { AdminRouteName } from '@/constants'
 import type { StoryCategoryTypeVO } from '@/types/storyCategoryType'
 
 const router = useRouter()
@@ -69,7 +70,7 @@ async function loadList() {
 
 function handleEdit(row: StoryCategoryTypeVO) {
   router.push({
-    name: 'AdminStoryCategoryTypeEdit',
+    name: AdminRouteName.STORY_CATEGORY_TYPE_EDIT,
     params: { id: String(row.id) },
   })
 }

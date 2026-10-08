@@ -31,7 +31,7 @@ import {
   type ProTableColumn,
   type ProTableExpose,
 } from '@/components/ProTable'
-import { statusLabel } from '@/constants/index'
+import { statusLabel } from '@/constants'
 import type { StoryVO } from '@/types/story'
 
 const props = defineProps<{

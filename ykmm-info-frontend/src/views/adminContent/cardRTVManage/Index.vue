@@ -96,7 +96,7 @@ import {
   listCardRtvByCardAPI,
   updateCardRtvAPI,
 } from '@/api/cardRtv'
-import { SOURCE_TYPE } from '@/constants'
+import { AdminRouteName, SOURCE_TYPE, UserRouteName } from '@/constants'
 import type { CardVO } from '@/types/card'
 import type { CardRtvDTO, CardRtvVO } from '@/types/cardRtv'
 
@@ -225,13 +225,13 @@ async function handleDelete(row: CardRtvVO) {
 function handleManageDialogue(row: CardRtvVO) {
   ElMessage.info('对话编辑入口待接入，请使用对应的对话编辑页面')
   router.push({
-    name: 'UserCardRtvEdit',
+    name: UserRouteName.CARD_RTV_BROWSE,
     query: { sourceType: SOURCE_TYPE.RTV, sourceId: String(row.id) },
   })
 }
 
 function handleBack() {
-  router.push({ name: 'AdminCardManage' })
+  router.push({ name: AdminRouteName.CARD_MANAGE })
 }
 
 /* -------- 初始化 -------- */

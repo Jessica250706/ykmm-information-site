@@ -167,6 +167,7 @@ import {
   CARD_MAX_RARITY_OPTIONS,
   cardAttributeLabel,
   cardMaxRarityLabel,
+  UserRouteName,
 } from '@/constants'
 import { usePersonStore } from '@/stores/personStore'
 import type { CardVO } from '@/types/card'
@@ -306,7 +307,7 @@ function handleFilterChange() {
 }
 
 function handleDetail(row: CardVO) {
-  router.push({ name: 'UserCardDetail', params: { id: String(row.id) } })
+  router.push({ name: UserRouteName.CARD_DETAIL, params: { id: String(row.id) } })
 }
 
 onMounted(async () => {

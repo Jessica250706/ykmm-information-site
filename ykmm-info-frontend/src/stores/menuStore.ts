@@ -1,7 +1,7 @@
 import { computed, ref } from 'vue'
 import { defineStore } from 'pinia'
 import { getMenuTreeAPI } from '@/api/menu'
-import { MENU_TYPE } from '@/constants/menu'
+import { MENU_TYPE } from '@/constants'
 import type { MenuVO } from '@/types/menu'
 
 /** 只保留 visible === 1 的节点，空 children 转 undefined */

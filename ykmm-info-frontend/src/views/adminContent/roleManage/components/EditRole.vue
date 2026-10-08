@@ -66,7 +66,8 @@ import { ElMessage, type FormInstance, type FormRules } from 'element-plus'
 import { useRoute, useRouter } from 'vue-router'
 import { createRoleAPI, getRoleDetailAPI, updateRoleAPI } from '@/api/role'
 import { listStoryCategoryTreeAPI } from '@/api/storyCategory'
-import { usePersonStore } from '@/stores/personStore'
+import { AdminRouteName } from '@/constants'
+import { usePersonStore } from '@/stores'
 import type { RoleDTO } from '@/types/role'
 import type { StoryCategoryVO } from '@/types/storyCategory'
 
@@ -152,7 +153,7 @@ async function handleSubmit() {
 }
 
 function handleBack() {
-  router.push({ name: 'AdminRoleManage' })
+  router.push({ name: AdminRouteName.ROLE_MANAGE })
 }
 
 function handleCategoryClear() {

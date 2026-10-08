@@ -200,7 +200,7 @@ async function loadCurrent() {
 
   syncVersionSelection()
   syncEditingLine()
-  // ★ 拉版本选项：listDialogueVersionOptionsAPI(props.sourceType, currentEpisodeId.value)
+  // 拉版本选项：listDialogueVersionOptionsAPI(props.sourceType, currentEpisodeId.value)
   versionOptions.value = null
   await applyPendingInsert()
 }

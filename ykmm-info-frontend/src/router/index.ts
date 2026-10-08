@@ -1,4 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
+import { CommonRouteName } from '@/constants'
 import { setupRouterGuards } from './guards'
 import { adminRoutes } from './routes/admin'
 import { userRoutes } from './routes/user'
@@ -7,13 +8,13 @@ import type { RouteRecordRaw } from 'vue-router'
 const routes: RouteRecordRaw[] = [
   {
     path: '/login',
-    name: 'Login',
+    name: CommonRouteName.LOGIN,
     component: () => import('@/views/login/Index.vue'),
     meta: { title: '登录' },
   },
   {
     path: '/register',
-    name: 'Register',
+    name: CommonRouteName.REGISTER,
     component: () => import('@/views/register/Index.vue'),
     meta: { title: '注册' },
   },
@@ -21,13 +22,13 @@ const routes: RouteRecordRaw[] = [
   userRoutes,
   {
     path: '/404',
-    name: 'Forbidden',
+    name: CommonRouteName.FORBIDDEN,
     component: () => import('@/views/forbidden/Index.vue'),
     meta: { title: '无权限' },
   },
   {
     path: '/:pathMatch(.*)*',
-    name: 'NotFound',
+    name: CommonRouteName.NOT_FOUND,
     component: () => import('@/views/notFound/Index.vue'),
     meta: { title: '页面不存在' },
   },

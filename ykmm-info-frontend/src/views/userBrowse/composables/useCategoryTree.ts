@@ -1,6 +1,6 @@
 import { computed, ref, type Ref, watch } from 'vue'
 import { listUserStoryCategoryTreeAPI } from '@/api/story'
-import type { StoryCategoryTypeValue } from '@/constants/story'
+import type { StoryCategoryTypeValue } from '@/constants'
 import type { StoryCategoryVO } from '@/types/storyCategory'
 
 function collectIds(list: StoryCategoryVO[]): number[] {

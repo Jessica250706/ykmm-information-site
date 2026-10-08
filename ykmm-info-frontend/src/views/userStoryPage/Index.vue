@@ -24,13 +24,13 @@
 
 <script setup lang="ts">
 import { useRouter } from 'vue-router'
-import { type StoryCategoryTypeValue } from '@/constants/story'
+import { type StoryCategoryTypeValue, UserRouteName } from '@/constants'
 import { useStoryCategoryTypeStore } from '@/stores/storyCategoryTypeStore'
 
 const router = useRouter()
 const storyCategoryTypeStore = useStoryCategoryTypeStore()
 
 function goType(type: StoryCategoryTypeValue) {
-  router.push({ name: 'UserStoryBrowse', params: { type: String(type) } })
+  router.push({ name: UserRouteName.STORY_BROWSE, params: { type: String(type) } })
 }
 </script>

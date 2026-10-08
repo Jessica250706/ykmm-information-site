@@ -274,7 +274,7 @@ public class DialogueVersionServiceImpl implements DialogueVersionService {
     }
 
     /**
-     * 查询全部文字版本选项
+     * 查询全部版本选项
      *
      * @param sourceType 来源类型
      * @param sourceId   来源主键
@@ -289,7 +289,7 @@ public class DialogueVersionServiceImpl implements DialogueVersionService {
             throw new RuntimeException("来源ID不能为空");
         }
 
-        // 1. 查出当前来源下已有的文字版本
+        // 1. 查出当前来源下已有的版本
         List<DialogueVersion> existed = dialogueVersionMapper.listBySource(sourceType, sourceId);
 
         // 2. 建索引：language-scope -> versionId

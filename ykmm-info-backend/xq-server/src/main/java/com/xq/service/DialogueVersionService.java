@@ -56,7 +56,7 @@ public interface DialogueVersionService {
     /**
      * 查询全部文字版本选项
      *
-     * @param sourceType 来源类型：1剧情 2RTV 3RC
+     * @param sourceType 来源类型：1-RC 2-RTV 3-Rabitter 4-剧情
      * @param sourceId   来源主键
      * @return 选项列表
      */
@@ -65,7 +65,7 @@ public interface DialogueVersionService {
     /**
      * 查询全部版本选项
      *
-     * @param sourceType 来源类型：1剧情 2RTV 3RC
+     * @param sourceType 来源类型：1-RC 2-RTV 3-Rabitter 4-剧情
      * @param sourceId   来源主键
      * @return 选项列表
      */

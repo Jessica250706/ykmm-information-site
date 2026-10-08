@@ -11,16 +11,33 @@ import java.util.List;
  */
 @Mapper
 public interface CardRtvMapper {
-    /** 根据卡面ID查询 RTV 列表 */
+    /**
+     * 根据卡面ID查询 RTV 列表
+     */
     List<CardRtv> listByCardId(@Param("cardId") Long cardId);
-    /** 根据 id 查询 */
+
+    /**
+     * 根据 id 查询
+     */
     CardRtv getById(@Param("id") Long id);
-    /** 新增 */
+
+    /**
+     * 新增
+     */
     int insert(CardRtv rtv);
-    /** 更新 */
+
+    /**
+     * 更新
+     */
     int update(CardRtv rtv);
-    /** 删除 */
+
+    /**
+     * 删除
+     */
     int deleteById(@Param("id") Long id);
-    /** 删除卡面下的全部 RTV */
+
+    /**
+     * 删除卡面下的全部 RTV
+     */
     int deleteByCardId(@Param("cardId") Long cardId);
 }

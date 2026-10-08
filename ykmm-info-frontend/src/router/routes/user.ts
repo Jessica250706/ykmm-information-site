@@ -1,3 +1,4 @@
+import { UserRouteName } from '@/constants'
 import type { RouteRecordRaw } from 'vue-router'
 
 export const userRoutes: RouteRecordRaw = {
@@ -8,53 +9,61 @@ export const userRoutes: RouteRecordRaw = {
     // ---------- 卡面 ----------
     {
       path: 'card',
-      name: 'UserCardList',
+      name: UserRouteName.CARD_LIST,
       component: () => import('@/views/userCardPage/Index.vue'),
       meta: { title: '卡面' },
     },
     {
       path: 'card/:id',
-      name: 'UserCardDetail',
+      name: UserRouteName.CARD_DETAIL,
       component: () => import('@/views/userCardPage/CardDetail/Index.vue'),
       meta: { title: '卡面详情' },
     },
     {
-      path: 'card-rc/edit',
-      name: 'UserCardRcEdit',
-      component: () => import('@/views/userCardPage/components/CardRCEdit.vue'),
-      meta: { title: 'RC 对话编辑' },
+      path: 'card-rc/browse',
+      name: UserRouteName.CARD_RC_BROWSE,
+      component: () => import('@/views/userCardPage/components/CardRCBrowse.vue'),
+      meta: { title: 'RC 对话浏览' },
     },
     {
-      path: 'card-rtv/edit',
-      name: 'UserCardRtvEdit',
-      component: () => import('@/views/userCardPage/components/CardRTVEdit.vue'),
-      meta: { title: 'RTV 对话编辑' },
+      path: 'card-rtv/browse',
+      name: UserRouteName.CARD_RTV_BROWSE,
+      component: () => import('@/views/userCardPage/components/CardRTVBrowse.vue'),
+      meta: { title: 'RTV 对话浏览' },
     },
+    {
+      path: 'card-rabitter/browse',
+      name: UserRouteName.CARD_RABITTER_BROWSE,
+      component: () => import('@/views/userCardPage/components/CardRabitterBrowse.vue'),
+      meta: { title: 'Rabbitter 对话浏览' },
+    },
+
     // ---------- 剧情 ----------
     {
       path: 'story',
-      name: 'UserStory',
+      name: UserRouteName.STORY,
       component: () => import('@/views/userStoryPage/Index.vue'),
       meta: { title: '剧情' },
     },
     {
       path: 'story/browse/:type',
-      name: 'UserStoryBrowse',
+      name: UserRouteName.STORY_BROWSE,
       component: () => import('@/views/userBrowse/StoryBrowse.vue'),
       props: true,
       meta: { title: '剧情浏览' },
     },
     {
       path: 'story/browse/:type/:kind/:id',
-      name: 'UserStoryBrowseDetail',
+      name: UserRouteName.STORY_BROWSE_DETAIL,
       component: () => import('@/views/userBrowse/StoryBrowse.vue'),
       props: true,
       meta: { title: '剧情浏览' },
     },
+
     // ---------- 个人中心 ----------
     {
       path: 'profile',
-      name: 'UserProfile',
+      name: UserRouteName.PROFILE,
       component: () => import('@/views/userProfilePage/Index.vue'),
       meta: { title: '个人中心', requiresAuth: true },
     },

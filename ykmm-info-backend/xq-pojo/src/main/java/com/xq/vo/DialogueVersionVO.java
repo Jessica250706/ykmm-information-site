@@ -69,6 +69,11 @@ public class DialogueVersionVO implements Serializable {
     private String scopeLabel;
 
     /**
+     * 状态
+     */
+    private Long status;
+
+    /**
      * 文字版本时的句子列表
      */
     private List<DialogueLineVO> lines;
@@ -77,6 +82,16 @@ public class DialogueVersionVO implements Serializable {
      * 图片版本时的图片列表
      */
     private List<DialogueImageVO> images;
+
+    /**
+     * RC 选项列表
+     */
+    private List<RcOptionVO> options;
+
+    /**
+     * 贡献者列表
+     */
+    private List<DialogueVersionContributorVO> contributors;
 
     /**
      * 创建时间

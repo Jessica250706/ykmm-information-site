@@ -1,18 +1,19 @@
 import { useRouter } from 'vue-router'
+import { UserRouteName } from '@/constants'
 
 export function useBrowseNavigation() {
   const router = useRouter()
 
   function goCategory(type: number, id: number) {
     router.push({
-      name: 'UserStoryBrowseDetail',
+      name: UserRouteName.STORY_BROWSE_DETAIL,
       params: { type: String(type), kind: 'category', id: String(id) },
     })
   }
 
   function goStory(type: number, id: number) {
     router.push({
-      name: 'UserStoryBrowseDetail',
+      name: UserRouteName.STORY_BROWSE_DETAIL,
       params: { type: String(type), kind: 'story', id: String(id) },
     })
   }
@@ -22,7 +23,7 @@ export function useBrowseNavigation() {
   }
 
   function handleSwitchType(typeId: number) {
-    router.push({ name: 'UserStoryBrowse', params: { type: String(typeId) } })
+    router.push({ name: UserRouteName.STORY_BROWSE, params: { type: String(typeId) } })
   }
 
   return { goCategory, goStory, goBack, handleSwitchType }

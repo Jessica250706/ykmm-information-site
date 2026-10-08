@@ -11,20 +11,51 @@ import java.util.List;
  */
 @Mapper
 public interface RcOptionMapper {
-    /** 根据 RC ID 查询选项 */
+    /**
+     * 根据 RC ID 查询选项
+     */
     List<RcOption> listByRcId(@Param("rcId") Long rcId);
-    /** 根据版本ID查询选项 */
+
+    /**
+     * 根据版本ID查询选项
+     */
     List<RcOption> listByVersionId(@Param("versionId") Long versionId);
-    /** 新增 */
+
+    /**
+     * 新增
+     */
     int insert(RcOption option);
-    /** 批量新增 */
+
+    /**
+     * 批量新增
+     */
     int insertBatch(@Param("list") List<RcOption> list);
-    /** 更新 */
+
+    /**
+     * 更新
+     */
     int update(RcOption option);
-    /** 删除 */
+
+    /**
+     * 删除
+     */
     int deleteById(@Param("id") Long id);
-    /** 删除 RC 下的全部选项 */
+
+    /**
+     * 删除 RC 下的全部选项
+     */
     int deleteByRcId(@Param("rcId") Long rcId);
-    /** 删除版本下的全部选项 */
+
+    /**
+     * 删除版本下的全部选项
+     */
     int deleteByVersionId(@Param("versionId") Long versionId);
+
+    /**
+     * 根据版本ID批量查询RC选项
+     *
+     * @param versionIds 版本ID列表
+     * @return RC选项列表
+     */
+    List<RcOption> listByVersionIds(@Param("versionIds") List<Long> versionIds);
 }

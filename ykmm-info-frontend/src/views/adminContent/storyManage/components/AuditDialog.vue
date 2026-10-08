@@ -35,7 +35,7 @@
 import { reactive, ref } from 'vue'
 import { ElMessage, type FormInstance, type FormRules } from 'element-plus'
 import { auditStoryAPI } from '@/api/story'
-import { STORY_AUDIT_ACTION } from '@/constants/story'
+import { STORY_AUDIT_ACTION } from '@/constants'
 import type { StoryAuditDTO, StoryVO } from '@/types/story'
 
 const visible = defineModel<boolean>({ required: true })

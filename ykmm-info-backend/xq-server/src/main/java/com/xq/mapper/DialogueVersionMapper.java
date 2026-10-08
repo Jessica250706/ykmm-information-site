@@ -82,4 +82,16 @@ public interface DialogueVersionMapper {
     List<DialogueVersion> listBySourceAndFormat(@Param("sourceType") Integer sourceType,
                                                 @Param("sourceId") Long sourceId,
                                                 @Param("format") Integer format);
+
+    /**
+     * 根据来源类型批量查询对话版本
+     *
+     * @param sourceType 来源类型
+     * @param sourceIds  来源ID列表
+     * @param status     审核状态过滤，null 表示不过滤
+     * @return 对话版本列表
+     */
+    List<DialogueVersion> listBySourceIds(@Param("sourceType") Integer sourceType,
+                                          @Param("sourceIds") List<Long> sourceIds,
+                                          @Param("status") Integer status);
 }

@@ -15,18 +15,32 @@ import java.io.Serializable;
 @NoArgsConstructor
 @AllArgsConstructor
 public class CardRcVO implements Serializable {
-    /** 主键 */
+    /**
+     * 主键
+     */
     private Long id;
-    /** 所属卡面ID */
+    /**
+     * 所属卡面ID
+     */
     private Long cardId;
-    /** 发起人角色ID */
+    /**
+     * 发起人角色ID
+     */
     private Long roleId;
-    /** 发起人角色名 */
+    /**
+     * 发起人角色名
+     */
     private String roleName;
-    /** 第几话 */
+    /**
+     * 第几话
+     */
     private Integer episodeNo;
-    /** 标题 */
+    /**
+     * 标题
+     */
     private String title;
-    /** 创建时间 */
+    /**
+     * 创建时间
+     */
     private String createdAt;
 }

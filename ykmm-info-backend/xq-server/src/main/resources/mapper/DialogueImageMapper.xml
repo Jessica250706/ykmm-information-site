@@ -15,7 +15,7 @@
     <include refid="baseColumns"/>
     FROM dialogue_image
     WHERE version_id = #{versionId}
-    ORDER BY sort ASC, id ASC
+    ORDER BY sort, id
   </select>
 
   <select id="getById" resultType="com.xq.entity.DialogueImage">

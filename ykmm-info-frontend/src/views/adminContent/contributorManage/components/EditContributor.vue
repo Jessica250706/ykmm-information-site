@@ -100,10 +100,11 @@ import {
   updateDialogueVersionContributorAPI,
 } from '@/api/dialogueVersionContributor'
 import {
+  AdminRouteName,
   CONTRIBUTOR_ROLE,
   CONTRIBUTOR_ROLE_OPTIONS,
   type ContributorRoleValue,
-} from '@/constants/contributor'
+} from '@/constants'
 import type { DialogueVersionContributorDTO } from '@/types/dialogueVersionContributor'
 
 const route = useRoute()
@@ -201,7 +202,7 @@ async function handleSubmit() {
 }
 
 function handleBack() {
-  router.push({ name: 'AdminDialogueVersionContributorManage' })
+  router.push({ name: AdminRouteName.CONTRIBUTOR_MANAGE })
 }
 
 /* -------- 初始化 -------- */

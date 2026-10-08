@@ -1,4 +1,5 @@
-import { useUserStore } from '@/stores/userStore'
+import { CommonRouteName } from '@/constants'
+import { useUserStore } from '@/stores'
 import type { Router } from 'vue-router'
 
 export function setupRouterGuards(router: Router) {
@@ -6,12 +7,15 @@ export function setupRouterGuards(router: Router) {
     const userStore = useUserStore()
 
     if (to.meta.requiresAuth && !userStore.token) {
-      return { name: 'Login', query: { redirect: to.fullPath } }
+      return {
+        name: CommonRouteName.LOGIN,
+        query: { redirect: to.fullPath },
+      }
     }
 
     const requiredRoles = to.meta.roles as number[] | undefined
     if (requiredRoles?.length && !requiredRoles.includes(userStore.userInfo?.role ?? -1)) {
-      return { name: 'Forbidden' }
+      return { name: CommonRouteName.FORBIDDEN }
     }
 
     return true

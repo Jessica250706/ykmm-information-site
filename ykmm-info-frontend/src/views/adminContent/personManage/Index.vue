@@ -130,12 +130,14 @@ import { useRouter } from 'vue-router'
 import { deletePersonAPI, listPersonAPI } from '@/api/person'
 import { type PageResult, type ProTableColumn, type ProTableExpose } from '@/components/ProTable'
 import {
+  AdminRouteName,
   PERSON_TYPE,
   PERSON_TYPE_LABEL,
   PERSON_TYPE_OPTIONS,
   type PersonTypeValue,
-} from '@/constants/person'
-import { useAgencyStore } from '@/stores/agencyStore'
+} from '@/constants'
+import {} from '@/constants'
+import { useAgencyStore } from '@/stores'
 import type { PersonPageQueryDTO, PersonVO } from '@/types/person'
 
 const router = useRouter()
@@ -203,12 +205,12 @@ function handleReset() {
 
 /* -------- 新增 / 编辑 -------- */
 function handleCreate() {
-  router.push({ name: 'AdminPersonCreate' })
+  router.push({ name: AdminRouteName.PERSON_CREATE })
 }
 
 function handleEdit(row: PersonVO) {
   router.push({
-    name: 'AdminPersonEdit',
+    name: AdminRouteName.PERSON_EDIT,
     params: { id: String(row.id) },
   })
 }

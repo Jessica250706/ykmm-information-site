@@ -2,8 +2,8 @@
   <CardBrowse
     :card-id="cardId"
     :episodes="episodes"
-    :source-label="'卡面RTV'"
-    :source-type="2"
+    :source-label="'卡面' + SOURCE_TYPE_LABEL[SOURCE_TYPE.RTV]"
+    :source-type="SOURCE_TYPE.RTV"
     @back="handleBack"
   />
 </template>
@@ -12,6 +12,7 @@
 import { computed, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { listCardRtvByCardAPI } from '@/api/cardRtv'
+import { SOURCE_TYPE, SOURCE_TYPE_LABEL, UserRouteName } from '@/constants'
 import CardBrowse from '@/views/userBrowse/CardBrowse.vue'
 
 const route = useRoute()
@@ -29,8 +30,8 @@ async function loadEpisodes() {
 
 function handleBack() {
   router.push({
-    name: 'AdminCardRtvManage',
-    query: { cardId: String(cardId.value) },
+    name: UserRouteName.CARD_DETAIL,
+    params: { id: String(cardId.value) },
   })
 }
 

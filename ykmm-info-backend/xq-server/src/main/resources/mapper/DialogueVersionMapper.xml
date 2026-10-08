@@ -12,6 +12,10 @@
     scope,
     creator_id   AS creatorId,
     creator_role AS creatorRole,
+    status,
+    reviewer_id  AS reviewerId,
+    review_time  AS reviewTime,
+    review_remark AS reviewRemark,
     created_at   AS createdAt
   </sql>
 
@@ -69,8 +73,10 @@
 
   <insert id="insert" parameterType="com.xq.entity.DialogueVersion"
           useGeneratedKeys="true" keyProperty="id">
-    INSERT INTO dialogue_version (source_type, source_id, language, format, scope, creator_id, creator_role)
-    VALUES (#{sourceType}, #{sourceId}, #{language}, #{format}, #{scope}, #{creatorId}, #{creatorRole})
+    INSERT INTO dialogue_version (source_type, source_id, language, format, scope, creator_id, creator_role, status,
+                                  reviewer_id, review_time, review_remark)
+    VALUES (#{sourceType}, #{sourceId}, #{language}, #{format}, #{scope}, #{creatorId}, #{creatorRole}, #{status},
+            #{reviewerId}, #{reviewTime}, #{reviewRemark})
   </insert>
 
   <delete id="deleteById">
@@ -87,6 +93,21 @@
       AND source_id = #{sourceId}
       AND format = #{format}
     ORDER BY id
+  </select>
+
+  <select id="listBySourceIds" resultType="com.xq.entity.DialogueVersion">
+    SELECT
+    <include refid="baseColumns"/>
+    FROM dialogue_version
+    WHERE source_type = #{sourceType}
+    AND source_id IN
+    <foreach collection="sourceIds" item="sid" open="(" separator="," close=")">
+      #{sid}
+    </foreach>
+    <if test="status != null">
+      AND status = #{status}
+    </if>
+    ORDER BY source_id, id
   </select>
 
 </mapper>

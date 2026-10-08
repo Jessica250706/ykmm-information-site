@@ -25,12 +25,12 @@ public class DialogueVersion implements Serializable {
     private Long id;
 
     /**
-     * 1剧情 2卡面RTV 3卡面RC
+     * 1-RC 2-RTV 3-Rabitter 4-剧情
      */
     private Integer sourceType;
 
     /**
-     * 对应 story.id / card_rtv.id / card_rc.id
+     * 对应 card_rc.id / card_rtv.id / card_rabitter.id / story.id
      */
     private Long sourceId;
 
@@ -48,6 +48,26 @@ public class DialogueVersion implements Serializable {
      * 1全部 2节选
      */
     private Integer scope;
+
+    /**
+     * 状态
+     */
+    private Long status;
+
+    /**
+     * 审批ID
+     */
+    private Long reviewerId;
+
+    /**
+     * 审批时间
+     */
+    private LocalDateTime reviewTime;
+
+    /**
+     * 审批理由
+     */
+    private String reviewRemark;
 
     /**
      * 创建时间

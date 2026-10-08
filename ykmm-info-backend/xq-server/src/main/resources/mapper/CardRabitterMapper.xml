@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xq.mapper.CardRabitterMapper">
+
+  <sql id="baseColumns">
+    id,
+    card_id AS cardId,
+    episode_no AS episodeNo,
+    title,
+    created_at AS createdAt
+  </sql>
+
+  <select id="listByCardId" resultType="com.xq.entity.CardRabitter">
+    SELECT
+    <include refid="baseColumns"/>
+    FROM card_rabitter
+    WHERE card_id = #{cardId}
+    ORDER BY episode_no, id
+  </select>
+
+  <select id="getById" resultType="com.xq.entity.CardRabitter">
+    SELECT
+    <include refid="baseColumns"/>
+    FROM card_rabitter WHERE id = #{id}
+  </select>
+
+  <select id="getVOById" resultType="com.xq.vo.CardRabitterVO">
+    SELECT
+    <include refid="baseColumns"/>
+    FROM card_rabitter
+    WHERE id = #{id}
+  </select>
+
+  <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+    INSERT INTO card_rabitter (card_id, episode_no, title)
+    VALUES (#{cardId}, #{episodeNo}, #{title})
+  </insert>
+
+  <update id="update">
+    UPDATE card_rabitter
+    <set>
+      <if test="episodeNo != null">episode_no = #{episodeNo},</if>
+      <if test="title != null">title = #{title},</if>
+    </set>
+    WHERE id = #{id}
+  </update>
+
+  <delete id="deleteById">
+    DELETE
+    FROM card_rabitter
+    WHERE id = #{id}
+  </delete>
+
+  <delete id="deleteByCardId">
+    DELETE
+    FROM card_rabitter
+    WHERE card_id = #{cardId}
+  </delete>
+
+</mapper>

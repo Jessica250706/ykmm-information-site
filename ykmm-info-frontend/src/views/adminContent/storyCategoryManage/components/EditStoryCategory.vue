@@ -66,8 +66,8 @@ import {
   listStoryCategoryTreeAPI,
   updateStoryCategoryAPI,
 } from '@/api/storyCategory'
-import { STORY_CATEGORY_TYPE, type StoryCategoryTypeValue } from '@/constants/story'
-import { useStoryCategoryTypeStore } from '@/stores/storyCategoryTypeStore'
+import { AdminRouteName, STORY_CATEGORY_TYPE, type StoryCategoryTypeValue } from '@/constants'
+import { useStoryCategoryTypeStore } from '@/stores'
 import type { StoryCategoryDTO, StoryCategoryVO } from '@/types/storyCategory'
 
 const route = useRoute()
@@ -161,12 +161,12 @@ function handleBack() {
   const { from, detailId } = route.query
   if (from === 'detail' && detailId) {
     router.push({
-      name: 'AdminStoryCategoryDetail',
+      name: AdminRouteName.STORY_CATEGORY_DETAIL,
       params: { id: String(detailId) },
     })
     return
   }
-  router.push({ name: 'AdminStoryCategoryManage' })
+  router.push({ name: AdminRouteName.STORY_CATEGORY_MANAGE })
 }
 
 onMounted(async () => {

@@ -1,4 +1,4 @@
-import { ROLE } from '@/constants/index'
+import { AdminRouteName, ROLE } from '@/constants'
 import type { RouteRecordRaw } from 'vue-router'
 
 export const adminRoutes: RouteRecordRaw = {
@@ -11,26 +11,26 @@ export const adminRoutes: RouteRecordRaw = {
     // ---------- 菜单管理 ----------
     {
       path: 'settings/menu',
-      name: 'AdminMenuManage',
+      name: AdminRouteName.MENU_MANAGE,
       component: () => import('@/views/adminSettings/menuManage/Index.vue'),
       meta: { title: '菜单管理' },
     },
     {
       path: 'settings/menu/create',
-      name: 'AdminMenuCreate',
+      name: AdminRouteName.MENU_CREATE,
       component: () => import('@/views/adminSettings/menuManage/components/EditMenu.vue'),
       meta: { title: '新增菜单' },
     },
     {
       path: 'settings/menu/edit/:id',
-      name: 'AdminMenuEdit',
+      name: AdminRouteName.MENU_EDIT,
       component: () => import('@/views/adminSettings/menuManage/components/EditMenu.vue'),
       meta: { title: '编辑菜单' },
     },
     // ---------- 用户管理 ----------
     {
       path: 'settings/user',
-      name: 'AdminUserManage',
+      name: AdminRouteName.USER_MANAGE,
       component: () => import('@/views/adminSettings/userManage/Index.vue'),
       meta: { title: '用户管理' },
     },
@@ -39,58 +39,58 @@ export const adminRoutes: RouteRecordRaw = {
     // ---------- 人物管理 ----------
     {
       path: 'content/person',
-      name: 'AdminPersonManage',
+      name: AdminRouteName.PERSON_MANAGE,
       component: () => import('@/views/adminContent/personManage/Index.vue'),
       meta: { title: '人物管理' },
     },
     {
       path: 'content/person/create',
-      name: 'AdminPersonCreate',
+      name: AdminRouteName.PERSON_CREATE,
       component: () => import('@/views/adminContent/personManage/components/EditPerson.vue'),
       meta: { title: '新增人物' },
     },
     {
       path: 'content/person/edit/:id',
-      name: 'AdminPersonEdit',
+      name: AdminRouteName.PERSON_EDIT,
       component: () => import('@/views/adminContent/personManage/components/EditPerson.vue'),
       meta: { title: '编辑人物' },
     },
     // ---------- 角色管理 ----------
     {
       path: 'content/role',
-      name: 'AdminRoleManage',
+      name: AdminRouteName.ROLE_MANAGE,
       component: () => import('@/views/adminContent/roleManage/Index.vue'),
       meta: { title: '角色管理' },
     },
     {
       path: 'content/role/create',
-      name: 'AdminRoleCreate',
+      name: AdminRouteName.ROLE_CREATE,
       component: () => import('@/views/adminContent/roleManage/components/EditRole.vue'),
       meta: { title: '新增角色' },
     },
     {
       path: 'content/role/edit/:id',
-      name: 'AdminRoleEdit',
+      name: AdminRouteName.ROLE_EDIT,
       component: () => import('@/views/adminContent/roleManage/components/EditRole.vue'),
       meta: { title: '编辑角色' },
     },
     // ---------- 卡面系列管理 ----------
     {
       path: 'content/card-series',
-      name: 'AdminCardSeriesManage',
+      name: AdminRouteName.CARD_SERIES_MANAGE,
       component: () => import('@/views/adminContent/cardSeriesManage/Index.vue'),
       meta: { title: '卡面系列' },
     },
     {
       path: 'content/card-series/create',
-      name: 'AdminCardSeriesCreate',
+      name: AdminRouteName.CARD_SERIES_CREATE,
       component: () =>
         import('@/views/adminContent/cardSeriesManage/components/EditCardSeries.vue'),
       meta: { title: '新增卡面系列' },
     },
     {
       path: 'content/card-series/edit/:id',
-      name: 'AdminCardSeriesEdit',
+      name: AdminRouteName.CARD_SERIES_EDIT,
       component: () =>
         import('@/views/adminContent/cardSeriesManage/components/EditCardSeries.vue'),
       meta: { title: '编辑卡面系列' },
@@ -98,93 +98,93 @@ export const adminRoutes: RouteRecordRaw = {
     // ---------- 卡面管理 ----------
     {
       path: 'content/card',
-      name: 'AdminCardManage',
+      name: AdminRouteName.CARD_MANAGE,
       component: () => import('@/views/adminContent/cardManage/Index.vue'),
       meta: { title: '卡面管理' },
     },
     {
       path: 'content/card/create',
-      name: 'AdminCardCreate',
+      name: AdminRouteName.CARD_CREATE,
       component: () => import('@/views/adminContent/cardManage/components/EditCard.vue'),
       meta: { title: '新增卡面' },
     },
     {
       path: 'content/card/edit/:id',
-      name: 'AdminCardEdit',
+      name: AdminRouteName.CARD_EDIT,
       component: () => import('@/views/adminContent/cardManage/components/EditCard.vue'),
       meta: { title: '编辑卡面' },
     },
     // ---------- 卡面 RC 管理 ----------
     {
       path: 'content/card-rc',
-      name: 'AdminCardRcManage',
+      name: AdminRouteName.CARD_RC_MANAGE,
       component: () => import('@/views/adminContent/cardRCManage/Index.vue'),
       meta: { title: 'RC 管理' },
     },
     // ---------- 卡面 RTV 管理 ----------
     {
       path: 'content/card-rtv',
-      name: 'AdminCardRtvManage',
+      name: AdminRouteName.CARD_RTV_MANAGE,
       component: () => import('@/views/adminContent/cardRTVManage/Index.vue'),
       meta: { title: 'RTV 管理' },
     },
     // ---------- 偶像小人管理 ----------
     {
       path: 'content/idol',
-      name: 'AdminIdolManage',
+      name: AdminRouteName.IDOL_MANAGE,
       component: () => import('@/views/adminContent/idolManage/Index.vue'),
       meta: { title: '偶像小人管理' },
     },
     // ---------- 造型管理 ----------
     {
       path: 'content/style',
-      name: 'AdminStyleManage',
+      name: AdminRouteName.STYLE_MANAGE,
       component: () => import('@/views/adminContent/styleManage/Index.vue'),
       meta: { title: '造型管理' },
     },
     // ---------- 剧情管理 ----------
     {
       path: 'content/story',
-      name: 'AdminStoryManage',
+      name: AdminRouteName.STORY_MANAGE,
       component: () => import('@/views/adminContent/storyManage/Index.vue'),
       meta: { title: '剧情管理' },
     },
     {
       path: 'content/story/create',
-      name: 'AdminStoryCreate',
+      name: AdminRouteName.STORY_CREATE,
       component: () => import('@/views/adminContent/storyManage/components/EditStory.vue'),
       meta: { title: '新增剧情' },
     },
     {
       path: 'content/story/edit/:id',
-      name: 'AdminStoryEdit',
+      name: AdminRouteName.STORY_EDIT,
       component: () => import('@/views/adminContent/storyManage/components/EditStory.vue'),
       meta: { title: '编辑剧情' },
     },
     // ---------- 剧情分类管理 ----------
     {
       path: 'content/story-category',
-      name: 'AdminStoryCategoryManage',
+      name: AdminRouteName.STORY_CATEGORY_MANAGE,
       component: () => import('@/views/adminContent/storyCategoryManage/Index.vue'),
       meta: { title: '剧情分类管理' },
     },
     {
       path: 'content/story-category/create',
-      name: 'AdminStoryCategoryCreate',
+      name: AdminRouteName.STORY_CATEGORY_CREATE,
       component: () =>
         import('@/views/adminContent/storyCategoryManage/components/EditStoryCategory.vue'),
       meta: { title: '新增剧情分类' },
     },
     {
       path: 'content/story-category/edit/:id',
-      name: 'AdminStoryCategoryEdit',
+      name: AdminRouteName.STORY_CATEGORY_EDIT,
       component: () =>
         import('@/views/adminContent/storyCategoryManage/components/EditStoryCategory.vue'),
       meta: { title: '编辑剧情分类' },
     },
     {
       path: 'content/story-category/detail/:id',
-      name: 'AdminStoryCategoryDetail',
+      name: AdminRouteName.STORY_CATEGORY_DETAIL,
       component: () =>
         import('@/views/adminContent/storyCategoryManage/components/DetailStoryCategory/Index.vue'),
       meta: { title: '剧情分类详情' },
@@ -192,13 +192,13 @@ export const adminRoutes: RouteRecordRaw = {
     // ---------- 剧情分类类型管理 ----------
     {
       path: 'settings/story-category-type',
-      name: 'AdminStoryCategoryTypeManage',
+      name: AdminRouteName.STORY_CATEGORY_TYPE_MANAGE,
       component: () => import('@/views/adminContent/storyCategoryTypeManage/Index.vue'),
       meta: { title: '剧情分类类型' },
     },
     {
       path: 'settings/story-category-type/edit/:id',
-      name: 'AdminStoryCategoryTypeEdit',
+      name: AdminRouteName.STORY_CATEGORY_TYPE_EDIT,
       component: () =>
         import('@/views/adminContent/storyCategoryTypeManage/components/EditStoryCategoryType.vue'),
       meta: { title: '编辑剧情分类类型' },
@@ -206,20 +206,20 @@ export const adminRoutes: RouteRecordRaw = {
     // ---------- 贡献者管理 ----------
     {
       path: 'contributor',
-      name: 'AdminDialogueVersionContributorManage',
+      name: AdminRouteName.CONTRIBUTOR_MANAGE,
       component: () => import('@/views/adminContent/contributorManage/Index.vue'),
       meta: { title: '贡献者管理' },
     },
     {
       path: 'contributor/create',
-      name: 'AdminDialogueVersionContributorCreate',
+      name: AdminRouteName.CONTRIBUTOR_CREATE,
       component: () =>
         import('@/views/adminContent/contributorManage/components/EditContributor.vue'),
       meta: { title: '新增贡献者' },
     },
     {
       path: 'contributor/edit/:id',
-      name: 'AdminDialogueVersionContributorEdit',
+      name: AdminRouteName.CONTRIBUTOR_EDIT,
       component: () =>
         import('@/views/adminContent/contributorManage/components/EditContributor.vue'),
       meta: { title: '编辑贡献者' },

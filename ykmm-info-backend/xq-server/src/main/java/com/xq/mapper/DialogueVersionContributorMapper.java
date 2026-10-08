@@ -128,4 +128,12 @@ public interface DialogueVersionContributorMapper {
      * @return 贡献者详情 VO，不存在返回 null
      */
     DialogueVersionContributorVO getVOById(@Param("id") Long id);
+
+    /**
+     * 根据版本ID批量查询贡献者
+     *
+     * @param versionIds 版本ID列表
+     * @return 贡献者列表
+     */
+    List<DialogueVersionContributorVO> listByVersionIds(@Param("versionIds") List<Long> versionIds);
 }

@@ -88,6 +88,7 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public void updateStatus(Long id, Integer status) {
+        // TODO: 状态值
         if (status == null || (status != 0 && status != 1)) {
             throw new RuntimeException("状态值不合法");
         }

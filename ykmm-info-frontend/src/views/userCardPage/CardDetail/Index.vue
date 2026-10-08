@@ -64,7 +64,13 @@
 import { computed, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import ImageView from '@/components/ImageView/Index.vue'
-import { CARD_IMAGE_TYPE_LABEL, SOURCE_TYPE } from '@/constants'
+import {
+  CARD_IMAGE_TYPE_LABEL,
+  SOURCE_TYPE,
+  SOURCE_TYPE_LABEL,
+  type SourceTypeLabelValue,
+  UserRouteName,
+} from '@/constants'
 import type { CardRcVO } from '@/types/cardRc'
 import type { CardRtvVO } from '@/types/cardRtv'
 import AddEpisodeDialog, { type EpisodeFormData } from './components/AddEpisodeDialog.vue'
@@ -135,9 +141,19 @@ async function handleSubmitEpisode(payload: {
 }
 
 /* -------- 查看 / 删除 -------- */
-function handleView(mode: 'rc' | 'rtv', id: number) {
+function chooseMode(mode: SourceTypeLabelValue) {
+  if (mode === SOURCE_TYPE_LABEL[SOURCE_TYPE.RC]) {
+    return UserRouteName.CARD_RC_BROWSE
+  } else if (mode === SOURCE_TYPE_LABEL[SOURCE_TYPE.RTV]) {
+    return UserRouteName.CARD_RTV_BROWSE
+  } else if (mode === SOURCE_TYPE_LABEL[SOURCE_TYPE.RABITTER]) {
+    return UserRouteName.CARD_RABITTER_BROWSE
+  }
+}
+
+function handleView(mode: SourceTypeLabelValue, id: number) {
   router.push({
-    name: mode === 'rc' ? 'UserCardRcEdit' : 'UserCardRtvEdit',
+    name: chooseMode(mode),
     query: { cardId: String(cardId.value), episodeId: String(id) },
   })
 }
@@ -164,7 +180,7 @@ function handleBack() {
 
 function handleGoto() {
   router.push({
-    name: 'UserCardRcEdit',
+    name: UserRouteName.CARD_RC_BROWSE,
     query: { sourceType: SOURCE_TYPE.RC, cardId: String(cardId.value) },
   })
 }

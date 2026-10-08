@@ -70,8 +70,8 @@ import { ElMessage, type FormInstance, type FormRules } from 'element-plus'
 import { useRoute, useRouter } from 'vue-router'
 import { createStoryAPI, getStoryDetailAPI, updateStoryAPI } from '@/api/story'
 import { listStoryCategoryTreeAPI } from '@/api/storyCategory'
-import { STORY_CATEGORY_TYPE, type StoryCategoryTypeValue } from '@/constants/story'
-import { useStoryCategoryTypeStore } from '@/stores/storyCategoryTypeStore'
+import { AdminRouteName, STORY_CATEGORY_TYPE, type StoryCategoryTypeValue } from '@/constants'
+import { useStoryCategoryTypeStore } from '@/stores'
 import type { StoryDTO } from '@/types/story'
 import type { StoryCategoryVO } from '@/types/storyCategory'
 
@@ -158,19 +158,19 @@ function handleBack() {
 
   if (from === 'storyCategoryDetail' && detailId) {
     router.push({
-      name: 'AdminStoryCategoryDetail',
+      name: AdminRouteName.STORY_CATEGORY_DETAIL,
       params: { id: String(detailId) },
     })
     return
   }
 
   if (from === 'storyCategory') {
-    router.push({ name: 'AdminStoryCategoryManage' })
+    router.push({ name: AdminRouteName.STORY_CATEGORY_MANAGE })
     return
   }
 
   // 默认回剧情管理列表
-  router.push({ name: 'AdminStoryManage' })
+  router.push({ name: AdminRouteName.STORY_MANAGE })
 }
 
 onMounted(async () => {

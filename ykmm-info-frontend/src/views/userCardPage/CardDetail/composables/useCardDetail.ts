@@ -7,7 +7,7 @@ export function useCardDetail() {
   const loading = ref(false)
   const card = ref<CardVO | null>(null)
 
-  /** 附属剧情类型：0无 1-RC 2-RTV 3-Rabbitter */
+  /** 附属剧情类型：0无 1-RC 2-RTV 3-Rabitter */
   const attachedType = computed(() => card.value?.attachedStoryType ?? 0)
 
   /** 图片 URL 列表 */

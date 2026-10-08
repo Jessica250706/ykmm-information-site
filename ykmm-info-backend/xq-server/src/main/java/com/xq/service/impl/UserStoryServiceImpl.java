@@ -5,10 +5,7 @@ import com.github.pagehelper.PageInfo;
 import com.xq.constant.StoryConstant;
 import com.xq.dto.StoryPageQueryDTO;
 import com.xq.entity.*;
-import com.xq.enums.DialogueFormatEnum;
-import com.xq.enums.DialogueLanguageEnum;
-import com.xq.enums.DialogueScopeEnum;
-import com.xq.enums.StoryCategoryTypeEnum;
+import com.xq.enums.*;
 import com.xq.mapper.*;
 import com.xq.result.PageResult;
 import com.xq.service.UserStoryService;
@@ -27,15 +24,6 @@ import java.util.stream.Collectors;
 @Service
 @Slf4j
 public class UserStoryServiceImpl implements UserStoryService {
-
-    /**
-     * 对话来源：1-剧情
-     */
-    private static final int SOURCE_TYPE_STORY = 1;
-    /**
-     * 已发布
-     */
-    private static final int STORY_STATUS_PUBLISHED = 1;
 
     @Autowired
     private StoryCategoryMapper storyCategoryMapper;
@@ -91,7 +79,7 @@ public class UserStoryServiceImpl implements UserStoryService {
         PageHelper.startPage(query.getPageNum(), query.getPageSize());
 
         // 强制只查已发布
-        query.setStatus(STORY_STATUS_PUBLISHED);
+        query.setStatus(StatusEnum.PUBLISHED.getValue());
         List<Story> stories = storyMapper.pageQuery(query);
         PageInfo<Story> pageInfo = new PageInfo<>(stories);
 
@@ -129,7 +117,7 @@ public class UserStoryServiceImpl implements UserStoryService {
 
         // 1. 查全部对话版本
         List<DialogueVersion> versions =
-                dialogueVersionMapper.listBySource(SOURCE_TYPE_STORY, id);
+                dialogueVersionMapper.listBySource(DialogueSourceTypeEnum.STORY.getValue(), id);
         if (versions == null || versions.isEmpty()) {
             vo.setVersions(Collections.emptyList());
             return vo;
@@ -229,7 +217,7 @@ public class UserStoryServiceImpl implements UserStoryService {
                     if (seg.getStickerId() != null) {
                         Sticker sticker = stickerMap.get(seg.getStickerId());
                         if (sticker != null) {
-                            svo.setStickerUrl(sticker.getImageUrl());
+                            svo.setStickerImageUrl(sticker.getImageUrl());
                             svo.setStickerEmoji(sticker.getEmoji());
                         }
                     }

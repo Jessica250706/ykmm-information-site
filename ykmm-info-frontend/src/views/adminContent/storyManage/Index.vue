@@ -130,6 +130,7 @@ import {
   type ProTableExpose,
 } from '@/components/ProTable'
 import {
+  AdminRouteName,
   STATUS,
   STATUS_LABEL,
   STATUS_OPTIONS,
@@ -137,7 +138,8 @@ import {
   type StatusValue,
   STORY_CATEGORY_TYPE_LABEL,
   type StoryCategoryTypeValue,
-} from '@/constants/index'
+  UserRouteName,
+} from '@/constants'
 import { useStoryCategoryTypeStore } from '@/stores/storyCategoryTypeStore'
 import type { StoryPageQueryDTO, StoryVO } from '@/types/story'
 import type { StoryCategoryVO } from '@/types/storyCategory'
@@ -208,12 +210,12 @@ function handleReset() {
 }
 
 function handleCreate() {
-  router.push({ name: 'AdminStoryCreate' })
+  router.push({ name: AdminRouteName.STORY_CREATE })
 }
 
 function handleDetail(row: StoryVO) {
   const { href } = router.resolve({
-    name: 'UserStoryBrowseDetail',
+    name: UserRouteName.STORY_BROWSE_DETAIL,
     params: { type: String(row.categoryType), kind: 'category', id: String(row.categoryId) },
   })
   window.open(href, '_blank')
@@ -221,7 +223,7 @@ function handleDetail(row: StoryVO) {
 
 function handleEdit(row: StoryVO) {
   router.push({
-    name: 'AdminStoryEdit',
+    name: AdminRouteName.STORY_EDIT,
     params: { id: String(row.id) },
   })
 }

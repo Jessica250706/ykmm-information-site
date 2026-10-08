@@ -8,13 +8,23 @@ import lombok.NoArgsConstructor;
 import java.io.Serializable;
 
 /**
- * 对话片段返回
+ * 对话片段返回（文本 / 表情包）
  */
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class DialogueSegmentVO implements Serializable {
+
+    /**
+     * 主键
+     */
+    private Long id;
+
+    /**
+     * 行ID
+     */
+    private Long lineId;
 
     /**
      * 片段类型：1文本 2表情包
@@ -39,7 +49,7 @@ public class DialogueSegmentVO implements Serializable {
     /**
      * 表情包图片
      */
-    private String stickerUrl;
+    private String stickerImageUrl;
 
     /**
      * 表情包 emoji

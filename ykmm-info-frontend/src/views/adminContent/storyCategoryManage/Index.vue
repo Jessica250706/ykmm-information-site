@@ -80,10 +80,10 @@ import {
   type ProTableColumn,
   type ProTableExpose,
 } from '@/components/ProTable'
-import { STORY_CATEGORY_TYPE_LABEL, type StoryCategoryTypeValue } from '@/constants/story'
-import { useStoryCategoryTypeStore } from '@/stores/storyCategoryTypeStore'
+import { AdminRouteName, STORY_CATEGORY_TYPE_LABEL, type StoryCategoryTypeValue } from '@/constants'
+import { useStoryCategoryTypeStore } from '@/stores'
 import type { StoryCategoryPageQueryDTO, StoryCategoryVO } from '@/types/storyCategory'
-import { categoryTagStyle } from '@/utils/index'
+import { categoryTagStyle } from '@/utils'
 
 const router = useRouter()
 const storyCategoryTypeStore = useStoryCategoryTypeStore()
@@ -147,21 +147,21 @@ function handleReset() {
 /* -------- 详情 / 新增 / 编辑 -------- */
 function handleDetail(row: StoryCategoryVO) {
   router.push({
-    name: 'AdminStoryCategoryDetail',
+    name: AdminRouteName.STORY_CATEGORY_DETAIL,
     params: { id: String(row.id) },
   })
 }
 
 function handleCreate(parent?: StoryCategoryVO) {
   router.push({
-    name: 'AdminStoryCategoryCreate',
+    name: AdminRouteName.STORY_CATEGORY_CREATE,
     query: parent ? { parentId: String(parent.id), categoryType: String(parent.categoryType) } : {},
   })
 }
 
 function handleEdit(row: StoryCategoryVO) {
   router.push({
-    name: 'AdminStoryCategoryEdit',
+    name: AdminRouteName.STORY_CATEGORY_EDIT,
     params: { id: String(row.id) },
   })
 }
@@ -169,7 +169,7 @@ function handleEdit(row: StoryCategoryVO) {
 /** 从分类直接跳去新增剧情 */
 function handleCreateStory(row: StoryCategoryVO) {
   router.push({
-    name: 'AdminStoryCreate',
+    name: AdminRouteName.STORY_CREATE,
     query: {
       categoryId: String(row.id),
       categoryType: String(row.categoryType ?? ''),

@@ -68,7 +68,7 @@
 import { ref } from 'vue'
 import { Check } from '@element-plus/icons-vue'
 import { useTheme } from '@/composables/useTheme'
-import type { ThemeConfig, ThemeName } from '@/constants/theme'
+import type { ThemeConfig, ThemeName } from '@/constants'
 
 const { currentTheme, themes, setTheme } = useTheme()
 

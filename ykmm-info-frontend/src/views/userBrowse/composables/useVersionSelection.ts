@@ -1,5 +1,5 @@
 import { computed, ref, type Ref } from 'vue'
-import { VERSION_FORMAT } from '@/constants/index'
+import { VERSION_FORMAT } from '@/constants'
 import type { DialogueVersionOptionVO, DialogueVersionVO } from '@/types/dialogueVersion'
 import type { StoryDetailVO } from '@/types/story'
 

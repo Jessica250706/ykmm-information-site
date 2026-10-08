@@ -12,18 +12,38 @@ import java.util.List;
  */
 @Mapper
 public interface CardRcMapper {
-    /** 根据卡面ID查询 RC 列表 */
+    /**
+     * 根据卡面ID查询 RC 列表
+     */
     List<CardRcVO> listVOByCardId(@Param("cardId") Long cardId);
-    /** 根据 id 查询实体 */
+
+    /**
+     * 根据 id 查询实体
+     */
     CardRc getById(@Param("id") Long id);
-    /** 根据 id 查询 VO */
+
+    /**
+     * 根据 id 查询 VO
+     */
     CardRcVO getVOById(@Param("id") Long id);
-    /** 新增 */
+
+    /**
+     * 新增
+     */
     int insert(CardRc rc);
-    /** 更新 */
+
+    /**
+     * 更新
+     */
     int update(CardRc rc);
-    /** 删除 */
+
+    /**
+     * 删除
+     */
     int deleteById(@Param("id") Long id);
-    /** 删除卡面下的全部 RC */
+
+    /**
+     * 删除卡面下的全部 RC
+     */
     int deleteByCardId(@Param("cardId") Long cardId);
 }

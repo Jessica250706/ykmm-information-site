@@ -167,13 +167,13 @@ import { ElMessage, type FormInstance, type FormRules } from 'element-plus'
 import { useRoute, useRouter } from 'vue-router'
 import { createPersonAPI, getPersonDetailAPI, updatePersonAPI } from '@/api/person'
 import {
+  AdminRouteName,
   BLOOD_TYPE_OPTIONS,
   PERSON_TYPE,
   PERSON_TYPE_OPTIONS,
   type PersonTypeValue,
-} from '@/constants/person'
-import { useAgencyStore } from '@/stores/agencyStore'
-import { useIdolGroupStore } from '@/stores/idolGroupStore'
+} from '@/constants'
+import { useAgencyStore, useIdolGroupStore } from '@/stores'
 import type { PersonDTO } from '@/types/person'
 
 const route = useRoute()
@@ -290,7 +290,7 @@ async function handleSubmit() {
 }
 
 function handleBack() {
-  router.push({ name: 'AdminPersonManage' })
+  router.push({ name: AdminRouteName.PERSON_MANAGE })
 }
 
 /* -------- 初始化 -------- */

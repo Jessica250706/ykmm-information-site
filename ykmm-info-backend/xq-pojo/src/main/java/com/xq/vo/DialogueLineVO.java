@@ -23,6 +23,11 @@ public class DialogueLineVO implements Serializable {
     private Long id;
 
     /**
+     * 版本ID
+     */
+    private Long versionId;
+
+    /**
      * 说话角色ID
      */
     private Long speakerId;
@@ -58,6 +63,11 @@ public class DialogueLineVO implements Serializable {
     private Integer side;
 
     /**
+     * 是否内心独白：0否 1是
+     */
+    private Integer monologue;
+
+    /**
      * 原始文本内容
      */
     private String content;
@@ -68,12 +78,7 @@ public class DialogueLineVO implements Serializable {
     private Integer sort;
 
     /**
-     * 是否内心独白：0否 1是
-     */
-    private Integer monologue;
-
-    /**
-     * 解析后的片段
+     * 解析后的片段（文本 + 表情包混排）
      */
     private List<DialogueSegmentVO> segments;
 }

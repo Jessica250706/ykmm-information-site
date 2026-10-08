@@ -81,6 +81,7 @@ import { Lock, Message, User } from '@element-plus/icons-vue'
 import { ElMessage, type FormInstance, type FormRules } from 'element-plus'
 import { useRouter } from 'vue-router'
 import { registerAPI } from '@/api/auth'
+import { CommonRouteName, ROLE } from '@/constants'
 import { useUserStore } from '@/stores/userStore'
 import type { RegisterRequest } from '@/types/auth'
 
@@ -134,7 +135,7 @@ const rules: FormRules<RegisterForm> = {
 }
 
 function goLogin() {
-  router.replace({ name: 'Login' })
+  router.replace({ name: CommonRouteName.LOGIN })
 }
 
 async function handleSubmit() {
@@ -149,20 +150,20 @@ async function handleSubmit() {
     const { email, nickname, password } = form
     const payload: RegisterRequest = { email, nickname, password }
 
-    const { result } = await registerAPI(payload)
+    const { data } = await registerAPI(payload)
 
     // 情况 A：后端注册接口直接返回了 token，则自动登录
-    if (result?.token && result?.user) {
-      setAuth(result.token, result.user)
+    if (data?.token && data?.user) {
+      setAuth(data.token, data.user)
       ElMessage.success('注册成功')
-      await router.replace(result.user.role === 1 ? '/admin' : '/cards')
+      await router.replace(data.user.role === ROLE.ADMIN ? '/admin' : '/cards')
       return
     }
 
     // 情况 B：只返回成功，跳回登录页并带上邮箱方便回填
     ElMessage.success('注册成功，请登录')
     await router.replace({
-      name: 'Login',
+      name: CommonRouteName.LOGIN,
       query: { email: form.email },
     })
   } catch (err: unknown) {

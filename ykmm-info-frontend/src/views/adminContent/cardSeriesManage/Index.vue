@@ -75,6 +75,7 @@ import {
   type ProTableColumn,
   type ProTableExpose,
 } from '@/components/ProTable'
+import { AdminRouteName } from '@/constants'
 import type { CardSeriesPageQueryDTO, CardSeriesVO } from '@/types/cardSeries'
 
 const router = useRouter()
@@ -125,12 +126,12 @@ function handleReset() {
 }
 
 function handleCreate() {
-  router.push({ name: 'AdminCardSeriesCreate' })
+  router.push({ name: AdminRouteName.CARD_SERIES_CREATE })
 }
 
 function handleEdit(row: CardSeriesVO) {
   router.push({
-    name: 'AdminCardSeriesEdit',
+    name: AdminRouteName.CARD_SERIES_EDIT,
     params: { id: String(row.id) },
   })
 }

@@ -90,11 +90,12 @@ import {
 } from '@/api/dialogueVersionContributor'
 import { type PageResult, type ProTableColumn, type ProTableExpose } from '@/components/ProTable'
 import {
+  AdminRouteName,
   CONTRIBUTOR_ROLE,
   CONTRIBUTOR_ROLE_OPTIONS,
   contributorRoleLabel,
   type ContributorRoleValue,
-} from '@/constants/contributor'
+} from '@/constants'
 import type {
   DialogueVersionContributorPageQueryDTO,
   DialogueVersionContributorVO,
@@ -184,12 +185,12 @@ function handleReset() {
 
 /* -------- 新增 / 编辑 -------- */
 function handleCreate() {
-  router.push({ name: 'AdminDialogueVersionContributorCreate' })
+  router.push({ name: AdminRouteName.CONTRIBUTOR_CREATE })
 }
 
 function handleEdit(row: DialogueVersionContributorVO) {
   router.push({
-    name: 'AdminDialogueVersionContributorEdit',
+    name: AdminRouteName.CONTRIBUTOR_EDIT,
     params: { id: String(row.id) },
   })
 }

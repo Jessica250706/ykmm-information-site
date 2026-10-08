@@ -1,7 +1,7 @@
 import { computed, ref } from 'vue'
 import { defineStore } from 'pinia'
 import { loginAPI } from '@/api/auth'
-import { ROLE } from '@/constants/index'
+import { ROLE } from '@/constants'
 import type { LoginRequest } from '@/types/auth'
 import type { UserInfo } from '@/types/user'
 import { useMenuStore } from './menuStore'

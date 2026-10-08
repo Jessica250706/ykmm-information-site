@@ -89,7 +89,7 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import { useScrollShadow } from '@/composables/useScrollShadow'
-import { VERSION_FORMAT } from '@/constants/index'
+import { VERSION_FORMAT } from '@/constants'
 import type { DialogueLineVO } from '@/types/dialogueLine'
 import type { DialogueVersionOptionVO, DialogueVersionVO } from '@/types/dialogueVersion'
 import type { StoryDetailVO } from '@/types/story'

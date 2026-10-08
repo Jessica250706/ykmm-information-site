@@ -19,18 +19,28 @@ public class CardRtv implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    /** 主键 */
+    /**
+     * 主键
+     */
     private Long id;
 
-    /** 卡面ID */
+    /**
+     * 卡面ID
+     */
     private Long cardId;
 
-    /** 第几话 */
+    /**
+     * 第几话
+     */
     private Integer episodeNo;
 
-    /** 标题 */
+    /**
+     * 标题
+     */
     private String title;
 
-    /** 创建时间 */
+    /**
+     * 创建时间
+     */
     private LocalDateTime createdAt;
 }

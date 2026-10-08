@@ -74,6 +74,7 @@ import { useRouter } from 'vue-router'
 import { deleteMenuAPI, getMenuTreeAPI } from '@/api/menu'
 import { ProTable, type ProTableColumn } from '@/components/ProTable'
 import {
+  AdminRouteName,
   MENU_TYPE,
   MENU_TYPE_LABEL,
   MENU_TYPE_OPTIONS,
@@ -81,8 +82,8 @@ import {
   MENU_VISIBLE_LABEL,
   type MenuTypeValue,
   type MenuVisibleValue,
-} from '@/constants/menu'
-import { useMenuStore } from '@/stores/menuStore'
+} from '@/constants'
+import { useMenuStore } from '@/stores'
 import type { MenuVO } from '@/types/menu'
 
 const router = useRouter()
@@ -123,14 +124,14 @@ async function loadData() {
 
 function handleCreate(parent?: MenuVO) {
   router.push({
-    name: 'AdminMenuCreate',
+    name: AdminRouteName.MENU_CREATE,
     query: parent ? { parentId: String(parent.id), menuType: String(parent.menuType) } : {},
   })
 }
 
 function handleEdit(row: MenuVO) {
   router.push({
-    name: 'AdminMenuEdit',
+    name: AdminRouteName.MENU_EDIT,
     params: { id: String(row.id) },
   })
 }

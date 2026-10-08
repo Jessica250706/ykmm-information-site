@@ -1,6 +1,5 @@
 package com.xq.controller.user;
 
-import com.xq.constant.UserRoleConstant;
 import com.xq.dto.CardPageQueryDTO;
 import com.xq.result.PageResult;
 import com.xq.result.Result;
@@ -8,7 +7,10 @@ import com.xq.service.CardService;
 import com.xq.vo.CardVO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 /**
  * 用户端 - 卡面浏览
@@ -33,7 +35,7 @@ public class UserCardController {
     }
 
     /**
-     * 查询卡面详情
+     * 查询卡面详情（含对话）
      *
      * @param id 主键
      * @return 卡面详情

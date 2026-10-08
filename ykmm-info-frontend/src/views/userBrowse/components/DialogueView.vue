@@ -75,8 +75,7 @@
 
 <script setup lang="ts">
 import { type ComponentPublicInstance, computed, nextTick, watch } from 'vue'
-import { VERSION_FORMAT } from '@/constants/index'
-import { MONOLOGUE } from '@/constants/index'
+import { MONOLOGUE, VERSION_FORMAT } from '@/constants'
 import type { DialogueLineVO } from '@/types/dialogueLine'
 import type { DialogueVersionOptionVO } from '@/types/dialogueVersion'
 import type { DialogueVersionVO, StoryDetailVO } from '@/types/story'
