@@ -13,7 +13,7 @@
     <!-- 中间：对话内容 -->
     <BrowseCenter
       v-model:current-version-id="currentVersionId"
-      :card-info="cardInfo"
+      :card-detail="episodeDetail"
       :color="color"
       :current-category="null"
       :editing-line-id="editingLineId"
@@ -21,8 +21,8 @@
       :loading-content="loadingDetail"
       :loading-stories="false"
       :selected-version-key="selectedVersionKey"
+      :source-type="sourceType as SourceTypeValue"
       :stories="[]"
-      :story-detail="currentDetail"
       :type-label="sourceLabel"
       :version-options="versionOptions"
       :version-select-items="versionSelectItems"
@@ -43,7 +43,8 @@
       :editing-line="editingLine"
       :editing-line-index="editingLineIndex"
       :pending-insert-after-id="pendingInsertAfterId"
-      :story-detail="currentDetail"
+      :source-type="sourceType as SourceTypeValue"
+      :story-detail="episodeDetail"
       class="h-full shrink-0 overflow-hidden"
       @add-line="handleAddLine"
       @create-version="handleCreateVersion"
@@ -60,15 +61,16 @@ import { ref, watch } from 'vue'
 import { ElMessage } from 'element-plus'
 import { getCardDetailAPI } from '@/api/card'
 import { createDialogueVersionAPI } from '@/api/dialogueVersion'
+import { type SourceTypeValue } from '@/constants'
 import type { CardVO } from '@/types/card'
 import type { DialogueLineVO } from '@/types/dialogueLine'
 import type { DialogueVersionOptionVO } from '@/types/dialogueVersion'
-import type { StoryDetailVO } from '@/types/story'
 import { useDialogueEdit } from '@/views/userBrowse/composables/useDialogueEdit.ts'
 import { useVersionSelection } from '@/views/userBrowse/composables/useVersionSelection.ts'
-import BrowseCenter from './components/BrowseCenter.vue'
+import BrowseCenter from './components/BrowseCenter/Index.vue'
+import CardEpisodeList from './components/BrowseLeft/CardEpisodeList.vue'
 import BrowseRight from './components/BrowseRight/Index.vue'
-import CardEpisodeList from './components/CardEpisodeList.vue'
+import { useCardEpisodeDetail } from './composables/useCardEpisodeDetail.ts'
 
 interface EpisodeItem {
   id?: number
@@ -78,13 +80,13 @@ interface EpisodeItem {
 
 /* -------- Props -------- */
 const props = defineProps<{
-  /** 来源类型：2-RTV 3-RC */
+  /** 来源类型：1-RC 2-RTV 3-Rabitter */
   sourceType: number
   /** 卡面ID */
   cardId: number
   /** 话数列表 */
   episodes: EpisodeItem[]
-  /** 来源标签：RTV / RC */
+  /** 来源标签：RC / RTV / Rabitter */
   sourceLabel: string
 }>()
 
@@ -101,54 +103,25 @@ async function loadCardInfo() {
   try {
     const res = await getCardDetailAPI(props.cardId)
     cardInfo.value = res.data ?? {}
-    console.log('cardInfo:', cardInfo.value)
-    // 用卡面属性对应的颜色
     const attrColorMap: Record<number, string> = { 1: 'red', 2: 'lime', 3: 'blue' }
     color.value = cardInfo.value.attribute
       ? (attrColorMap[cardInfo.value.attribute] ?? 'blue')
       : 'blue'
-  } catch {
-    // ignore
-  }
+  } catch {}
 }
 
 /* -------- 当前话数 -------- */
 const currentEpisodeId = ref<number | null>(null)
 
-/**
- * 当前话数的详情（含 versions）。
- * 后端需提供按 RC/RTV id 拉取含对话版本详情的接口。
- * 这里用 StoryDetailVO 的形状承接，字段一致。
- */
-const currentDetail = ref<StoryDetailVO | null>(null)
-const loadingDetail = ref(false)
-
-async function loadCurrentEpisode() {
-  if (currentEpisodeId.value == null) {
-    currentDetail.value = null
-    return
-  }
-  loadingDetail.value = true
-  try {
-    // ★ 替换为真实接口：按 sourceType + sourceId 查询对话详情
-    // const res = await getDialogueSourceDetailAPI(props.sourceType, currentEpisodeId.value)
-    // currentDetail.value = res.data ?? null
-    currentDetail.value = null // 占位
-  } catch {
-    currentDetail.value = null
-  } finally {
-    loadingDetail.value = false
-  }
-}
-
-function handleSelectEpisode(id: number) {
-  if (currentEpisodeId.value === id) return
-  currentEpisodeId.value = id
-}
-
-function handleBack() {
-  emit('back')
-}
+/* -------- 话数对话详情 -------- */
+const {
+  episodeDetail,
+  loading: loadingDetail,
+  versionOptions,
+  reset: resetEpisodeDetail,
+  fetchEpisodeDetail,
+  fetchVersionOptions,
+} = useCardEpisodeDetail()
 
 /* -------- 编辑态（复用 Browse 的 composables） -------- */
 const {
@@ -163,18 +136,16 @@ const {
   syncEditingLine,
   selectLine,
   applyPendingInsert,
-} = useDialogueEdit(currentDetail)
+} = useDialogueEdit(episodeDetail)
 
 /* -------- 版本选中 -------- */
-const versionOptions = ref<DialogueVersionOptionVO[] | null>(null)
-
 const {
   selectedVersionKey,
   versionSelectItems,
   versionItemMap,
   currentOptionVersion,
   selectByVersionId,
-} = useVersionSelection(currentDetail, versionOptions)
+} = useVersionSelection(episodeDetail, versionOptions)
 
 /**
  * 外部 currentVersionId 变化时同步本地 key
@@ -194,22 +165,31 @@ function handleSelectedVersionKeyChange(key: string) {
   currentVersionId.value = versionItemMap.value.get(key)?.versionId ?? null
 }
 
-/* -------- 加载当前视图 -------- */
-async function loadCurrent() {
-  currentDetail.value = null
-  await loadCurrentEpisode()
-  if (!currentDetail.value) return
+/* -------- 加载当前话数对话 -------- */
+async function loadCurrentEpisode() {
+  if (currentEpisodeId.value == null) {
+    resetEpisodeDetail()
+    return
+  }
+
+  resetEpisodeDetail()
+  await fetchEpisodeDetail(props.sourceType, currentEpisodeId.value)
+  if (!episodeDetail.value) return
 
   syncVersionSelection()
   syncEditingLine()
-  // 拉版本选项：listDialogueVersionOptionsAPI(props.sourceType, currentEpisodeId.value)
-  versionOptions.value = null
+  await fetchVersionOptions(props.sourceType, currentEpisodeId.value)
   await applyPendingInsert()
 }
 
-watch(currentEpisodeId, () => {
-  void loadCurrent()
-})
+function handleSelectEpisode(id: number) {
+  if (currentEpisodeId.value === id) return
+  currentEpisodeId.value = id
+}
+
+function handleBack() {
+  emit('back')
+}
 
 /* -------- 交互 -------- */
 function handleSelectLine(line: DialogueLineVO) {
@@ -218,10 +198,11 @@ function handleSelectLine(line: DialogueLineVO) {
 
 async function handleAddLine(payload: { afterId: number | null; atStart: boolean }) {
   pendingInsertAfterId.value = payload.atStart ? null : payload.afterId
-  await loadCurrent()
-  // 定位新行
+  await loadCurrentEpisode()
+
   const lines = currentVersion.value?.lines ?? []
   if (!lines.length) return
+
   const newLineId = payload.atStart
     ? (lines[0]?.id ?? null)
     : payload.afterId == null
@@ -230,6 +211,7 @@ async function handleAddLine(payload: { afterId: number | null; atStart: boolean
           const idx = lines.findIndex((l) => l.id === payload.afterId)
           return idx >= 0 && idx + 1 < lines.length ? (lines[idx + 1]?.id ?? null) : null
         })()
+
   if (newLineId != null) editingLineId.value = newLineId
 }
 
@@ -239,14 +221,17 @@ async function handleDeleteLine(payload: {
   nextId: number | null
 }) {
   editingLineId.value = null
-  await loadCurrent()
+  await loadCurrentEpisode()
+
   const lines = currentVersion.value?.lines ?? []
   if (!lines.length) return
+
   const targetId =
     (payload.prevId != null && lines.some((l) => l.id === payload.prevId)
       ? payload.prevId
       : null) ??
     (payload.nextId != null && lines.some((l) => l.id === payload.nextId) ? payload.nextId : null)
+
   if (targetId != null) editingLineId.value = targetId
 }
 
@@ -269,14 +254,15 @@ async function handleCreateVersion(payload: {
       contributorUserId: payload.contributorUserId ?? undefined,
       contributorName: payload.contributorName ?? undefined,
     })
+
     const newId = res?.data
     if (newId == null) {
       ElMessage.error('创建成功但未拿到版本 ID')
-      await loadCurrent()
+      await loadCurrentEpisode()
       return
     }
     ElMessage.success('创建成功')
-    await loadCurrent()
+    await loadCurrentEpisode()
     currentVersionId.value = newId
     selectByVersionId(newId)
   } catch (err) {
@@ -285,7 +271,7 @@ async function handleCreateVersion(payload: {
   }
 }
 
-/* -------- 初始化 -------- */
+/* -------- 生命周期 -------- */
 watch(
   () => props.episodes,
   (list) => {
@@ -296,6 +282,34 @@ watch(
   },
   { immediate: true },
 )
+
+watch(currentEpisodeId, () => {
+  void loadCurrentEpisode()
+})
+
+watch(
+  () => props.sourceType,
+  () => {
+    // 来源类型变化时，先清空，等待 episodes watch 重新选中
+    resetEpisodeDetail()
+    currentEpisodeId.value = null
+  },
+)
+
+watch(
+  () => props.cardId,
+  () => {
+    void loadCardInfo()
+  },
+)
+
+watch(currentVersionId, () => {
+  editingLineId.value = null
+})
+
+watch(editingMode, (val) => {
+  if (!val) editingLineId.value = null
+})
 
 void loadCardInfo()
 </script>

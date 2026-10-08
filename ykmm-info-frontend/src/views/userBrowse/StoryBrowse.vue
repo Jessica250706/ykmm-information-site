@@ -26,6 +26,7 @@
       :loading-content="loadingContent"
       :loading-stories="loadingStories"
       :selected-version-key="selectedVersionKey"
+      :source-type="SOURCE_TYPE.STORY"
       :stories="stories"
       :story-detail="storyDetail"
       :type-label="typeLabel"
@@ -48,6 +49,7 @@
       :editing-line="editingLine"
       :editing-line-index="editingLineIndex"
       :pending-insert-after-id="pendingInsertAfterId"
+      :source-type="SOURCE_TYPE.STORY"
       :story-detail="storyDetail"
       class="h-full shrink-0 overflow-hidden"
       @add-line="handleAddLine"
@@ -69,8 +71,8 @@ import { useStoryCategoryTypeStore } from '@/stores'
 import type { DialogueLineVO } from '@/types/dialogueLine'
 import type { DialogueVersionOptionVO } from '@/types/dialogueVersion'
 import type { StoryCategoryVO } from '@/types/storyCategory'
-import BrowseCenter from './components/BrowseCenter.vue'
-import BrowseLeft from './components/BrowseLeft.vue'
+import BrowseCenter from './components/BrowseCenter/Index.vue'
+import BrowseLeft from './components/BrowseLeft/BrowseLeft.vue'
 import BrowseRight from './components/BrowseRight/Index.vue'
 import { useBrowseNavigation } from './composables/useBrowseNavigation.ts'
 import { useBrowseRoute } from './composables/useBrowseRoute.ts'

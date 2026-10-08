@@ -180,6 +180,7 @@
 import { computed, ref } from 'vue'
 import { useVModel } from '@vueuse/core'
 import { MONOLOGUE } from '@/constants'
+import { type SourceTypeValue } from '@/constants'
 import { useUserStore } from '@/stores/userStore'
 import type { DialogueLineVO } from '@/types/dialogueLine'
 import type { DialogueVersionOptionVO, DialogueVersionVO } from '@/types/dialogueVersion'
@@ -211,6 +212,8 @@ const props = defineProps<{
   allLines: DialogueLineVO[]
   pendingInsertAfterId: number | null
   currentOptionVersion: DialogueVersionOptionVO | null
+  /** 来源类型：1-RC 2-RTV 3-Rabitter 4-story */
+  sourceType: SourceTypeValue
 }>()
 
 const emit = defineEmits<{

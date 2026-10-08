@@ -4,7 +4,7 @@
     <div class="mb-4 shrink-0">
       <div class="flex justify-between items-center">
         <h2 class="text-lg font-semibold">
-          {{ storyDetail.title || `剧情 #${storyDetail.id}` }}
+          {{ storyDetail?.title || `剧情 #${storyDetail?.id}` }}
         </h2>
         <el-button @click="emit('goBack')">← 返回</el-button>
       </div>
@@ -17,11 +17,11 @@
           effect="plain"
           size="small"
         >
-          {{ storyDetail.categoryTypeLabel }}
+          {{ storyDetail?.categoryTypeLabel }}
         </el-tag>
-        <span>{{ storyDetail.categoryName }}</span>
+        <span>{{ storyDetail?.categoryName }}</span>
       </div>
-      <p v-if="storyDetail.description" class="mt-3 whitespace-pre-line text-sm text-slate-600">
+      <p v-if="storyDetail?.description" class="mt-3 whitespace-pre-line text-sm text-slate-600">
         {{ storyDetail.description }}
       </p>
     </div>
@@ -90,16 +90,20 @@
 import { computed, ref } from 'vue'
 import { useScrollShadow } from '@/composables/useScrollShadow'
 import { VERSION_FORMAT } from '@/constants'
+import type { CardEpisodeVO } from '@/types/card'
 import type { DialogueLineVO } from '@/types/dialogueLine'
 import type { DialogueVersionOptionVO, DialogueVersionVO } from '@/types/dialogueVersion'
 import type { StoryDetailVO } from '@/types/story'
 import DialogueView from './DialogueView.vue'
-import type { VersionSelectItem } from '../composables/useVersionSelection.ts'
+import type { VersionSelectItem } from '../../composables/useVersionSelection.ts'
 
 /* -------- Props / Emits -------- */
 
 const props = defineProps<{
-  storyDetail: StoryDetailVO
+  /** 当前剧情详情 */
+  storyDetail?: StoryDetailVO | null
+  /** 当前剧情详情 */
+  cardDetail?: CardEpisodeVO | null
   color: string
   currentVersionId: number | null
   editingLineId: number | null
@@ -129,7 +133,7 @@ const currentOptionVersion = computed<DialogueVersionOptionVO | null>(() => {
 /** 当前选中项对应的真实版本；无 versionId 或 storyDetail 里找不到时为 null */
 const currentVersion = computed<DialogueVersionVO | null>(() => {
   if (props.currentVersionId == null) return null
-  return props.storyDetail.versions?.find((v) => v.id === props.currentVersionId) ?? null
+  return props.storyDetail?.versions?.find((v) => v.id === props.currentVersionId) ?? null
 })
 
 /** 传给 DialogueView 的 versionId，保证与 currentVersion 一致 */

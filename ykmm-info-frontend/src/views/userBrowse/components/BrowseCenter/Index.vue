@@ -6,7 +6,7 @@
     <el-skeleton v-if="loadingContent" :rows="6" animated />
 
     <BrowseCenterStory
-      v-else-if="storyDetail"
+      v-else-if="storyDetail && sourceType === SOURCE_TYPE.STORY"
       v-model:current-version-id="currentVersionIdComputed"
       v-model:selected-version-key="selectedVersionKeyComputed"
       :color="color"
@@ -20,7 +20,7 @@
     />
 
     <BrowseCenterCategory
-      v-else-if="currentCategory"
+      v-else-if="currentCategory && sourceType === SOURCE_TYPE.STORY"
       :color="color"
       :current-category="currentCategory"
       :loading-stories="loadingStories"
@@ -32,13 +32,13 @@
     />
 
     <BrowseCenterStory
-      v-else-if="cardInfo"
+      v-else-if="cardDetail && sourceType === SOURCE_TYPE.RC"
       v-model:current-version-id="currentVersionIdComputed"
       v-model:selected-version-key="selectedVersionKeyComputed"
+      :card-detail="cardDetail"
       :color="color"
       :editing-line-id="editingLineId"
       :editing-mode="editingMode"
-      :story-detail="cardInfo"
       :version-options="versionOptions"
       :version-select-items="versionSelectItems"
       @go-back="emit('goBack')"
@@ -51,20 +51,23 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import type { CardVO } from '@/types/card'
+import { SOURCE_TYPE, type SourceTypeValue } from '@/constants'
+import type { CardEpisodeVO } from '@/types/card'
 import type { DialogueLineVO } from '@/types/dialogueLine'
 import type { DialogueVersionOptionVO } from '@/types/dialogueVersion'
 import type { StoryDetailVO, StoryVO } from '@/types/story'
 import type { StoryCategoryVO } from '@/types/storyCategory'
 import BrowseCenterCategory from './BrowseCenterCategory.vue'
 import BrowseCenterStory from './BrowseCenterStory.vue'
-import type { VersionSelectItem } from '../composables/useVersionSelection.ts'
+import type { VersionSelectItem } from '../../composables/useVersionSelection.ts'
 
 const props = defineProps<{
   /** 详情加载中 */
   loadingContent: boolean
   /** 当前剧情详情 */
-  storyDetail: StoryDetailVO | null
+  storyDetail?: StoryDetailVO | null
+  /** 当前剧情详情 */
+  cardDetail?: CardEpisodeVO | null
   /** 当前分类 */
   currentCategory: StoryCategoryVO | null
   /** 类型标签，用于分类标签回退显示 */
@@ -73,8 +76,6 @@ const props = defineProps<{
   loadingStories: boolean
   /** 当前分类下的剧情列表 */
   stories: StoryVO[]
-  /** 当前卡面下的具体信息 */
-  cardInfo?: CardVO | null
   /** 当前分类色 */
   color: string
   /** 当前选中的版本 id */
@@ -89,6 +90,8 @@ const props = defineProps<{
   selectedVersionKey: string
   /** 预计算的下拉项 */
   versionSelectItems: VersionSelectItem[]
+  /** 来源类型：1-RC 2-RTV 3-Rabitter 4-story */
+  sourceType: SourceTypeValue
 }>()
 
 const emit = defineEmits<{
