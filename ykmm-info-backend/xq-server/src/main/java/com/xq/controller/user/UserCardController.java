@@ -4,13 +4,11 @@ import com.xq.dto.CardPageQueryDTO;
 import com.xq.result.PageResult;
 import com.xq.result.Result;
 import com.xq.service.CardService;
+import com.xq.vo.CardEpisodeVO;
 import com.xq.vo.CardVO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 /**
  * 用户端 - 卡面浏览
@@ -35,7 +33,7 @@ public class UserCardController {
     }
 
     /**
-     * 查询卡面详情（含对话）
+     * 查询卡面详情（不含对话）
      *
      * @param id 主键
      * @return 卡面详情
@@ -43,5 +41,19 @@ public class UserCardController {
     @GetMapping("/{id}")
     public Result<CardVO> detail(@PathVariable Long id) {
         return Result.success(cardService.getById(id));
+    }
+
+    /**
+     * 查询某一话的对话
+     *
+     * @param sourceType 来源类型：1-RC 2-RTV 3-Rabitter
+     * @param sourceId   来源ID
+     * @return 话详情（含对话版本）
+     */
+    @GetMapping("/episode/dialogue")
+    public Result<CardEpisodeVO> episodeDialogue(
+            @RequestParam Integer sourceType,
+            @RequestParam Long sourceId) {
+        return Result.success(cardService.getEpisodeDialogue(sourceType, sourceId));
     }
 }

@@ -1,4 +1,10 @@
-import type { CardDTO, CardPageQueryDTO, CardVO } from '@/types/card'
+import type {
+  CardDTO,
+  CardEpisodeDialogueDTO,
+  CardEpisodeVO,
+  CardPageQueryDTO,
+  CardVO,
+} from '@/types/card'
 import type { PageResult } from '@/types/common'
 import request from '@/utils/http'
 
@@ -49,4 +55,11 @@ export const pageUserCardAPI = (params: CardPageQueryDTO) => {
  */
 export const getUserCardDetailAPI = (id: number) => {
   return request.get<CardVO>(`/user/card/${id}`)
+}
+
+/**
+ * @description: 用户端 - 查询某一话的对话
+ */
+export const getCardEpisodeDialogueAPI = (params: CardEpisodeDialogueDTO) => {
+  return request.get<CardEpisodeVO>(`/user/card/episode/dialogue`, { params })
 }

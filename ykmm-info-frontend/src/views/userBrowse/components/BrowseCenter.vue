@@ -31,12 +31,27 @@
       @go-story="(id) => emit('goStory', id)"
     />
 
+    <BrowseCenterStory
+      v-else-if="cardInfo"
+      v-model:current-version-id="currentVersionIdComputed"
+      v-model:selected-version-key="selectedVersionKeyComputed"
+      :color="color"
+      :editing-line-id="editingLineId"
+      :editing-mode="editingMode"
+      :story-detail="cardInfo"
+      :version-options="versionOptions"
+      :version-select-items="versionSelectItems"
+      @go-back="emit('goBack')"
+      @select-line="(line) => emit('select-line', line)"
+    />
+
     <el-empty v-else description="请从左侧选择一个分类" />
   </el-card>
 </template>
 
 <script setup lang="ts">
 import { computed } from 'vue'
+import type { CardVO } from '@/types/card'
 import type { DialogueLineVO } from '@/types/dialogueLine'
 import type { DialogueVersionOptionVO } from '@/types/dialogueVersion'
 import type { StoryDetailVO, StoryVO } from '@/types/story'
@@ -58,6 +73,8 @@ const props = defineProps<{
   loadingStories: boolean
   /** 当前分类下的剧情列表 */
   stories: StoryVO[]
+  /** 当前卡面下的具体信息 */
+  cardInfo?: CardVO | null
   /** 当前分类色 */
   color: string
   /** 当前选中的版本 id */

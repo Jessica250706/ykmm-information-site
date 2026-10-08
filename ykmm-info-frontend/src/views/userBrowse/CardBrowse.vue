@@ -13,6 +13,7 @@
     <!-- 中间：对话内容 -->
     <BrowseCenter
       v-model:current-version-id="currentVersionId"
+      :card-info="cardInfo"
       :color="color"
       :current-category="null"
       :editing-line-id="editingLineId"
@@ -100,6 +101,7 @@ async function loadCardInfo() {
   try {
     const res = await getCardDetailAPI(props.cardId)
     cardInfo.value = res.data ?? {}
+    console.log('cardInfo:', cardInfo.value)
     // 用卡面属性对应的颜色
     const attrColorMap: Record<number, string> = { 1: 'red', 2: 'lime', 3: 'blue' }
     color.value = cardInfo.value.attribute

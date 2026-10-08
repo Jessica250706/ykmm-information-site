@@ -129,29 +129,109 @@ public class CardServiceImpl implements CardService {
      */
     @Override
     public CardVO getById(Long id) {
-        /** 卡面ID不能为空 */
+        /* 卡面ID不能为空 */
         if (id == null) {
             throw new RuntimeException("卡面ID不能为空");
         }
         Card card = cardMapper.getById(id);
-        /** 卡面必须存在 */
+        /* 卡面必须存在 */
         if (card == null) {
             throw new RuntimeException("卡面不存在");
         }
 
         if (RoleContext.isUser()) {
-            /** 用户端只允许查看已发布卡面 */
+            /* 用户端只允许查看已发布卡面 */
             if (!StatusEnum.PUBLISHED.getValue().equals(card.getStatus())) {
                 throw new RuntimeException("卡面不存在");
             }
         }
 
-        CardVO vo = toVO(card, true);
+        /*
+          不再装配附属剧情对话。
+          前端如需查看某一话的对话，调用 getEpisodeDialogue(sourceType, sourceId)。
+         */
+        return toVO(card, true);
+    }
 
-        /** 装配附属剧情 */
-        vo.setAttachedStory(buildAttachedStory(card));
+    /**
+     * 查询某一话的对话
+     *
+     * @param sourceType 来源类型：1-RC 2-RTV 3-Rabitter
+     * @param sourceId   来源ID
+     * @return 话详情（含对话版本）
+     */
+    @Override
+    public CardEpisodeVO getEpisodeDialogue(Integer sourceType, Long sourceId) {
+        /** 来源类型不能为空 */
+        if (sourceType == null) {
+            throw new RuntimeException("来源类型不能为空");
+        }
+        /** 来源ID不能为空 */
+        if (sourceId == null) {
+            throw new RuntimeException("来源ID不能为空");
+        }
+        /** 只支持 RC / RTV / Rabitter */
+        if (!DialogueSourceTypeEnum.RC.getValue().equals(sourceType)
+                && !DialogueSourceTypeEnum.RTV.getValue().equals(sourceType)
+                && !DialogueSourceTypeEnum.RABITTER.getValue().equals(sourceType)) {
+            throw new RuntimeException("该来源类型不支持查询卡面附属剧情");
+        }
 
-        return vo;
+        CardEpisodeVO episode = new CardEpisodeVO();
+        episode.setVersions(new ArrayList<>());
+
+        /** 根据来源类型查询对应的 card_？？ 表，取到话信息 */
+        if (DialogueSourceTypeEnum.RC.getValue().equals(sourceType)) {
+            // RC → card_rc
+            CardRcVO rc = cardRcMapper.getVOById(sourceId);
+            /** RC 必须存在 */
+            if (rc == null) {
+                throw new RuntimeException("RC 不存在");
+            }
+            episode.setId(rc.getId());
+            episode.setCardId(rc.getCardId());
+            episode.setEpisodeNo(rc.getEpisodeNo());
+            episode.setTitle(rc.getTitle());
+            episode.setInitiatorRoleId(rc.getRoleId());
+            episode.setInitiatorRoleName(rc.getRoleName());
+        } else if (DialogueSourceTypeEnum.RTV.getValue().equals(sourceType)) {
+            // RTV → card_rtv
+            CardRtv rtv = cardRtvMapper.getById(sourceId);
+            /** RTV 必须存在 */
+            if (rtv == null) {
+                throw new RuntimeException("RTV 不存在");
+            }
+            episode.setId(rtv.getId());
+            episode.setCardId(rtv.getCardId());
+            episode.setEpisodeNo(rtv.getEpisodeNo());
+            episode.setTitle(rtv.getTitle());
+        } else {
+            // Rabitter → card_rabitter
+            CardRabitter rabitter = cardRabitterMapper.getById(sourceId);
+            /** Rabitter 必须存在 */
+            if (rabitter == null) {
+                throw new RuntimeException("Rabitter 不存在");
+            }
+            episode.setId(rabitter.getId());
+            episode.setCardId(rabitter.getCardId());
+            episode.setEpisodeNo(rabitter.getEpisodeNo());
+            episode.setTitle(rabitter.getTitle());
+        }
+
+        /** 用户端只允许查看已发布卡面下的对话 */
+        if (RoleContext.isUser()) {
+            Card card = cardMapper.getById(episode.getCardId());
+            if (card == null || !StatusEnum.PUBLISHED.getValue().equals(card.getStatus())) {
+                throw new RuntimeException("卡面不存在");
+            }
+        }
+
+        Integer statusFilter = RoleContext.isUser() ? StatusEnum.PUBLISHED.getValue() : null;
+        Map<Long, List<DialogueVersionVO>> versionsBySource =
+                loadVersionsBySource(sourceType, List.of(sourceId), statusFilter);
+        episode.setVersions(versionsBySource.getOrDefault(sourceId, Collections.emptyList()));
+
+        return episode;
     }
 
     /**
@@ -334,89 +414,25 @@ public class CardServiceImpl implements CardService {
     }
 
     /**
-     * 装配卡面附属剧情
+     * 根据来源类型 + 来源ID列表，批量加载对话版本及其内容
      *
-     * @param card 卡面实体
-     * @return 附属剧情VO，无附属剧情返回 null
+     * @param sourceType   来源类型
+     * @param sourceIds    来源ID列表
+     * @param statusFilter 审核状态过滤，null 表示不过滤
+     * @return sourceId -> 版本VO列表
      */
-    private CardAttachedStoryVO buildAttachedStory(Card card) {
-        Integer type = card.getAttachedStoryType();
-        /** 无附属剧情 */
-        if (type == null || type.equals(DialogueSourceTypeEnum.NONE.getValue())) {
-            return null;
-        }
+    private Map<Long, List<DialogueVersionVO>> loadVersionsBySource(
+            Integer sourceType, List<Long> sourceIds, Integer statusFilter) {
 
-        CardAttachedStoryVO storyVO = new CardAttachedStoryVO();
-        storyVO.setStoryType(type);
-        storyVO.setStoryTypeLabel(DialogueSourceTypeEnum.getLabel(type));
-
-        List<CardEpisodeVO> episodes = new ArrayList<>();
-        storyVO.setEpisodes(episodes);
-
-        Long cardId = card.getId();
-        Integer statusFilter = RoleContext.isUser() ? StatusEnum.PUBLISHED.getValue() : null;
-
-        /** 先按附属剧情类型拿到话列表 */
-        if (type.equals(DialogueSourceTypeEnum.RC.getValue())) {
-            // RC
-            List<CardRcVO> rcList = cardRcMapper.listVOByCardId(cardId);
-            for (CardRcVO rc : rcList) {
-                CardEpisodeVO ep = new CardEpisodeVO();
-                ep.setId(rc.getId());
-                ep.setCardId(rc.getCardId());
-                ep.setEpisodeNo(rc.getEpisodeNo());
-                ep.setTitle(rc.getTitle());
-                ep.setInitiatorRoleId(rc.getRoleId());
-                ep.setInitiatorRoleName(rc.getRoleName());
-                ep.setVersions(new ArrayList<>());
-                episodes.add(ep);
-            }
-        } else if (type.equals(DialogueSourceTypeEnum.RTV.getValue())) {
-            // RTV
-            List<CardRtv> rtvList = cardRtvMapper.listByCardId(cardId);
-            for (CardRtv rtv : rtvList) {
-                CardEpisodeVO ep = new CardEpisodeVO();
-                ep.setId(rtv.getId());
-                ep.setCardId(rtv.getCardId());
-                ep.setEpisodeNo(rtv.getEpisodeNo());
-                ep.setTitle(rtv.getTitle());
-                ep.setVersions(new ArrayList<>());
-                episodes.add(ep);
-            }
-        } else if (type.equals(DialogueSourceTypeEnum.RABITTER.getValue())) {
-            List<CardRabitter> rabitterListList = cardRabitterMapper.listByCardId(cardId);
-            for (CardRabitter rabitter : rabitterListList) {
-                CardEpisodeVO ep = new CardEpisodeVO();
-                ep.setId(rabitter.getId());
-                ep.setCardId(rabitter.getCardId());
-                ep.setEpisodeNo(rabitter.getEpisodeNo());
-                ep.setTitle(rabitter.getTitle());
-                ep.setVersions(new ArrayList<>());
-                episodes.add(ep);
-            }
-            log.warn("Rabbitter 附属剧情暂无对应表，cardId={}", cardId);
-            return storyVO;
-        } else {
-            return storyVO;
-        }
-
-        if (episodes.isEmpty()) {
-            return storyVO;
-        }
-
-        List<Long> sourceIds = episodes.stream()
-                .map(CardEpisodeVO::getId)
-                .filter(Objects::nonNull)
-                .toList();
-        if (sourceIds.isEmpty()) {
-            return storyVO;
+        if (sourceIds == null || sourceIds.isEmpty()) {
+            return Collections.emptyMap();
         }
 
         /** 批量查询对话版本 */
         List<DialogueVersion> versions =
-                dialogueVersionMapper.listBySourceIds(type, sourceIds, statusFilter);
+                dialogueVersionMapper.listBySourceIds(sourceType, sourceIds, statusFilter);
         if (versions.isEmpty()) {
-            return storyVO;
+            return Collections.emptyMap();
         }
 
         List<Long> versionIds = versions.stream()
@@ -424,10 +440,7 @@ public class CardServiceImpl implements CardService {
                 .toList();
 
         /** 批量查询对话句子 */
-        List<DialogueLine> lines = versionIds.isEmpty()
-                ? Collections.emptyList()
-                : dialogueLineMapper.listByVersionIds(versionIds);
-
+        List<DialogueLine> lines = dialogueLineMapper.listByVersionIds(versionIds);
         Map<Long, List<DialogueLine>> linesByVersion = lines.stream()
                 .collect(Collectors.groupingBy(DialogueLine::getVersionId));
 
@@ -436,7 +449,6 @@ public class CardServiceImpl implements CardService {
         List<DialogueSegment> segments = lineIds.isEmpty()
                 ? Collections.emptyList()
                 : dialogueSegmentMapper.listByLineIds(lineIds);
-
         Map<Long, List<DialogueSegment>> segmentsByLine = segments.stream()
                 .collect(Collectors.groupingBy(DialogueSegment::getLineId));
 
@@ -445,29 +457,20 @@ public class CardServiceImpl implements CardService {
                 .map(DialogueSegment::getStickerId)
                 .filter(Objects::nonNull)
                 .collect(Collectors.toSet());
-
-        Map<Long, Sticker> stickerMap;
-        if (stickerIds.isEmpty()) {
-            stickerMap = Collections.emptyMap();
-        } else {
-            stickerMap = stickerMapper.listByIds(new ArrayList<>(stickerIds)).stream()
-                    .collect(Collectors.toMap(Sticker::getId, s -> s, (a, b) -> a));
-        }
+        Map<Long, Sticker> stickerMap = stickerIds.isEmpty()
+                ? Collections.emptyMap()
+                : stickerMapper.listByIds(new ArrayList<>(stickerIds)).stream()
+                .collect(Collectors.toMap(Sticker::getId, s -> s, (a, b) -> a));
 
         /** 批量查询图片版本 */
-        List<DialogueImage> images = versionIds.isEmpty()
-                ? Collections.emptyList()
-                : dialogueImageMapper.listByVersionIds(versionIds);
-
+        List<DialogueImage> images = dialogueImageMapper.listByVersionIds(versionIds);
         Map<Long, List<DialogueImage>> imagesByVersion = images.stream()
                 .collect(Collectors.groupingBy(DialogueImage::getVersionId));
 
-        /** 批量查询 RC 选项 */
+        /** 批量查询 RC 选项（仅 RC） */
         Map<Long, List<RcOption>> optionsByVersion;
-        if (type == 1) {
-            List<RcOption> options = versionIds.isEmpty()
-                    ? Collections.emptyList()
-                    : rcOptionMapper.listByVersionIds(versionIds);
+        if (DialogueSourceTypeEnum.RC.getValue().equals(sourceType)) {
+            List<RcOption> options = rcOptionMapper.listByVersionIds(versionIds);
             optionsByVersion = options.stream()
                     .collect(Collectors.groupingBy(RcOption::getVersionId));
         } else {
@@ -475,105 +478,94 @@ public class CardServiceImpl implements CardService {
         }
 
         /** 批量查询贡献者 */
-        List<DialogueVersionContributorVO> contributors = versionIds.isEmpty()
-                ? Collections.emptyList()
-                : dialogueVersionContributorMapper.listByVersionIds(versionIds);
-
+        List<DialogueVersionContributorVO> contributors =
+                dialogueVersionContributorMapper.listByVersionIds(versionIds);
         Map<Long, List<DialogueVersionContributorVO>> contributorsByVersion = contributors.stream()
                 .collect(Collectors.groupingBy(DialogueVersionContributorVO::getVersionId));
 
-        /** 按 source_id 分组版本 */
-        Map<Long, List<DialogueVersion>> versionsBySource = versions.stream()
-                .collect(Collectors.groupingBy(DialogueVersion::getSourceId));
+        /** 构建版本VO列表 */
+        List<DialogueVersionVO> versionVOS = new ArrayList<>(versions.size());
+        for (DialogueVersion v : versions) {
+            DialogueVersionVO vvo = new DialogueVersionVO();
+            vvo.setId(v.getId());
+            vvo.setSourceType(v.getSourceType());
+            vvo.setSourceId(v.getSourceId());
+            vvo.setLanguage(v.getLanguage());
+            vvo.setLanguageLabel(DialogueLanguageEnum.getLabel(v.getLanguage()));
+            vvo.setFormat(v.getFormat());
+            vvo.setFormatLabel(DialogueFormatEnum.getLabel(v.getFormat()));
+            vvo.setScope(v.getScope());
+            vvo.setScopeLabel(DialogueScopeEnum.getLabel(v.getScope()));
+            vvo.setStatus(v.getStatus());
 
-        /** 组装 */
-        for (CardEpisodeVO ep : episodes) {
-            List<DialogueVersion> epVersions =
-                    versionsBySource.getOrDefault(ep.getId(), Collections.emptyList());
-            List<DialogueVersionVO> versionVOS = new ArrayList<>(epVersions.size());
-
-            for (DialogueVersion v : epVersions) {
-                DialogueVersionVO vvo = new DialogueVersionVO();
-                vvo.setId(v.getId());
-                vvo.setSourceType(v.getSourceType());
-                vvo.setSourceId(v.getSourceId());
-                vvo.setLanguage(v.getLanguage());
-                vvo.setLanguageLabel(DialogueLanguageEnum.getLabel(v.getLanguage()));
-                vvo.setFormat(v.getFormat());
-                vvo.setFormatLabel(DialogueFormatEnum.getLabel(v.getFormat()));
-                vvo.setScope(v.getScope());
-                vvo.setScopeLabel(DialogueScopeEnum.getLabel(v.getScope()));
-                vvo.setStatus(v.getStatus());
-
-                /** 图片版本 */
-                List<DialogueImage> vImages = imagesByVersion.getOrDefault(v.getId(), Collections.emptyList());
-                List<DialogueImageVO> imageVOS = new ArrayList<>(vImages.size());
-                for (DialogueImage img : vImages) {
-                    DialogueImageVO ivo = new DialogueImageVO();
-                    BeanUtils.copyProperties(img, ivo);
-                    imageVOS.add(ivo);
-                }
-                vvo.setImages(imageVOS);
-
-                /** 文字版本：句子 + 片段 */
-                List<DialogueLine> vLines = linesByVersion.getOrDefault(v.getId(), Collections.emptyList());
-                List<DialogueLineVO> lineVOS = new ArrayList<>(vLines.size());
-                for (DialogueLine line : vLines) {
-                    DialogueLineVO lvo = new DialogueLineVO();
-                    lvo.setId(line.getId());
-                    lvo.setVersionId(line.getVersionId());
-                    lvo.setSpeakerId(line.getSpeakerId());
-                    lvo.setSide(line.getSide());
-                    lvo.setMonologue(line.getMonologue());
-                    lvo.setContent(line.getContent());
-                    lvo.setSort(line.getSort());
-
-                    List<DialogueSegment> lineSegments =
-                            segmentsByLine.getOrDefault(line.getId(), Collections.emptyList());
-                    List<DialogueSegmentVO> segVOS = new ArrayList<>(lineSegments.size());
-                    for (DialogueSegment seg : lineSegments) {
-                        DialogueSegmentVO svo = new DialogueSegmentVO();
-                        svo.setId(seg.getId());
-                        svo.setLineId(seg.getLineId());
-                        svo.setSegmentType(seg.getSegmentType());
-                        svo.setContent(seg.getContent());
-                        svo.setStickerId(seg.getStickerId());
-                        svo.setSort(seg.getSort());
-
-                        if (seg.getStickerId() != null) {
-                            Sticker sticker = stickerMap.get(seg.getStickerId());
-                            if (sticker != null) {
-                                svo.setStickerLabel(sticker.getLabel());
-                                svo.setStickerImageUrl(sticker.getImageUrl());
-                                svo.setStickerEmoji(sticker.getEmoji());
-                            }
-                        }
-                        segVOS.add(svo);
-                    }
-                    lvo.setSegments(segVOS);
-                    lineVOS.add(lvo);
-                }
-                vvo.setLines(lineVOS);
-
-                /** RC 选项 */
-                List<RcOption> vOptions = optionsByVersion.getOrDefault(v.getId(), Collections.emptyList());
-                List<RcOptionVO> optionVOS = new ArrayList<>(vOptions.size());
-                for (RcOption opt : vOptions) {
-                    RcOptionVO ovo = new RcOptionVO();
-                    BeanUtils.copyProperties(opt, ovo);
-                    optionVOS.add(ovo);
-                }
-                vvo.setOptions(optionVOS);
-
-                /** 贡献者 */
-                vvo.setContributors(contributorsByVersion.getOrDefault(v.getId(), Collections.emptyList()));
-
-                versionVOS.add(vvo);
+            /** 图片版本 */
+            List<DialogueImage> vImages = imagesByVersion.getOrDefault(v.getId(), Collections.emptyList());
+            List<DialogueImageVO> imageVOS = new ArrayList<>(vImages.size());
+            for (DialogueImage img : vImages) {
+                DialogueImageVO ivo = new DialogueImageVO();
+                BeanUtils.copyProperties(img, ivo);
+                imageVOS.add(ivo);
             }
+            vvo.setImages(imageVOS);
 
-            ep.setVersions(versionVOS);
+            /** 文字版本：句子 + 片段 */
+            List<DialogueLine> vLines = linesByVersion.getOrDefault(v.getId(), Collections.emptyList());
+            List<DialogueLineVO> lineVOS = new ArrayList<>(vLines.size());
+            for (DialogueLine line : vLines) {
+                DialogueLineVO lvo = new DialogueLineVO();
+                lvo.setId(line.getId());
+                lvo.setVersionId(line.getVersionId());
+                lvo.setSpeakerId(line.getSpeakerId());
+                lvo.setSide(line.getSide());
+                lvo.setMonologue(line.getMonologue());
+                lvo.setContent(line.getContent());
+                lvo.setSort(line.getSort());
+
+                List<DialogueSegment> lineSegments =
+                        segmentsByLine.getOrDefault(line.getId(), Collections.emptyList());
+                List<DialogueSegmentVO> segVOS = new ArrayList<>(lineSegments.size());
+                for (DialogueSegment seg : lineSegments) {
+                    DialogueSegmentVO svo = new DialogueSegmentVO();
+                    svo.setId(seg.getId());
+                    svo.setLineId(seg.getLineId());
+                    svo.setSegmentType(seg.getSegmentType());
+                    svo.setContent(seg.getContent());
+                    svo.setStickerId(seg.getStickerId());
+                    svo.setSort(seg.getSort());
+
+                    if (seg.getStickerId() != null) {
+                        Sticker sticker = stickerMap.get(seg.getStickerId());
+                        if (sticker != null) {
+                            svo.setStickerLabel(sticker.getLabel());
+                            svo.setStickerImageUrl(sticker.getImageUrl());
+                            svo.setStickerEmoji(sticker.getEmoji());
+                        }
+                    }
+                    segVOS.add(svo);
+                }
+                lvo.setSegments(segVOS);
+                lineVOS.add(lvo);
+            }
+            vvo.setLines(lineVOS);
+
+            /** RC 选项 */
+            List<RcOption> vOptions = optionsByVersion.getOrDefault(v.getId(), Collections.emptyList());
+            List<RcOptionVO> optionVOS = new ArrayList<>(vOptions.size());
+            for (RcOption opt : vOptions) {
+                RcOptionVO ovo = new RcOptionVO();
+                BeanUtils.copyProperties(opt, ovo);
+                optionVOS.add(ovo);
+            }
+            vvo.setOptions(optionVOS);
+
+            /** 贡献者 */
+            vvo.setContributors(contributorsByVersion.getOrDefault(v.getId(), Collections.emptyList()));
+
+            versionVOS.add(vvo);
         }
 
-        return storyVO;
+        /** 按 source_id 分组返回 */
+        return versionVOS.stream()
+                .collect(Collectors.groupingBy(DialogueVersionVO::getSourceId));
     }
 }

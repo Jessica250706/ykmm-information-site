@@ -136,8 +136,6 @@ export interface StoryAuditDTO {
 
 /**
  * 数据
- *
- * StoryDetailVO
  */
 export interface StoryDetailVO {
   /**
