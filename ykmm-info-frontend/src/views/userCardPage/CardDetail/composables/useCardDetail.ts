@@ -15,6 +15,7 @@ export function useCardDetail() {
 
   const isRc = computed(() => attachedType.value === SOURCE_TYPE.RC)
   const isRtv = computed(() => attachedType.value === SOURCE_TYPE.RTV)
+  const isRabitter = computed(() => attachedType.value === SOURCE_TYPE.RABITTER)
 
   async function load(id: number) {
     if (!id) return
@@ -36,6 +37,7 @@ export function useCardDetail() {
     imageUrls,
     isRc,
     isRtv,
+    isRabitter,
     load,
   }
 }

@@ -49,6 +49,7 @@ import { computed, reactive, ref, watch } from 'vue'
 import { listGroupedRolesAPI } from '@/api/role'
 import { SOURCE_TYPE, SOURCE_TYPE_SMALL_LABEL, type SourceTypeSmallLabelValue } from '@/constants'
 import type { RoleGroupVO } from '@/types/role'
+import { getSourceTypeLabel } from '@/utils'
 import type { FormInstance, FormRules } from 'element-plus'
 
 type Mode = SourceTypeSmallLabelValue
@@ -89,7 +90,7 @@ const form = reactive<EpisodeFormData>({
 
 const title = computed(() => {
   const action = editingId.value == null ? '新增' : '编辑'
-  const kind = mode.value === SOURCE_TYPE_SMALL_LABEL[SOURCE_TYPE.RC] ? 'RC' : 'RTV'
+  const kind = getSourceTypeLabel(mode.value)
   return `${action} ${kind}`
 })
 

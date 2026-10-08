@@ -29,22 +29,30 @@
         <CardSkillDesc :text="card.skillDesc" />
         <CardImageLegend :items="imageLegend" />
 
-        <!-- RC / RTV 列表 -->
+        <!-- RC / RTV / Rabitter 列表 -->
         <CardEpisodeList
           v-if="isRc"
           :list="rcList"
           mode="rc"
-          @delete="(ep) => handleRemove(SOURCE_TYPE_SMALL_LABEL[SOURCE_TYPE.RC], ep)"
-          @edit="(ep) => handleEdit(SOURCE_TYPE_SMALL_LABEL[SOURCE_TYPE.RC], ep)"
-          @view="(id) => handleView(SOURCE_TYPE_SMALL_LABEL[SOURCE_TYPE.RC], id)"
+          @delete="(ep) => handleRemove(RC_MODE, ep)"
+          @edit="(ep) => handleEdit(RC_MODE, ep)"
+          @view="(id) => handleView(RC_MODE, id)"
         />
         <CardEpisodeList
           v-if="isRtv"
           :list="rtvList"
           mode="rtv"
-          @delete="(ep) => handleRemove(SOURCE_TYPE_SMALL_LABEL[SOURCE_TYPE.RTV], ep)"
-          @edit="(ep) => handleEdit(SOURCE_TYPE_SMALL_LABEL[SOURCE_TYPE.RTV], ep)"
-          @view="(id) => handleView(SOURCE_TYPE_SMALL_LABEL[SOURCE_TYPE.RTV], id)"
+          @delete="(ep) => handleRemove(RTV_MODE, ep)"
+          @edit="(ep) => handleEdit(RTV_MODE, ep)"
+          @view="(id) => handleView(RTV_MODE, id)"
+        />
+        <CardEpisodeList
+          v-if="isRabitter"
+          :list="rabitterList"
+          mode="rabitter"
+          @delete="(ep) => handleRemove(RABITTER_MODE, ep)"
+          @edit="(ep) => handleEdit(RABITTER_MODE, ep)"
+          @view="(id) => handleView(RABITTER_MODE, id)"
         />
       </aside>
     </div>
@@ -90,13 +98,18 @@ const router = useRouter()
 
 const cardId = computed(() => Number(route.params.id ?? 0))
 
+const RC_MODE = SOURCE_TYPE_SMALL_LABEL[SOURCE_TYPE.RC]
+const RTV_MODE = SOURCE_TYPE_SMALL_LABEL[SOURCE_TYPE.RTV]
+const RABITTER_MODE = SOURCE_TYPE_SMALL_LABEL[SOURCE_TYPE.RABITTER]
+
 /* -------- 卡面 -------- */
-const { loading, card, attachedType, imageUrls, isRc, isRtv, load } = useCardDetail()
+const { loading, card, attachedType, imageUrls, isRc, isRtv, isRabitter, load } = useCardDetail()
 
 /* -------- 话数管理 -------- */
 const {
   rcList,
   rtvList,
+  rabitterList,
   load: loadEpisodes,
   create: createEpisode,
   update: updateEpisode,

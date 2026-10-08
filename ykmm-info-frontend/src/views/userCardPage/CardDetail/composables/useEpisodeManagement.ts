@@ -138,6 +138,7 @@ export function useEpisodeManagement(cardId: Ref<number>, attachedType: Ref<numb
   return {
     rcList,
     rtvList,
+    rabitterList,
     currentEpisodes,
     load,
     create,

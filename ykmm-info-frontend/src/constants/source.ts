@@ -20,7 +20,8 @@ export const SOURCE_TYPE_LABEL: Record<SourceTypeValue, string> = {
   [SOURCE_TYPE.RTV]: 'RTV',
   [SOURCE_TYPE.RABITTER]: 'Rabitter',
   [SOURCE_TYPE.STORY]: '剧情',
-}
+} as const
+
 export type SourceTypeLabelValue = (typeof SOURCE_TYPE_LABEL)[keyof typeof SOURCE_TYPE_LABEL]
 
 export const SOURCE_TYPE_SMALL_LABEL: Record<SourceTypeValue, string> = {
