@@ -36,37 +36,22 @@ public class DialogueConstant {
     public static final int MAX_BATCH_SIZE = 500;
 
     /**
-     * 语言：中文
+     * 对话角色：普通
      */
-    public static final int LANG_CN = 1;
+    public static final int DIALOGUE_ROLE_NORMAL = 0;
 
     /**
-     * 语言：日文
+     * 对话角色：问句
      */
-    public static final int LANG_JP = 2;
+    public static final int DIALOGUE_ROLE_QUESTION = 1;
 
     /**
-     * 形式：文字
+     * 对话角色：回答
      */
-    public static final int FORMAT_TEXT = 1;
+    public static final int DIALOGUE_ROLE_ANSWER = 2;
 
     /**
-     * 形式：图片
+     * 选项编号行正则，如 "1." "2."
      */
-    public static final int FORMAT_IMAGE = 2;
-
-    /**
-     * 来源：剧情
-     */
-    public static final int SOURCE_STORY = 1;
-
-    /**
-     * 来源：卡面 RTV
-     */
-    public static final int SOURCE_RTV = 2;
-
-    /**
-     * 来源：卡面 RC
-     */
-    public static final int SOURCE_RC = 3;
+    public static final String OPTION_NUMBER_PATTERN = "^\\d+\\.$";
 }

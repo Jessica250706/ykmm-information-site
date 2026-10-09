@@ -89,3 +89,20 @@ export function chatBubbleStyle(color?: string, percent = 22) {
     backgroundColor: `color-mix(in srgb, ${color} ${percent}%, white)`,
   }
 }
+
+/**
+ * el-avatar 的占位背景色：
+ * 用人物代表色的浅色版，保证与气泡色系一致
+ *
+ * 只在没有头像图片（personAvatar 为空）时使用。
+ *
+ * @param color 人物代表色，如 'rgb(29, 41, 81)'
+ * @param percent 主题色占比，默认 22%
+ */
+export function avatarBubbleStyle(color?: string, percent = 22) {
+  if (!color) return undefined
+  return {
+    backgroundColor: `color-mix(in srgb, ${color} ${percent}%, white)`,
+    color: `color-mix(in srgb, ${color} 85%, black)`,
+  }
+}

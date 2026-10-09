@@ -78,6 +78,21 @@ public class DialogueLineVO implements Serializable {
     private Integer sort;
 
     /**
+     * 对话角色：0-普通 1-问句 2-回答
+     */
+    private Integer dialogueRole;
+
+    /**
+     * 选项编号（仅 RC 的问句/回答有效）
+     */
+    private Integer optionNumber;
+
+    /**
+     * 对话角色标签（"普通" / "问句" / "回答"）
+     */
+    private String dialogueRoleLabel;
+
+    /**
      * 解析后的片段（文本 + 表情包混排）
      */
     private List<DialogueSegmentVO> segments;

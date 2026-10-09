@@ -15,9 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -100,10 +98,10 @@ public class DialogueLineServiceImpl implements DialogueLineService {
             line.setSpeakerId(dto.getSpeakerId());
             line.setSide(dto.getSide());
             line.setVersionId(versionId);
-            line.setSort(dto.getSort() != null ? dto.getSort() :startSort + i);
+            line.setSort(dto.getSort() != null ? dto.getSort() : startSort + i);
             line.setMonologue(dto.getMonologue() != null ? dto.getMonologue() : 0);
 
-            // ★ 计算 side
+            // 计算 side
             line.setSide(resolveSide(dto.getSpeakerId(), dto.getSide(), initiatorRoleId));
 
             entityList.add(line);
@@ -111,6 +109,11 @@ public class DialogueLineServiceImpl implements DialogueLineService {
 
         // 批量插入
         dialogueLineMapper.insertBatch(entityList);
+
+        /* ★ RC 场景：解析选项并写入 rc_option */
+        if (Objects.equals(DialogueSourceTypeEnum.RC.getValue(), version.getSourceType())) {
+            saveRcOptions(version, versionId, lines, entityList);
+        }
 
         // 解析每条句子的片段
         List<DialogueSegment> allSegments = new ArrayList<>();
@@ -347,7 +350,7 @@ public class DialogueLineServiceImpl implements DialogueLineService {
 
     /**
      * 解析 RC 发起人角色ID
-     *
+     * <p>
      * - 来源类型为 RC 时：查 card_rc 拿 role_id 作为发起人
      * - 其他来源：返回 null
      *
@@ -376,11 +379,11 @@ public class DialogueLineServiceImpl implements DialogueLineService {
 
     /**
      * 计算对话句子的左右位置
-     *
+     * <p>
      * 规则：
      * - RC 场景（initiatorRoleId != null）：
-     *     speakerId == initiatorRoleId → 2（右侧）
-     *     其他 → 1（左侧）
+     * speakerId == initiatorRoleId → 2（右侧）
+     * 其他 → 1（左侧）
      * - 非 RC 场景：使用前端传入的 side，可为 null
      *
      * @param speakerId       说话角色ID
@@ -396,5 +399,67 @@ public class DialogueLineServiceImpl implements DialogueLineService {
         return Objects.equals(speakerId, initiatorRoleId)
                 ? DialogueSideEnum.RIGHT.getValue()
                 : DialogueSideEnum.LEFT.getValue();
+    }
+
+    /**
+     * 解析选项并写入 rc_option
+     * <p>
+     * 规则：dialogueRole=问句 和 dialogueRole=回答 的行按 optionNumber 配对；
+     * 每对生成一条 rc_option 记录。
+     *
+     * @param version   对话版本
+     * @param versionId 版本ID
+     * @param dtoList      原始 DTO
+     * @param entities  插入后的实体（含自增ID）
+     */
+    private void saveRcOptions(DialogueVersion version,
+                               Long versionId,
+                               List<DialogueLineDTO> dtoList,
+                               List<DialogueLine> entities) {
+        /* 问句 / 回答分别收集：optionNumber -> lineId */
+        Map<Integer, Long> questionByOption = new HashMap<>();
+        Map<Integer, Long> answerByOption = new HashMap<>();
+
+        for (int i = 0; i < dtoList.size(); i++) {
+            DialogueLineDTO dto = dtoList.get(i);
+            if (dto.getDialogueRole() == null || dto.getOptionNumber() == null) {
+                continue;
+            }
+            Long lineId = entities.get(i).getId();
+            if (lineId == null) {
+                continue;
+            }
+            if (dto.getDialogueRole() == DialogueConstant.DIALOGUE_ROLE_QUESTION) {
+                questionByOption.put(dto.getOptionNumber(), lineId);
+            } else if (dto.getDialogueRole() == DialogueConstant.DIALOGUE_ROLE_ANSWER) {
+                answerByOption.put(dto.getOptionNumber(), lineId);
+            }
+        }
+
+        /* 配对成 rc_option */
+        List<RcOption> options = new ArrayList<>();
+        for (Map.Entry<Integer, Long> e : questionByOption.entrySet()) {
+            Integer optionNumber = e.getKey();
+            Long questionLineId = e.getValue();
+            Long answerLineId = answerByOption.get(optionNumber);
+
+            if (questionLineId == null || answerLineId == null) {
+                log.warn("选项 {} 缺少问句或回答，跳过。versionId={}", optionNumber, versionId);
+                continue;
+            }
+
+            RcOption opt = new RcOption();
+            opt.setRcId(version.getSourceId());
+            opt.setVersionId(versionId);
+            opt.setQuestionLineId(questionLineId);
+            opt.setAnswerLineId(answerLineId);
+            opt.setSort(optionNumber);
+            options.add(opt);
+        }
+
+        if (!options.isEmpty()) {
+            rcOptionMapper.insertBatch(options);
+            log.info("写入 RC 选项成功，versionId={}, optionCount={}", versionId, options.size());
+        }
     }
 }

@@ -45,7 +45,7 @@
 
     <!-- 表格区 -->
     <el-card class="flex-1" shadow="never">
-      <ProTable ref="tableRef" :columns="columns" :request="fetchList" row-key="id" stripe>
+      <ProTable ref="tableRef" :columns="columns" :request="fetchList" row-key="id">
         <!-- 头像 -->
         <template #avatar="{ row }">
           <el-avatar :size="40" :src="row.avatar">

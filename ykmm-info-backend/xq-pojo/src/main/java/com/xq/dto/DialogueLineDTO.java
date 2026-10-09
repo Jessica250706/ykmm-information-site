@@ -40,4 +40,14 @@ public class DialogueLineDTO implements Serializable {
      */
     private Integer monologue;
 
+    /**
+     * 对话角色：0-普通 1-问句 2-回答
+     */
+    private Integer dialogueRole;
+
+    /**
+     * 选项编号（仅 RC 的问句/回答有效）
+     */
+    private Integer optionNumber;
+
 }

@@ -81,3 +81,21 @@ export function dialogueSideLabel(side?: number | null): string {
     ? DIALOGUE_SIDE_LABEL[DIALOGUE_SIDE.RIGHT]
     : DIALOGUE_SIDE_LABEL[DIALOGUE_SIDE.LEFT]
 }
+
+/**
+ * 对话选项（RC 聊天用）
+ * 0-普通 1-问题 2-回答
+ */
+export const DIALOGUE_ROLE = {
+  NORMAL: 0,
+  QUESTION: 1,
+  ANSWER: 2,
+} as const
+
+export type DialogueRoleValue = (typeof DIALOGUE_ROLE)[keyof typeof DIALOGUE_ROLE]
+
+export const DIALOGUE_ROLE_LABEL: Record<DialogueRoleValue, string> = {
+  [DIALOGUE_ROLE.NORMAL]: '普通',
+  [DIALOGUE_ROLE.QUESTION]: '问题',
+  [DIALOGUE_ROLE.ANSWER]: '回答',
+}

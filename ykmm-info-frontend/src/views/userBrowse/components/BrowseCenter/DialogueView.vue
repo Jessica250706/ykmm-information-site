@@ -91,7 +91,11 @@
           class="flex items-start gap-3 rounded-lg p-3 transition"
           @click="onLineClick(line)"
         >
-          <el-avatar :size="36" :src="line.personAvatar">
+          <el-avatar
+            :size="36"
+            :src="line.personAvatar || undefined"
+            :style="!line.personAvatar ? avatarBubbleStyle(line.personThemeColor) : undefined"
+          >
             {{ line.speakerName?.slice(-1) || '?' }}
           </el-avatar>
           <div class="min-w-0 flex-1">
@@ -145,7 +149,7 @@ import type { CardEpisodeVO } from '@/types/card'
 import type { DialogueLineVO } from '@/types/dialogueLine'
 import type { DialogueVersionOptionVO } from '@/types/dialogueVersion'
 import type { DialogueVersionVO, StoryDetailVO } from '@/types/story'
-import { chatBubbleStyle } from '@/utils/color'
+import { avatarBubbleStyle, chatBubbleStyle } from '@/utils'
 
 const props = defineProps<{
   detail?: StoryDetailVO | CardEpisodeVO | null
@@ -234,6 +238,7 @@ const imageUrls = computed(() =>
   flex-direction: column;
   gap: 12px;
   padding: 8px 4px;
+  flex-shrink: 0;
 }
 
 .rc-row {

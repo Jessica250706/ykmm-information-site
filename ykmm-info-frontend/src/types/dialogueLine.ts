@@ -1,23 +1,41 @@
 /**
  * 对话句子返回
- *
- * DialogueLineVO
  */
 export interface DialogueLineVO {
   content?: string
+  /**
+   * 对话角色：0-普通 1-问句 2-回答
+   */
+  dialogueRole?: number
+  /**
+   * 对话角色标签（"普通" / "问句" / "回答"）
+   */
+  dialogueRoleLabel?: string
   id?: number
   /**
-   * 对应人物ID
+   * 是否内心独白：0否 1是
    */
-  personId?: number
+  monologue?: number
+  /**
+   * 选项编号（仅 RC 的问句/回答有效）
+   */
+  optionNumber?: number
   /**
    * 对应人物头像
    */
   personAvatar?: string
   /**
+   * 对应人物ID
+   */
+  personId?: number
+  /**
    * 对应人物中文名
    */
   personNameCn?: string
+  /**
+   * 应援色
+   */
+  personThemeColor?: string
   segments?: DialogueSegmentVO[]
   /**
    * 1左 2右
@@ -27,9 +45,9 @@ export interface DialogueLineVO {
   speakerId?: number
   speakerName?: string
   /**
-   * 是否内心独白：0否 1是
+   * 版本ID
    */
-  monologue?: number
+  versionId?: number
   [property: string]: any
 }
 
@@ -75,9 +93,21 @@ export interface DialogueLineDTO {
    */
   content?: string
   /**
+   * 对话角色：0-普通 1-问句 2-回答
+   */
+  dialogueRole?: number
+  /**
    * 句子ID，编辑时使用，新增时为空
    */
   id?: number
+  /**
+   * 是否内心独白：0否 1是
+   */
+  monologue?: number
+  /**
+   * 选项编号（仅 RC 的问句/回答有效）
+   */
+  optionNumber?: number
   /**
    * RC聊天：1左 2右，非RC可为空
    */
@@ -90,10 +120,6 @@ export interface DialogueLineDTO {
    * 说话角色ID
    */
   speakerId?: number
-  /**
-   * 是否内心独白：0否 1是
-   */
-  monologue?: number
   [property: string]: any
 }
 
