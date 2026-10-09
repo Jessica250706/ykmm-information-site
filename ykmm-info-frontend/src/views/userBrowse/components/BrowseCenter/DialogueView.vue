@@ -82,7 +82,7 @@ import type { DialogueVersionOptionVO } from '@/types/dialogueVersion'
 import type { DialogueVersionVO, StoryDetailVO } from '@/types/story'
 
 const props = defineProps<{
-  detail: StoryDetailVO | CardEpisodeVO
+  detail?: StoryDetailVO | CardEpisodeVO | null
   /** 当前版本的 id */
   currentVersionId: number | null
   /** 当前版本（已由父组件计算好） */

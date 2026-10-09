@@ -265,6 +265,7 @@ async function handleCreateVersion(payload: {
     }
     ElMessage.success('创建成功')
     await loadCurrentEpisode()
+
     currentVersionId.value = newId
     selectByVersionId(newId)
   } catch (err) {

@@ -149,7 +149,9 @@ const currentOptionVersion = computed<DialogueVersionOptionVO | null>(() => {
 /** 当前选中项对应的真实版本；无 versionId 或 storyDetail 里找不到时为 null */
 const currentVersion = computed<DialogueVersionVO | null>(() => {
   if (props.currentVersionId == null) return null
-  return props.storyDetail?.versions?.find((v) => v.id === props.currentVersionId) ?? null
+  if (props.sourceType === SOURCE_TYPE.STORY)
+    return props.storyDetail?.versions?.find((v) => v.id === props.currentVersionId) ?? null
+  else return props.cardDetail?.versions?.find((v) => v.id === props.currentVersionId) ?? null
 })
 
 /** 传给 DialogueView 的 versionId，保证与 currentVersion 一致 */
