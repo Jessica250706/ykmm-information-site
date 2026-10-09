@@ -31,7 +31,7 @@ public interface CardService {
      * 查询某一话的对话
      *
      * @param sourceType 来源类型：1-RC 2-RTV 3-Rabitter
-     * @param sourceId   来源ID：card_rc.id / card_rtv.id / card_rabbiter.id
+     * @param sourceId   来源ID：card_rc.id / card_rtv.id / card_rabitter.id
      * @return 话详情（含对话版本）
      */
     CardEpisodeVO getEpisodeDialogue(Integer sourceType, Long sourceId);

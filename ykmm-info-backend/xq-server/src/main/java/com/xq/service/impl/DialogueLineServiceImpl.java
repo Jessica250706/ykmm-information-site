@@ -2,18 +2,12 @@ package com.xq.service.impl;
 
 import com.xq.constant.DialogueConstant;
 import com.xq.dto.DialogueLineDTO;
-import com.xq.entity.DialogueLine;
-import com.xq.entity.DialogueSegment;
-import com.xq.entity.DialogueVersion;
+import com.xq.entity.*;
 import com.xq.enums.DialogueFormatEnum;
 import com.xq.enums.DialogueSegmentTypeEnum;
-import com.xq.mapper.DialogueLineMapper;
-import com.xq.mapper.DialogueSegmentMapper;
-import com.xq.mapper.DialogueVersionMapper;
-import com.xq.mapper.RoleMapper;
-import com.xq.mapper.StickerMapper;
-import com.xq.entity.Role;
-import com.xq.entity.Sticker;
+import com.xq.enums.DialogueSideEnum;
+import com.xq.enums.DialogueSourceTypeEnum;
+import com.xq.mapper.*;
 import com.xq.service.DialogueLineService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
@@ -23,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -54,6 +49,9 @@ public class DialogueLineServiceImpl implements DialogueLineService {
     @Autowired
     private StickerMapper stickerMapper;
 
+    @Autowired
+    private CardRcMapper cardRcMapper;
+
     /**
      * 批量保存句子
      *
@@ -81,6 +79,9 @@ public class DialogueLineServiceImpl implements DialogueLineService {
             throw new RuntimeException("该版本不是文字版本");
         }
 
+        // ★ RC 场景下：先查 card_rc 拿到发起人角色ID
+        Long initiatorRoleId = resolveInitiatorRoleId(version);
+
         // 计算起始 sort
         Integer maxSort = dialogueLineMapper.getMaxSort(versionId);
         int startSort = (maxSort == null ? 0 : maxSort) + 1;
@@ -89,17 +90,19 @@ public class DialogueLineServiceImpl implements DialogueLineService {
         List<DialogueLine> entityList = new ArrayList<>();
         for (int i = 0; i < lines.size(); i++) {
             DialogueLineDTO dto = lines.get(i);
-            log.info("DialogueLineDTO:{}", dto.toString());
             validateLineDTO(dto, version);
 
             DialogueLine line = new DialogueLine();
-            log.info("DialogueLine:{}", line);
             BeanUtils.copyProperties(dto, line);
             line.setSpeakerId(dto.getSpeakerId());
             line.setSide(dto.getSide());
             line.setVersionId(versionId);
             line.setSort(dto.getSort() != null ? dto.getSort() :startSort + i);
             line.setMonologue(dto.getMonologue() != null ? dto.getMonologue() : 0);
+
+            // ★ 计算 side
+            line.setSide(resolveSide(dto.getSpeakerId(), dto.getSide(), initiatorRoleId));
+
             entityList.add(line);
         }
 
@@ -116,8 +119,8 @@ public class DialogueLineServiceImpl implements DialogueLineService {
             dialogueSegmentMapper.insertBatch(allSegments);
         }
 
-        log.info("批量保存对话句子成功，versionId={}, count={}",
-                versionId, entityList.size());
+        log.info("批量保存对话句子成功，versionId={}, count={}, initiatorRoleId={}",
+                versionId, entityList.size(), initiatorRoleId);
     }
 
     /**
@@ -243,12 +246,10 @@ public class DialogueLineServiceImpl implements DialogueLineService {
         if (role == null) {
             throw new RuntimeException("说话角色不存在：id=" + dto.getSpeakerId());
         }
-        // RC 必须传 side
-        if (DialogueConstant.SOURCE_RC == version.getSourceType()) {
-            if (dto.getSide() == null
-                    || (dto.getSide() != 1 && dto.getSide() != 2)) {
-                throw new RuntimeException("RC 对话必须指定左右位置");
-            }
+        // RC 场景下 side 由服务端按发起人自动计算，前端可选传；
+        // 只要传了就必须是 1 或 2
+        if (dto.getSide() != null && !DialogueSideEnum.isValid(dto.getSide())) {
+            throw new RuntimeException("side 取值不合法：" + dto.getSide());
         }
     }
 
@@ -307,5 +308,58 @@ public class DialogueLineServiceImpl implements DialogueLineService {
             }
         }
         return result;
+    }
+
+    /**
+     * 解析 RC 发起人角色ID
+     *
+     * - 来源类型为 RC 时：查 card_rc 拿 role_id 作为发起人
+     * - 其他来源：返回 null
+     *
+     * @param version 对话版本
+     * @return 发起人角色ID，非 RC 返回 null
+     */
+    private Long resolveInitiatorRoleId(DialogueVersion version) {
+        if (version == null || version.getSourceType() == null) {
+            return null;
+        }
+        if (!(Objects.equals(DialogueSourceTypeEnum.RC.getValue(), version.getSourceType()))) {
+            return null;
+        }
+        if (version.getSourceId() == null) {
+            throw new RuntimeException("RC 版本的来源ID不能为空");
+        }
+        CardRc rc = cardRcMapper.getById(version.getSourceId());
+        if (rc == null) {
+            throw new RuntimeException("RC 不存在：id=" + version.getSourceId());
+        }
+        if (rc.getRoleId() == null) {
+            throw new RuntimeException("RC 未设置发起人角色");
+        }
+        return rc.getRoleId();
+    }
+
+    /**
+     * 计算对话句子的左右位置
+     *
+     * 规则：
+     * - RC 场景（initiatorRoleId != null）：
+     *     speakerId == initiatorRoleId → 2（右侧）
+     *     其他 → 1（左侧）
+     * - 非 RC 场景：使用前端传入的 side，可为 null
+     *
+     * @param speakerId       说话角色ID
+     * @param sideFromRequest 前端传入的 side
+     * @param initiatorRoleId RC发起人角色ID
+     * @return 最终 side
+     */
+    private Integer resolveSide(Long speakerId, Integer sideFromRequest, Long initiatorRoleId) {
+        if (initiatorRoleId == null) {
+            // 非 RC：沿用前端值
+            return sideFromRequest;
+        }
+        return Objects.equals(speakerId, initiatorRoleId)
+                ? DialogueSideEnum.RIGHT.getValue()
+                : DialogueSideEnum.LEFT.getValue();
     }
 }

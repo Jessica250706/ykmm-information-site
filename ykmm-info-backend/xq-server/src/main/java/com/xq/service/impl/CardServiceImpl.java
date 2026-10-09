@@ -57,6 +57,10 @@ public class CardServiceImpl implements CardService {
     private StickerMapper stickerMapper;
     @Autowired
     private DialogueVersionContributorMapper dialogueVersionContributorMapper;
+    @Autowired
+    private RoleMapper roleMapper;
+    @Autowired
+    private PersonMapper personMapper;
 
     /**
      * 分页查询
@@ -444,6 +448,27 @@ public class CardServiceImpl implements CardService {
         Map<Long, List<DialogueLine>> linesByVersion = lines.stream()
                 .collect(Collectors.groupingBy(DialogueLine::getVersionId));
 
+        /** 说话人：基于所有 speakerId 批量查 role，再查 person */
+        Set<Long> speakerIds = lines.stream()
+                .map(DialogueLine::getSpeakerId)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toSet());
+
+        Map<Long, Role> roleMap = speakerIds.isEmpty()
+                ? Collections.emptyMap()
+                : roleMapper.listByIds(speakerIds).stream()
+                .collect(Collectors.toMap(Role::getId, r -> r, (a, b) -> a));
+
+        Set<Long> personIds = roleMap.values().stream()
+                .map(Role::getPersonId)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toSet());
+
+        Map<Long, Person> personMap = personIds.isEmpty()
+                ? Collections.emptyMap()
+                : personMapper.listByIds(personIds).stream()
+                .collect(Collectors.toMap(Person::getId, p -> p, (a, b) -> a));
+
         /** 批量查询片段 */
         List<Long> lineIds = lines.stream().map(DialogueLine::getId).toList();
         List<DialogueSegment> segments = lineIds.isEmpty()
@@ -520,6 +545,20 @@ public class CardServiceImpl implements CardService {
                 lvo.setMonologue(line.getMonologue());
                 lvo.setContent(line.getContent());
                 lvo.setSort(line.getSort());
+
+                /** 通过 role 反查说话人及人物信息 */
+                Role role = roleMap.get(line.getSpeakerId());
+                if (role != null) {
+                    lvo.setSpeakerName(role.getName());        // 角色名 → speakerName
+                    lvo.setPersonId(role.getPersonId());       // 角色关联的人物ID → personId
+
+                    Person person = personMap.get(role.getPersonId());
+                    if (person != null) {
+                        lvo.setPersonNameCn(person.getNameCn());          // 人物中文名
+                        lvo.setPersonAvatar(person.getAvatar());          // 人物头像
+                        lvo.setPersonThemeColor(person.getThemeColor());  // 人物代表色
+                    }
+                }
 
                 List<DialogueSegment> lineSegments =
                         segmentsByLine.getOrDefault(line.getId(), Collections.emptyList());
