@@ -2,7 +2,6 @@
   <div class="dialogue-view h-full">
     <!-- 没有选中的版本 -->
     <el-empty v-if="!currentOptionVersion" description="请选择一个对话版本" />
-    <!-- 没有选中的版本 -->
     <el-empty v-else-if="!currentVersion" description="当前对话版本暂无对话" />
 
     <!-- 文字版本 -->
@@ -15,6 +14,71 @@
         </el-empty>
       </div>
 
+      <!-- RC 聊天样式 -->
+      <div v-else-if="isRcChat" class="rc-chat">
+        <div
+          v-for="line in currentVersion.lines"
+          :key="line.id"
+          :ref="(el) => setLineRef(line.id, el)"
+          :class="{
+            'rc-row--right': isRightSide(line.side),
+            'rc-row--left': !isRightSide(line.side),
+            'dialogue-line--selected': line.id === editingLineId,
+            'dialogue-line--editable': editingMode,
+          }"
+          class="rc-row"
+          @click="onLineClick(line)"
+        >
+          <div class="rc-row__inner">
+            <!-- 左侧：显示头像；右侧：不显示头像 -->
+            <el-avatar
+              v-if="!isRightSide(line.side)"
+              :size="36"
+              :src="line.personAvatar"
+              class="rc-avatar"
+            >
+              {{ line.speakerName?.slice(-1) || '?' }}
+            </el-avatar>
+
+            <div class="rc-body">
+              <!-- 左侧才显示说话人名字 -->
+              <div v-if="!isRightSide(line.side)" class="rc-name">
+                {{ line.speakerName }}
+              </div>
+
+              <div
+                :class="isRightSide(line.side) ? 'rc-bubble--right' : 'rc-bubble--left'"
+                :style="isRightSide(line.side) ? chatBubbleStyle(line.personThemeColor) : undefined"
+                class="rc-bubble"
+              >
+                <template v-for="(seg, i) in line.segments ?? []" :key="seg.id ?? i">
+                  <template v-if="seg.segmentType === 1">
+                    <span :class="{ 'dialogue-line--inner': line.monologue === MONOLOGUE.INNER }">
+                      {{ seg.content }}
+                    </span>
+                  </template>
+                  <span v-else-if="seg.segmentType === 2" class="mx-1 align-middle">
+                    <img
+                      v-if="seg.stickerUrl"
+                      :src="seg.stickerUrl"
+                      alt="sticker"
+                      class="inline-block h-6 w-6 align-middle"
+                    />
+                    <span v-else>{{ seg.stickerEmoji || seg.stickerLabel }}</span>
+                  </span>
+                </template>
+                <template v-if="!line.segments?.length">
+                  <span :class="{ 'dialogue-line--inner': line.monologue === MONOLOGUE.INNER }">
+                    {{ line.content }}
+                  </span>
+                </template>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 普通（非 RC）样式 -->
       <div v-else>
         <div
           v-for="line in currentVersion.lines"
@@ -75,11 +139,13 @@
 
 <script setup lang="ts">
 import { type ComponentPublicInstance, computed, nextTick, watch } from 'vue'
-import { MONOLOGUE, VERSION_FORMAT } from '@/constants'
+import { MONOLOGUE, SOURCE_TYPE, VERSION_FORMAT } from '@/constants'
+import { isRightSide } from '@/constants/dialogueLine'
 import type { CardEpisodeVO } from '@/types/card'
 import type { DialogueLineVO } from '@/types/dialogueLine'
 import type { DialogueVersionOptionVO } from '@/types/dialogueVersion'
 import type { DialogueVersionVO, StoryDetailVO } from '@/types/story'
+import { chatBubbleStyle } from '@/utils/color'
 
 const props = defineProps<{
   detail?: StoryDetailVO | CardEpisodeVO | null
@@ -98,6 +164,9 @@ const props = defineProps<{
 const emit = defineEmits<{
   'select-line': [line: DialogueLineVO]
 }>()
+
+/** 当前版本是否为 RC，决定是否启用聊天样式 */
+const isRcChat = computed(() => props.currentVersion?.sourceType === SOURCE_TYPE.RC)
 
 /* -------- 句子 ref，用于滚动定位 -------- */
 const lineRefMap = new Map<number, HTMLElement>()
@@ -138,6 +207,7 @@ const imageUrls = computed(() =>
   color: var(--color-blue) !important;
 }
 
+/* ================= 普通（非 RC）样式 ================= */
 .dialogue-line {
   background: var(--el-fill-color-lighter);
   transition:
@@ -153,6 +223,95 @@ const imageUrls = computed(() =>
   background: var(--el-color-primary-light-9);
 }
 
+.dialogue-line--selected {
+  background: var(--el-color-info-light-9);
+  box-shadow: inset 0 0 0 2px var(--el-color-primary-light-5);
+}
+
+/* ================= RC 聊天样式 ================= */
+.rc-chat {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 8px 4px;
+}
+
+.rc-row {
+  padding: 6px 8px;
+  border-radius: 8px;
+  transition:
+    background-color 0.15s,
+    box-shadow 0.15s;
+}
+
+.rc-row--left .rc-row__inner {
+  justify-content: flex-start;
+}
+
+.rc-row--right .rc-row__inner {
+  justify-content: flex-end;
+}
+
+.rc-row__inner {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.rc-avatar {
+  flex-shrink: 0;
+}
+
+.rc-body {
+  max-width: 70%;
+  min-width: 0;
+}
+
+.rc-name {
+  font-size: 12px;
+  color: var(--el-text-color-secondary);
+  margin-bottom: 4px;
+}
+
+.rc-bubble {
+  display: inline-block;
+  padding: 8px 12px;
+  border-radius: 10px;
+  font-size: 14px;
+  line-height: 1.5;
+  white-space: pre-line;
+  word-break: break-word;
+  text-align: left;
+  color: var(--el-text-color-primary);
+  background: var(--el-fill-color-light);
+}
+
+/* 左侧（对方）：浅灰气泡，气泡角在左上 */
+.rc-bubble--left {
+  border-top-left-radius: 2px;
+}
+
+/* 右侧（自己）：背景色由 chatBubbleStyle 注入，气泡角在右上 */
+.rc-bubble--right {
+  border-top-right-radius: 2px;
+  background: var(--el-color-primary-light-9);
+}
+
+/* 编辑模式下气泡可点击 */
+.rc-row.dialogue-line--editable {
+  cursor: pointer;
+}
+
+.rc-row.dialogue-line--editable:hover {
+  background: var(--el-color-primary-light-9);
+}
+
+.rc-row.dialogue-line--selected {
+  background: var(--el-color-info-light-9);
+  box-shadow: inset 0 0 0 2px var(--el-color-primary-light-5);
+}
+
+/* 非 RC 场景下，之前的选择样式仍生效 */
 .dialogue-line--selected {
   background: var(--el-color-info-light-9);
   box-shadow: inset 0 0 0 2px var(--el-color-primary-light-5);

@@ -43,3 +43,41 @@ export function isInnerMonologue(v?: number | null): boolean {
 export function monologueLabel(v?: number | null): string {
   return v != null && isMonologue(v) ? MONOLOGUE_LABEL[v] : MONOLOGUE_LABEL[MONOLOGUE.SPOKEN]
 }
+
+/**
+ * 对话左右位置（RC 聊天用）
+ * 1-左侧 2-右侧
+ */
+export const DIALOGUE_SIDE = {
+  LEFT: 1,
+  RIGHT: 2,
+} as const
+
+export type DialogueSideValue = (typeof DIALOGUE_SIDE)[keyof typeof DIALOGUE_SIDE]
+
+export const DIALOGUE_SIDE_LABEL: Record<DialogueSideValue, string> = {
+  [DIALOGUE_SIDE.LEFT]: '左侧',
+  [DIALOGUE_SIDE.RIGHT]: '右侧',
+}
+
+export const DIALOGUE_SIDE_OPTIONS = [
+  { value: DIALOGUE_SIDE.LEFT, label: DIALOGUE_SIDE_LABEL[DIALOGUE_SIDE.LEFT] },
+  { value: DIALOGUE_SIDE.RIGHT, label: DIALOGUE_SIDE_LABEL[DIALOGUE_SIDE.RIGHT] },
+] as const
+
+/** 是否右侧（RC 聊天里"我"这一侧） */
+export function isRightSide(side?: number | null): boolean {
+  return side === DIALOGUE_SIDE.RIGHT
+}
+
+/** 是否左侧 */
+export function isLeftSide(side?: number | null): boolean {
+  return side === DIALOGUE_SIDE.LEFT
+}
+
+/** 安全取文案 */
+export function dialogueSideLabel(side?: number | null): string {
+  return isRightSide(side)
+    ? DIALOGUE_SIDE_LABEL[DIALOGUE_SIDE.RIGHT]
+    : DIALOGUE_SIDE_LABEL[DIALOGUE_SIDE.LEFT]
+}

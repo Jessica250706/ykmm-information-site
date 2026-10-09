@@ -72,3 +72,20 @@ export function categoryTagStyle(color: string) {
     color: `var(--color-${color})`,
   }
 }
+
+/**
+ * RC 聊天气泡背景：用人物代表色的浅色版
+ *
+ * 输入形如 'rgb(29, 41, 81)'，输出可直接绑到 :style 的对象。
+ * 用 color-mix 让人物主题色的浅色版成为气泡底色，
+ * 保证与头像色系一致，同时文字仍然清晰可读。
+ *
+ * @param color 人物代表色，如 'rgb(29, 41, 81)'
+ * @param percent 主题色占比，默认 22%
+ */
+export function chatBubbleStyle(color?: string, percent = 22) {
+  if (!color) return undefined
+  return {
+    backgroundColor: `color-mix(in srgb, ${color} ${percent}%, white)`,
+  }
+}
