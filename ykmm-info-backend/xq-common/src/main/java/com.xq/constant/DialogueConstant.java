@@ -36,21 +36,6 @@ public class DialogueConstant {
     public static final int MAX_BATCH_SIZE = 500;
 
     /**
-     * 对话角色：普通
-     */
-    public static final int DIALOGUE_ROLE_NORMAL = 0;
-
-    /**
-     * 对话角色：问句
-     */
-    public static final int DIALOGUE_ROLE_QUESTION = 1;
-
-    /**
-     * 对话角色：回答
-     */
-    public static final int DIALOGUE_ROLE_ANSWER = 2;
-
-    /**
      * 选项编号行正则，如 "1." "2."
      */
     public static final String OPTION_NUMBER_PATTERN = "^\\d+\\.$";

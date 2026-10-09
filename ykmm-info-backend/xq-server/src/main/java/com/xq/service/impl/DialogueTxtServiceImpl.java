@@ -6,6 +6,7 @@ import com.xq.entity.DialogueVersion;
 import com.xq.entity.Role;
 import com.xq.entity.Sticker;
 import com.xq.enums.DialogueFormatEnum;
+import com.xq.enums.DialogueRoleEnum;
 import com.xq.enums.DialogueSourceTypeEnum;
 import com.xq.mapper.DialogueVersionMapper;
 import com.xq.mapper.RoleMapper;
@@ -271,13 +272,11 @@ public class DialogueTxtServiceImpl implements DialogueTxtService {
             Matcher m = SPEAKER_PATTERN.matcher(line);
             if (m.matches()) {
                 if (currentSpeaker != null && !buffer.isEmpty()) {
-                    int role = isOption
-                            ? (stage == 0
-                            ? DialogueConstant.DIALOGUE_ROLE_QUESTION
-                            : DialogueConstant.DIALOGUE_ROLE_ANSWER)
-                            : DialogueConstant.DIALOGUE_ROLE_NORMAL;
+                    DialogueRoleEnum role = isOption
+                            ? (stage == 0 ? DialogueRoleEnum.QUESTION : DialogueRoleEnum.ANSWER)
+                            : DialogueRoleEnum.NORMAL;
                     flushLine(lines, currentSpeaker, buffer.toString(), sort++,
-                            role, isOption ? optionNumber : null,
+                            role.getValue(), isOption ? optionNumber : null,
                             speakers, unmatchedSpeakers, unmatchedStickers, errors);
                     if (isOption) {
                         stage++;
@@ -301,13 +300,11 @@ public class DialogueTxtServiceImpl implements DialogueTxtService {
 
         /* 块末尾的最后一条 */
         if (currentSpeaker != null && !buffer.isEmpty()) {
-            int role = isOption
-                    ? (stage == 0
-                    ? DialogueConstant.DIALOGUE_ROLE_QUESTION
-                    : DialogueConstant.DIALOGUE_ROLE_ANSWER)
-                    : DialogueConstant.DIALOGUE_ROLE_NORMAL;
+            DialogueRoleEnum role = isOption
+                    ? (stage == 0 ? DialogueRoleEnum.QUESTION : DialogueRoleEnum.ANSWER)
+                    : DialogueRoleEnum.NORMAL;
             flushLine(lines, currentSpeaker, buffer.toString(), sort++,
-                    role, isOption ? optionNumber : null,
+                    role.getValue(), isOption ? optionNumber : null,
                     speakers, unmatchedSpeakers, unmatchedStickers, errors);
         }
 

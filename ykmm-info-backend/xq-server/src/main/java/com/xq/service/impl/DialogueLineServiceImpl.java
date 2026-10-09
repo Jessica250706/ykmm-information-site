@@ -3,10 +3,7 @@ package com.xq.service.impl;
 import com.xq.constant.DialogueConstant;
 import com.xq.dto.DialogueLineDTO;
 import com.xq.entity.*;
-import com.xq.enums.DialogueFormatEnum;
-import com.xq.enums.DialogueSegmentTypeEnum;
-import com.xq.enums.DialogueSideEnum;
-import com.xq.enums.DialogueSourceTypeEnum;
+import com.xq.enums.*;
 import com.xq.mapper.*;
 import com.xq.service.DialogueLineService;
 import lombok.extern.slf4j.Slf4j;
@@ -429,9 +426,9 @@ public class DialogueLineServiceImpl implements DialogueLineService {
             if (lineId == null) {
                 continue;
             }
-            if (dto.getDialogueRole() == DialogueConstant.DIALOGUE_ROLE_QUESTION) {
+            if (DialogueRoleEnum.QUESTION.getValue().equals(dto.getDialogueRole())) {
                 questionByOption.put(dto.getOptionNumber(), lineId);
-            } else if (dto.getDialogueRole() == DialogueConstant.DIALOGUE_ROLE_ANSWER) {
+            } else if (DialogueRoleEnum.ANSWER.getValue().equals(dto.getDialogueRole())) {
                 answerByOption.put(dto.getOptionNumber(), lineId);
             }
         }

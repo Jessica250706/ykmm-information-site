@@ -2,6 +2,7 @@ package com.xq.service.impl;
 
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
+import com.xq.constant.DialogueConstant;
 import com.xq.context.BaseContext;
 import com.xq.context.RoleContext;
 import com.xq.dto.CardDTO;
@@ -492,12 +493,28 @@ public class CardServiceImpl implements CardService {
         Map<Long, List<DialogueImage>> imagesByVersion = images.stream()
                 .collect(Collectors.groupingBy(DialogueImage::getVersionId));
 
-        /** 批量查询 RC 选项（仅 RC） */
+        /** 批量查询 RC 选项（仅 RC），同时构建 lineId -> 角色 / 选项编号 映射 */
         Map<Long, List<RcOption>> optionsByVersion;
+        Map<Long, Integer> lineRoleMap = new HashMap<>();
+        Map<Long, Integer> lineOptionNumMap = new HashMap<>();
+
         if (DialogueSourceTypeEnum.RC.getValue().equals(sourceType)) {
             List<RcOption> options = rcOptionMapper.listByVersionIds(versionIds);
             optionsByVersion = options.stream()
                     .collect(Collectors.groupingBy(RcOption::getVersionId));
+
+            /** 用 rc_option 反查每一行的角色和选项编号 */
+            for (RcOption opt : options) {
+                Integer optNum = opt.getSort();
+                if (opt.getQuestionLineId() != null) {
+                    lineRoleMap.put(opt.getQuestionLineId(), DialogueRoleEnum.QUESTION.getValue());
+                    lineOptionNumMap.put(opt.getQuestionLineId(), optNum);
+                }
+                if (opt.getAnswerLineId() != null) {
+                    lineRoleMap.put(opt.getAnswerLineId(), DialogueRoleEnum.ANSWER.getValue());
+                    lineOptionNumMap.put(opt.getAnswerLineId(), optNum);
+                }
+            }
         } else {
             optionsByVersion = Collections.emptyMap();
         }
@@ -545,6 +562,13 @@ public class CardServiceImpl implements CardService {
                 lvo.setMonologue(line.getMonologue());
                 lvo.setContent(line.getContent());
                 lvo.setSort(line.getSort());
+
+                /** ★ 从 rc_option 反查角色和选项编号 */
+                Integer roleValue = lineRoleMap.getOrDefault(
+                        line.getId(), DialogueRoleEnum.NORMAL.getValue());
+                lvo.setDialogueRole(roleValue);
+                lvo.setDialogueRoleLabel(DialogueRoleEnum.getLabel(roleValue));
+                lvo.setOptionNumber(lineOptionNumMap.get(line.getId()));
 
                 /** 通过 role 反查说话人及人物信息 */
                 Role role = roleMap.get(line.getSpeakerId());

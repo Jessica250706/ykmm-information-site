@@ -16,66 +16,46 @@
 
       <!-- RC 聊天样式 -->
       <div v-else-if="isRcChat" class="rc-chat">
-        <div
-          v-for="line in currentVersion.lines"
-          :key="line.id"
-          :ref="(el) => setLineRef(line.id, el)"
-          :class="{
-            'rc-row--right': isRightSide(line.side),
-            'rc-row--left': !isRightSide(line.side),
-            'dialogue-line--selected': line.id === editingLineId,
-            'dialogue-line--editable': editingMode,
-          }"
-          class="rc-row"
-          @click="onLineClick(line)"
-        >
-          <div class="rc-row__inner">
-            <!-- 左侧：显示头像；右侧：不显示头像 -->
-            <el-avatar
-              v-if="!isRightSide(line.side)"
-              :size="36"
-              :src="line.personAvatar"
-              class="rc-avatar"
+        <template v-for="block in rcRenderBlocks" :key="block.key">
+          <!-- 普通行 -->
+          <div
+            v-if="block.type === 'line'"
+            :ref="(el) => setLineRef(block.line.id, el)"
+            :class="[
+              isRightSide(block.line.side) ? 'rc-row--right' : 'rc-row--left',
+              {
+                'dialogue-line--selected': block.line.id === editingLineId,
+                'dialogue-line--editable': editingMode,
+              },
+            ]"
+            class="rc-row"
+            @click="onLineClick(block.line)"
+          >
+            <RcRowInner :line="block.line" />
+          </div>
+
+          <!-- 选项组（问句 + 回答） -->
+          <div v-else class="rc-option-card">
+            <div class="rc-option-card__badge">选项 {{ block.optionNumber }}</div>
+
+            <div
+              v-for="line in block.lines"
+              :key="line.id"
+              :ref="(el) => setLineRef(line.id, el)"
+              :class="[
+                isRightSide(line.side) ? 'rc-row--right' : 'rc-row--left',
+                {
+                  'dialogue-line--selected': line.id === editingLineId,
+                  'dialogue-line--editable': editingMode,
+                },
+              ]"
+              class="rc-row"
+              @click="onLineClick(line)"
             >
-              {{ line.speakerName?.slice(-1) || '?' }}
-            </el-avatar>
-
-            <div class="rc-body">
-              <!-- 左侧才显示说话人名字 -->
-              <div v-if="!isRightSide(line.side)" class="rc-name">
-                {{ line.speakerName }}
-              </div>
-
-              <div
-                :class="isRightSide(line.side) ? 'rc-bubble--right' : 'rc-bubble--left'"
-                :style="isRightSide(line.side) ? chatBubbleStyle(line.personThemeColor) : undefined"
-                class="rc-bubble"
-              >
-                <template v-for="(seg, i) in line.segments ?? []" :key="seg.id ?? i">
-                  <template v-if="seg.segmentType === 1">
-                    <span :class="{ 'dialogue-line--inner': line.monologue === MONOLOGUE.INNER }">
-                      {{ seg.content }}
-                    </span>
-                  </template>
-                  <span v-else-if="seg.segmentType === 2" class="mx-1 align-middle">
-                    <img
-                      v-if="seg.stickerUrl"
-                      :src="seg.stickerUrl"
-                      alt="sticker"
-                      class="inline-block h-6 w-6 align-middle"
-                    />
-                    <span v-else>{{ seg.stickerEmoji || seg.stickerLabel }}</span>
-                  </span>
-                </template>
-                <template v-if="!line.segments?.length">
-                  <span :class="{ 'dialogue-line--inner': line.monologue === MONOLOGUE.INNER }">
-                    {{ line.content }}
-                  </span>
-                </template>
-              </div>
+              <RcRowInner :line="line" />
             </div>
           </div>
-        </div>
+        </template>
       </div>
 
       <!-- 普通（非 RC）样式 -->
@@ -101,27 +81,7 @@
           <div class="min-w-0 flex-1">
             <div class="text-xs font-medium text-slate-500">{{ line.speakerName }}</div>
             <div class="mt-1 whitespace-pre-line text-sm text-slate-800">
-              <template v-for="(seg, i) in line.segments ?? []" :key="seg.id ?? i">
-                <template v-if="seg.segmentType === 1">
-                  <span :class="{ 'dialogue-line--inner': line.monologue === MONOLOGUE.INNER }">
-                    {{ seg.content }}
-                  </span>
-                </template>
-                <span v-else-if="seg.segmentType === 2" class="mx-1 align-middle">
-                  <img
-                    v-if="seg.stickerUrl"
-                    :src="seg.stickerUrl"
-                    alt="sticker"
-                    class="inline-block h-6 w-6 align-middle"
-                  />
-                  <span v-else>{{ seg.stickerEmoji || seg.stickerLabel }}</span>
-                </span>
-              </template>
-              <template v-if="!line.segments?.length">
-                <span :class="{ 'dialogue-line--inner': line.monologue === MONOLOGUE.INNER }">
-                  {{ line.content }}
-                </span>
-              </template>
+              <DialogueLineContent :line="line" />
             </div>
           </div>
         </div>
@@ -134,7 +94,7 @@
         <el-empty description="暂无图片" />
       </div>
 
-      <div v-else class="overflow-hidden h-full">
+      <div v-else class="h-full overflow-hidden">
         <ImageView :image-list="imageUrls" :magnifier="false" />
       </div>
     </template>
@@ -143,13 +103,15 @@
 
 <script setup lang="ts">
 import { type ComponentPublicInstance, computed, nextTick, watch } from 'vue'
-import { MONOLOGUE, SOURCE_TYPE, VERSION_FORMAT } from '@/constants'
-import { isRightSide } from '@/constants/dialogueLine'
+import { SOURCE_TYPE, VERSION_FORMAT } from '@/constants'
+import { DIALOGUE_ROLE, isRightSide } from '@/constants/dialogueLine'
 import type { CardEpisodeVO } from '@/types/card'
 import type { DialogueLineVO } from '@/types/dialogueLine'
 import type { DialogueVersionOptionVO } from '@/types/dialogueVersion'
 import type { DialogueVersionVO, StoryDetailVO } from '@/types/story'
-import { avatarBubbleStyle, chatBubbleStyle } from '@/utils'
+import { avatarBubbleStyle } from '@/utils'
+import DialogueLineContent from './DialogueLineContent.vue'
+import RcRowInner from './RcRowInner.vue'
 
 const props = defineProps<{
   detail?: StoryDetailVO | CardEpisodeVO | null
@@ -171,6 +133,57 @@ const emit = defineEmits<{
 
 /** 当前版本是否为 RC，决定是否启用聊天样式 */
 const isRcChat = computed(() => props.currentVersion?.sourceType === SOURCE_TYPE.RC)
+
+/* -------- RC 渲染分组 -------- */
+
+type RcRenderBlock =
+  | { type: 'line'; key: string; line: DialogueLineVO }
+  | { type: 'option'; key: string; optionNumber: number; lines: DialogueLineVO[] }
+
+/**
+ * 把 RC 的 lines 组装成渲染块：
+ * - 普通行：独立渲染
+ * - 问句/回答：按 optionNumber 聚合，插入到该选项第一行出现的位置
+ */
+const rcRenderBlocks = computed<RcRenderBlock[]>(() => {
+  const lines = props.currentVersion?.lines ?? []
+  if (!lines.length) return []
+
+  /** optionNumber -> 该选项下的行 */
+  const optionMap = new Map<number, DialogueLineVO[]>()
+  for (const line of lines) {
+    const isQ = line.dialogueRole === DIALOGUE_ROLE.QUESTION
+    const isA = line.dialogueRole === DIALOGUE_ROLE.ANSWER
+    if ((isQ || isA) && line.optionNumber != null) {
+      const n = line.optionNumber
+      if (!optionMap.has(n)) optionMap.set(n, [])
+      optionMap.get(n)!.push(line)
+    }
+  }
+
+  /** 按出现顺序构建渲染块 */
+  const blocks: RcRenderBlock[] = []
+  const added = new Set<number>()
+  for (const line of lines) {
+    const isQ = line.dialogueRole === DIALOGUE_ROLE.QUESTION
+    const isA = line.dialogueRole === DIALOGUE_ROLE.ANSWER
+    if ((isQ || isA) && line.optionNumber != null) {
+      const n = line.optionNumber
+      if (!added.has(n)) {
+        added.add(n)
+        blocks.push({
+          type: 'option',
+          key: `option-${n}`,
+          optionNumber: n,
+          lines: optionMap.get(n) ?? [],
+        })
+      }
+    } else {
+      blocks.push({ type: 'line', key: `line-${line.id}`, line })
+    }
+  }
+  return blocks
+})
 
 /* -------- 句子 ref，用于滚动定位 -------- */
 const lineRefMap = new Map<number, HTMLElement>()
@@ -316,9 +329,37 @@ const imageUrls = computed(() =>
   box-shadow: inset 0 0 0 2px var(--el-color-primary-light-5);
 }
 
-/* 非 RC 场景下，之前的选择样式仍生效 */
-.dialogue-line--selected {
-  background: var(--el-color-info-light-9);
+/* ================= RC 选项卡片 ================= */
+.rc-option-card {
+  position: relative;
+  margin: 8px 0 4px;
+  padding: 16px 8px 8px;
+  border-radius: 12px;
+  border: 1px dashed var(--el-color-primary-light-5);
+  background: var(--el-color-primary-light-9);
+}
+
+.rc-option-card__badge {
+  position: absolute;
+  top: -10px;
+  left: 12px;
+  padding: 2px 10px;
+  border-radius: 10px;
+  background: var(--el-color-primary);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
+}
+
+/* 选项卡片内的行：略微调整，避免与卡片背景叠加过重 */
+.rc-option-card .rc-row {
+  padding: 4px 6px;
+}
+
+.rc-option-card .rc-row.dialogue-line--selected {
+  background: var(--el-color-white);
   box-shadow: inset 0 0 0 2px var(--el-color-primary-light-5);
 }
 </style>

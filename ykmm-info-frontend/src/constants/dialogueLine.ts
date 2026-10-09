@@ -83,8 +83,8 @@ export function dialogueSideLabel(side?: number | null): string {
 }
 
 /**
- * 对话选项（RC 聊天用）
- * 0-普通 1-问题 2-回答
+ * 对话角色
+ * 0-普通 1-问句 2-回答
  */
 export const DIALOGUE_ROLE = {
   NORMAL: 0,
@@ -96,6 +96,21 @@ export type DialogueRoleValue = (typeof DIALOGUE_ROLE)[keyof typeof DIALOGUE_ROL
 
 export const DIALOGUE_ROLE_LABEL: Record<DialogueRoleValue, string> = {
   [DIALOGUE_ROLE.NORMAL]: '普通',
-  [DIALOGUE_ROLE.QUESTION]: '问题',
+  [DIALOGUE_ROLE.QUESTION]: '问句',
   [DIALOGUE_ROLE.ANSWER]: '回答',
+}
+
+/** 是否问句 */
+export function isQuestion(line?: { dialogueRole?: number } | null): boolean {
+  return line?.dialogueRole === DIALOGUE_ROLE.QUESTION
+}
+
+/** 是否回答 */
+export function isAnswer(line?: { dialogueRole?: number } | null): boolean {
+  return line?.dialogueRole === DIALOGUE_ROLE.ANSWER
+}
+
+/** 是否普通对话 */
+export function isNormalLine(line?: { dialogueRole?: number } | null): boolean {
+  return !line?.dialogueRole || line.dialogueRole === DIALOGUE_ROLE.NORMAL
 }
