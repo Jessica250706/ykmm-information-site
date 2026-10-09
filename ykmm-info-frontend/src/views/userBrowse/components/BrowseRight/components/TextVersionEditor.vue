@@ -186,11 +186,20 @@ const {
   currentVersion: currentVersionRef,
   dirty,
   exitCreateMode,
+  /** 保存成功：清空选中 + 刷新 */
   onSaved: () => {
     emit('clear-line')
     emit('save-line')
   },
-  onCleared: () => emit('clear-line'),
+  /** 取消：只清空选中 */
+  onCleared: () => {
+    emit('clear-line')
+  },
+  /** ★ 删除成功：清空选中 + 刷新 */
+  onDeleted: () => {
+    emit('clear-line')
+    emit('save-line')
+  },
 })
 
 function onSaveRcOptionPair() {

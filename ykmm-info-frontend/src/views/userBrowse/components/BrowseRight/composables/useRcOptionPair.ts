@@ -21,6 +21,8 @@ interface Options {
   onSaved: () => void
   /** 取消 / 删除后回调（父级清空选中） */
   onCleared: () => void
+  /** 删除成功后回调（需要刷新数据） */
+  onDeleted: () => void
 }
 
 /**
@@ -120,7 +122,7 @@ export function useRcOptionPair(opts: Options) {
       await deleteDialogueLinesBatchAPI(lineIds)
       ElMessage.success('删除选项成功')
       opts.dirty.value = false
-      opts.onCleared()
+      opts.onDeleted()
       return true
     } catch (err) {
       console.error('删除选项失败', err)
