@@ -114,3 +114,50 @@ export function isAnswer(line?: { dialogueRole?: number } | null): boolean {
 export function isNormalLine(line?: { dialogueRole?: number } | null): boolean {
   return !line?.dialogueRole || line.dialogueRole === DIALOGUE_ROLE.NORMAL
 }
+
+/**
+ * 对话片段类型
+ * 1-文本 2-表情包
+ */
+export const DIALOGUE_SEGMENT_TYPE = {
+  TEXT: 1,
+  STICKER: 2,
+} as const
+
+export type DialogueSegmentTypeValue =
+  (typeof DIALOGUE_SEGMENT_TYPE)[keyof typeof DIALOGUE_SEGMENT_TYPE]
+
+export const DIALOGUE_SEGMENT_TYPE_LABEL: Record<DialogueSegmentTypeValue, string> = {
+  [DIALOGUE_SEGMENT_TYPE.TEXT]: '文本',
+  [DIALOGUE_SEGMENT_TYPE.STICKER]: '表情包',
+}
+
+export const DIALOGUE_SEGMENT_TYPE_OPTIONS = [
+  {
+    value: DIALOGUE_SEGMENT_TYPE.TEXT,
+    label: DIALOGUE_SEGMENT_TYPE_LABEL[DIALOGUE_SEGMENT_TYPE.TEXT],
+  },
+  {
+    value: DIALOGUE_SEGMENT_TYPE.STICKER,
+    label: DIALOGUE_SEGMENT_TYPE_LABEL[DIALOGUE_SEGMENT_TYPE.STICKER],
+  },
+] as const
+
+/** 是否文本片段 */
+export function isTextSegment(type?: number | null): boolean {
+  return type === DIALOGUE_SEGMENT_TYPE.TEXT
+}
+
+/** 是否表情包片段 */
+export function isStickerSegment(type?: number | null): boolean {
+  return type === DIALOGUE_SEGMENT_TYPE.STICKER
+}
+
+/** 安全取文案 */
+export function dialogueSegmentTypeLabel(type?: number | null): string {
+  if (type === DIALOGUE_SEGMENT_TYPE.TEXT)
+    return DIALOGUE_SEGMENT_TYPE_LABEL[DIALOGUE_SEGMENT_TYPE.TEXT]
+  if (type === DIALOGUE_SEGMENT_TYPE.STICKER)
+    return DIALOGUE_SEGMENT_TYPE_LABEL[DIALOGUE_SEGMENT_TYPE.STICKER]
+  return '未知'
+}

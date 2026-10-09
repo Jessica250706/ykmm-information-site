@@ -77,7 +77,6 @@ import ImageView from '@/components/ImageView/Index.vue'
 import {
   CARD_IMAGE_TYPE_LABEL,
   SOURCE_TYPE,
-  SOURCE_TYPE_LABEL,
   SOURCE_TYPE_SMALL_LABEL,
   type SourceTypeLabelValue,
   type SourceTypeSmallLabelValue,

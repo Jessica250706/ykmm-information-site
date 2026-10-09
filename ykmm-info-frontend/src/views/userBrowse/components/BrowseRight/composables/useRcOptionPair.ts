@@ -5,10 +5,10 @@ import {
   deleteDialogueLinesBatchAPI,
   updateDialogueLinesBatchAPI,
 } from '@/api/dialogueLine'
-import { DIALOGUE_ROLE } from '@/constants'
+import { DIALOGUE_ROLE, EDITOR_MODE, type EditorMode } from '@/constants'
 import type { DialogueLineDTO } from '@/types/dialogueLine'
 import type { DialogueVersionVO } from '@/types/dialogueVersion'
-import type { EditorForm, EditorMode } from './useEditorForm'
+import type { EditorForm } from './useEditorForm'
 
 interface Options {
   editorForm: EditorForm
@@ -137,7 +137,7 @@ export function useRcOptionPair(opts: Options) {
    * - edit 模式：清空选中
    */
   function cancel() {
-    if (opts.editorMode.value === 'create') {
+    if (opts.editorMode.value === EDITOR_MODE.CREATE) {
       opts.exitCreateMode()
     } else {
       opts.onCleared()

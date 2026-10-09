@@ -35,7 +35,7 @@
 
     <div class="flex justify-between">
       <div class="flex items-center gap-1">
-        <template v-if="editorMode === 'edit'">
+        <template v-if="editorMode === EDITOR_MODE.EDIT">
           <el-button @click="emit('add')">+ 新增</el-button>
           <el-button v-if="showAddRcOption" @click="emit('addRcOption')">+ 新增选项</el-button>
           <el-button
@@ -54,19 +54,22 @@
         </template>
       </div>
       <el-button
-        :disabled="!form.id && editorMode === 'edit'"
+        :disabled="!form.id && editorMode === EDITOR_MODE.EDIT"
         :loading="saving"
         type="primary"
         @click="emit('save')"
       >
-        {{ editorMode === 'create' ? '创建' : '保存' }}
+        {{ editorMode === EDITOR_MODE.CREATE ? '创建' : '保存' }}
       </el-button>
     </div>
 
-    <div v-if="editorMode === 'edit' && !hasEditingLine" class="mt-2 text-xs text-slate-400">
+    <div
+      v-if="editorMode === EDITOR_MODE.EDIT && !hasEditingLine"
+      class="mt-2 text-xs text-slate-400"
+    >
       点击左侧某一句对话可加载到编辑器；未选中时新增将追加到末尾。
     </div>
-    <div v-else-if="editorMode === 'create'" class="mt-2 text-xs text-slate-400">
+    <div v-else-if="editorMode === EDITOR_MODE.CREATE" class="mt-2 text-xs text-slate-400">
       填写完成后点击"创建"，将作为新对话插入。
     </div>
   </div>
@@ -74,9 +77,15 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import { MONOLOGUE, SOURCE_TYPE, type SourceTypeValue } from '@/constants'
+import {
+  EDITOR_MODE,
+  type EditorMode,
+  MONOLOGUE,
+  SOURCE_TYPE,
+  type SourceTypeValue,
+} from '@/constants'
 import type { RoleGroupVO } from '@/types/role'
-import type { EditorForm, EditorMode } from '../composables/useEditorForm'
+import type { EditorForm } from '../composables/useEditorForm'
 
 /**
  * 双向绑定的普通行表单。

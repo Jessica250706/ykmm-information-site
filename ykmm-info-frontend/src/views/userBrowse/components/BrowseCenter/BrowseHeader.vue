@@ -14,15 +14,7 @@
       v-if="tag || subtitle"
       class="mt-1 flex flex-wrap items-center gap-2 text-xs text-slate-400"
     >
-      <el-tag
-        v-if="tag"
-        :style="{
-          borderColor: `var(--color-${color})`,
-          color: `var(--color-${color})`,
-        }"
-        effect="plain"
-        size="small"
-      >
+      <el-tag v-if="tag" :style="categoryTagStyle(color)" effect="plain" size="small">
         {{ tag }}
       </el-tag>
       <span v-if="subtitle">{{ subtitle }}</span>
@@ -39,6 +31,8 @@
 </template>
 
 <script setup lang="ts">
+import { categoryTagStyle } from '@/utils'
+
 withDefaults(
   defineProps<{
     /** 标题 */

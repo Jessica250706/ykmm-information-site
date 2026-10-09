@@ -1,11 +1,13 @@
 import { type ComputedRef, reactive, ref, watch } from 'vue'
-import { DIALOGUE_ROLE, MONOLOGUE } from '@/constants'
+import {
+  DIALOGUE_ROLE,
+  EDIT_TARGET,
+  EDITOR_MODE,
+  type EditorMode,
+  type EditTarget,
+  MONOLOGUE,
+} from '@/constants'
 import type { DialogueLineVO } from '@/types/dialogueLine'
-
-export type EditorMode = 'edit' | 'create'
-
-/** 编辑目标：普通行 / RC 选项对 */
-export type EditTarget = 'normal' | 'rcOption'
 
 export interface RcQuestionForm {
   id: number | null
@@ -64,7 +66,7 @@ export function useEditorForm(
   /** 当前版本全部行，用于在编辑 RC 选项时找到对侧行 */
   allLines?: ComputedRef<DialogueLineVO[]>,
 ) {
-  const editorMode = ref<EditorMode>('edit')
+  const editorMode = ref<EditorMode>(EDITOR_MODE.EDIT)
   const creatingAfterId = ref<number | null>(null)
   /** 新增目标是否为"开头"（优先级高于 creatingAfterId） */
   const creatingAtStart = ref(false)
@@ -77,7 +79,7 @@ export function useEditorForm(
     side: null,
     monologue: MONOLOGUE.SPOKEN,
     rcPair: createEmptyRcPair(),
-    editTarget: 'normal',
+    editTarget: EDIT_TARGET.NORMAL,
   })
 
   /** 重置整个表单 */
@@ -88,7 +90,7 @@ export function useEditorForm(
     editorForm.side = null
     editorForm.monologue = MONOLOGUE.SPOKEN
     editorForm.rcPair = createEmptyRcPair()
-    editorForm.editTarget = 'normal'
+    editorForm.editTarget = EDIT_TARGET.NORMAL
   }
 
   /** 根据选中的行填充表单 */
@@ -103,7 +105,7 @@ export function useEditorForm(
 
     /** RC 选项行：填 rcPair，并从 allLines 里找对侧 */
     if ((isQuestion || isAnswer) && line.optionNumber != null) {
-      editorForm.editTarget = 'rcOption'
+      editorForm.editTarget = EDIT_TARGET.RC_OPTION
       editorForm.rcPair.optionNumber = line.optionNumber
 
       const lines = allLines?.value ?? []
@@ -128,7 +130,7 @@ export function useEditorForm(
     }
 
     /** 普通行 */
-    editorForm.editTarget = 'normal'
+    editorForm.editTarget = EDIT_TARGET.NORMAL
     editorForm.id = line.id ?? null
     editorForm.speakerId = line.speakerId ?? null
     editorForm.content = line.content ?? ''
@@ -141,8 +143,8 @@ export function useEditorForm(
     () => editingLine.value?.id,
     (newId, oldId) => {
       if (newId === oldId) return
-      if (editorMode.value === 'create') {
-        editorMode.value = 'edit'
+      if (editorMode.value === EDITOR_MODE.CREATE) {
+        editorMode.value = EDITOR_MODE.EDIT
         creatingAfterId.value = null
         creatingAtStart.value = false
       }
@@ -167,7 +169,7 @@ export function useEditorForm(
     ],
     () => {
       /** create 模式：只要有输入就算 dirty */
-      if (editorMode.value === 'create') {
+      if (editorMode.value === EDITOR_MODE.CREATE) {
         dirty.value =
           !!editorForm.content.trim() ||
           editorForm.speakerId != null ||
@@ -185,7 +187,7 @@ export function useEditorForm(
       }
 
       /** edit 模式：RC 选项对比较 */
-      if (editorForm.editTarget === 'rcOption') {
+      if (editorForm.editTarget === EDIT_TARGET.RC_OPTION) {
         const lines = allLines?.value ?? []
         const q = lines.find(
           (l) =>
@@ -214,7 +216,7 @@ export function useEditorForm(
   )
 
   function enterCreateMode(afterId: number | null, atStart = false) {
-    editorMode.value = 'create'
+    editorMode.value = EDITOR_MODE.CREATE
     creatingAfterId.value = afterId
     creatingAtStart.value = atStart
     fillForm(null)
@@ -223,10 +225,10 @@ export function useEditorForm(
 
   /** 进入"新增 RC 选项"模式 */
   function enterRcOptionCreate() {
-    editorMode.value = 'create'
+    editorMode.value = EDITOR_MODE.CREATE
     creatingAfterId.value = null
     creatingAtStart.value = false
-    editorForm.editTarget = 'rcOption'
+    editorForm.editTarget = EDIT_TARGET.RC_OPTION
     editorForm.rcPair = createEmptyRcPair()
     dirty.value = false
   }
@@ -236,7 +238,7 @@ export function useEditorForm(
    * keepForm=true 时不重置表单（用于保存成功后，等父级刷新再 fill）。
    */
   function exitCreateMode(options?: { keepForm?: boolean }) {
-    editorMode.value = 'edit'
+    editorMode.value = EDITOR_MODE.EDIT
     creatingAfterId.value = null
     creatingAtStart.value = false
     if (!options?.keepForm) {

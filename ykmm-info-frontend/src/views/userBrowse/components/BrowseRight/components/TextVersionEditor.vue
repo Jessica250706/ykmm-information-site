@@ -26,14 +26,14 @@
       </div>
 
       <el-alert
-        v-if="editorMode === 'create'"
+        v-if="editorMode === EDITOR_MODE.CREATE"
         :closable="false"
         class="mb-4!"
         type="info"
         show-icon
       >
         {{
-          editorForm.editTarget === 'rcOption'
+          editorForm.editTarget === EDIT_TARGET.RC_OPTION
             ? '正在新增 RC 选项'
             : creatingAtStart
               ? '将追加到开头'
@@ -45,7 +45,7 @@
 
       <!-- RC 选项编辑 -->
       <RcOptionForm
-        v-if="editorForm.editTarget === 'rcOption'"
+        v-if="editorForm.editTarget === EDIT_TARGET.RC_OPTION"
         v-model:pair="editorForm.rcPair"
         :deleting="rcDeleting"
         :role-options="roleOptions"
@@ -80,7 +80,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import { SOURCE_TYPE, type SourceTypeValue } from '@/constants'
+import { EDIT_TARGET, EDITOR_MODE, SOURCE_TYPE, type SourceTypeValue } from '@/constants'
 import type { DialogueLineVO } from '@/types/dialogueLine'
 import type { DialogueVersionVO } from '@/types/dialogueVersion'
 import { useEditorActions } from '../composables/useEditorActions'
