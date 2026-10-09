@@ -217,10 +217,13 @@ public class DialogueTxtServiceImpl implements DialogueTxtService {
         for (int b = 0; b < blocks.size(); b++) {
             List<String> block = blocks.get(b);
 
-            /* 第一个块永远是普通对话；后续块在 allowOptions 时才是选项 */
-            boolean isOption = allowOptions && b > 0;
-            /* 选项编号从 1 开始 */
-            int optionNumber = b;
+            /**
+             * 是否是选项块：
+             * - 必须允许解析选项（RC 版本）
+             * - 块内第一行必须匹配 "N." 编号行
+             */
+            Integer optionNumber = detectOptionNumber(block);
+            boolean isOption = allowOptions && optionNumber != null;
 
             sort = parseBlock(block, isOption, optionNumber, sort,
                     lines, speakers, unmatchedSpeakers, unmatchedStickers, errors);
@@ -233,6 +236,34 @@ public class DialogueTxtServiceImpl implements DialogueTxtService {
                 .lines(lines)
                 .errors(errors)
                 .build();
+    }
+
+    /**
+     * 检测块是否为选项块
+     *
+     * 规则：块内第一个非空行必须是 "N." 形式的编号行。
+     * 如果是，解析出编号 N 并返回；否则返回 null。
+     *
+     * @param block 块内行
+     * @return 选项编号，非选项块返回 null
+     */
+    private Integer detectOptionNumber(List<String> block) {
+        if (block == null || block.isEmpty()) {
+            return null;
+        }
+        /** 第一行必须是编号行 */
+        String first = block.get(0);
+        if (!OPTION_NUMBER_PATTERN.matcher(first).matches()) {
+            return null;
+        }
+        /** 取出 "N." 里的 N */
+        try {
+            String numStr = first.substring(0, first.length() - 1).trim();
+            int n = Integer.parseInt(numStr);
+            return n > 0 ? n : null;
+        } catch (NumberFormatException e) {
+            return null;
+        }
     }
 
     /**
@@ -251,7 +282,7 @@ public class DialogueTxtServiceImpl implements DialogueTxtService {
      */
     private int parseBlock(List<String> block,
                            boolean isOption,
-                           int optionNumber,
+                           Integer optionNumber,
                            int startSort,
                            List<DialogueLineVO> lines,
                            Set<String> speakers,
