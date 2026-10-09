@@ -158,16 +158,25 @@
             </el-form>
 
             <div class="flex justify-between">
-              <el-button @click="onCancelCreate">取消</el-button>
+              <div class="flex items-center gap-1">
+                <el-button @click="onCancelRcOption">取消</el-button>
+                <el-button
+                  v-if="hasRcOptionSaved"
+                  :loading="deleting"
+                  type="danger"
+                  plain
+                  @click="onDeleteRcOptionPair"
+                >
+                  删除选项
+                </el-button>
+              </div>
               <el-button :loading="saving" type="primary" @click="onSaveRcOptionPair">
                 保存选项
               </el-button>
             </div>
           </template>
 
-          <!-- =============================================
-               模式 B：普通行编辑
-               ============================================= -->
+          <!-- 模式 B：普通行编辑 -->
           <template v-else>
             <el-form label-width="70px" size="default">
               <el-form-item label="说话人">
@@ -306,6 +315,8 @@ const emit = defineEmits<{
   'select-line': [line: DialogueLineVO]
   'create-version': [option: CreateVersionEmit]
   'delete-line': [payload: { deletedId: number; prevId: number | null; nextId: number | null }]
+  /** 清空当前选中行 */
+  'clear-line': []
 }>()
 
 const editingModeLocal = useVModel(props, 'editingMode', emit, {
@@ -321,6 +332,11 @@ const allLinesRef = computed(() => props.allLines)
 const currentVersionRef = computed(() => props.currentVersion)
 
 const userStore = useUserStore()
+
+/** 选项是否已经保存过（至少一侧有 id），用于控制"删除选项"按钮是否可用 */
+const hasRcOptionSaved = computed(
+  () => editorForm.rcPair.question.id != null || editorForm.rcPair.answer.id != null,
+)
 
 /* ============================================================
  * 空版本分支
@@ -407,6 +423,7 @@ const {
   onCancelCreate,
   onSave,
   onDelete,
+  onDeleteRcOptionPair,
   goPrev,
   goNext,
 } = useEditorActions({
@@ -423,6 +440,11 @@ const {
   onSaveDone: () => emit('save-line'),
   onAddDone: (payload) => emit('add-line', payload),
   onDeleteDone: (payload) => emit('delete-line', payload),
+  /** RC 选项删除完成后：清空选中 + 刷新 */
+  onRcOptionDeleteDone: () => {
+    emit('clear-line')
+    emit('save-line')
+  },
   enterCreateMode,
   exitCreateMode,
 })
@@ -485,11 +507,25 @@ async function onSaveRcOptionPair() {
     dirty.value = false
     /** 退出 create 模式；keepForm 防止覆盖刚才的清空动作 */
     exitCreateMode({ keepForm: false })
+    emit('clear-line')
     emit('save-line')
   } catch (err) {
     console.error('保存选项失败', err)
   } finally {
     saving.value = false
+  }
+}
+
+/**
+ * RC 选项编辑区的"取消"：
+ * - create 模式：取消新增
+ * - edit 模式：取消选中（清空 editingLineId）
+ */
+function onCancelRcOption() {
+  if (editorMode.value === 'create') {
+    onCancelCreate()
+  } else {
+    emit('clear-line')
   }
 }
 

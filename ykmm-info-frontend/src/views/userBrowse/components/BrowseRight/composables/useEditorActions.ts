@@ -3,6 +3,7 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import {
   batchSaveDialogueLinesAPI,
   deleteDialogueLineAPI,
+  deleteDialogueLinesBatchAPI,
   updateDialogueLineAPI,
 } from '@/api/dialogueLine'
 import type { DialogueLineVO } from '@/types/dialogueLine'
@@ -30,6 +31,8 @@ interface Options {
     prevId: number | null
     nextId: number | null
   }) => void
+  /** RC 选项删除成功后：父级负责清空选中 + 刷新 */
+  onRcOptionDeleteDone?: () => void
 }
 
 export function useEditorActions(opts: Options) {
@@ -223,6 +226,55 @@ export function useEditorActions(opts: Options) {
     }
   }
 
+  /**
+   * 删除 RC 选项对（问句 + 回答）
+   *
+   * 规则：
+   * - 至少有一行带 id 才能删
+   * - 收集双方 id 一次批量删除
+   * - 删除后 emit clear-line + save-line
+   */
+  async function onDeleteRcOptionPair(): Promise<boolean> {
+    const pair = opts.editorForm.rcPair
+    const questionId = pair.question.id
+    const answerId = pair.answer.id
+
+    const lineIds = [questionId, answerId].filter((id): id is number => id != null)
+    if (lineIds.length === 0) {
+      ElMessage.warning('该选项尚未保存，无法删除')
+      return false
+    }
+
+    try {
+      await ElMessageBox.confirm(
+        '确定要删除这个选项吗？问句和回答都会被删除，删除后不可恢复。',
+        '删除确认',
+        {
+          type: 'warning',
+          confirmButtonText: '删除',
+          confirmButtonClass: 'el-button--danger',
+          cancelButtonText: '取消',
+        },
+      )
+    } catch {
+      return false
+    }
+
+    deleting.value = true
+    try {
+      await deleteDialogueLinesBatchAPI(lineIds)
+      ElMessage.success('删除选项成功')
+      opts.dirty.value = false
+      opts.onRcOptionDeleteDone?.()
+      return true
+    } catch (err) {
+      console.error('删除选项失败', err)
+      return false
+    } finally {
+      deleting.value = false
+    }
+  }
+
   return {
     saving,
     deleting,
@@ -233,6 +285,7 @@ export function useEditorActions(opts: Options) {
     onCancelCreate,
     onSave,
     onDelete,
+    onDeleteRcOptionPair,
     goPrev,
     goNext,
   }

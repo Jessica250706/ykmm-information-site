@@ -48,6 +48,7 @@
       :story-detail="episodeDetail"
       class="h-full shrink-0 overflow-hidden"
       @add-line="handleAddLine"
+      @clear-line="editingLineId = null"
       @create-version="handleCreateVersion"
       @delete-line="handleDeleteLine"
       @refresh="loadCurrentEpisode"
@@ -174,7 +175,7 @@ async function loadCurrentEpisode() {
     return
   }
 
-  resetEpisodeDetail()
+  // resetEpisodeDetail()
   await fetchEpisodeDetail(props.sourceType, currentEpisodeId.value)
   if (!episodeDetail.value) return
 
@@ -297,6 +298,7 @@ watch(
 )
 
 watch(currentEpisodeId, () => {
+  resetEpisodeDetail()
   void loadCurrentEpisode()
 })
 
