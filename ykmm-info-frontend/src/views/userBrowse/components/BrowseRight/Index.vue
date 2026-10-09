@@ -108,7 +108,10 @@
                 filterable
               />
             </el-form-item>
-            <el-form-item label="内心独白">
+            <el-form-item
+              v-if="sourceType === SOURCE_TYPE.STORY || sourceType === SOURCE_TYPE.RTV"
+              label="内心独白"
+            >
               <el-switch
                 v-model="editorForm.monologue"
                 :active-value="MONOLOGUE.INNER"
@@ -180,7 +183,7 @@
 import { computed, ref } from 'vue'
 import { useVModel } from '@vueuse/core'
 import { MONOLOGUE } from '@/constants'
-import { type SourceTypeValue } from '@/constants'
+import { SOURCE_TYPE, type SourceTypeValue } from '@/constants'
 import { useUserStore } from '@/stores/userStore'
 import type { DialogueLineVO } from '@/types/dialogueLine'
 import type { DialogueVersionOptionVO, DialogueVersionVO } from '@/types/dialogueVersion'

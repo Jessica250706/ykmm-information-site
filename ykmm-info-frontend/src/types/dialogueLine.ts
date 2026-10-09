@@ -56,9 +56,18 @@ export interface DialogueSegmentVO {
 }
 
 /**
+ * 确认后的句子
+ */
+export interface DialogueTxtImportDTO {
+  /**
+   * 确认后的句子列表
+   */
+  lines?: DialogueLineDTO[]
+  [property: string]: any
+}
+
+/**
  * 对话句子
- *
- * DialogueLineDTO
  */
 export interface DialogueLineDTO {
   /**

@@ -41,7 +41,7 @@ export function useTxtUpload(currentVersion: Ref<DialogueVersionVO | null>) {
           { type: 'warning' },
         )
       }
-      await importDialogueTxtAPI(versionId, parsed.lines)
+      await importDialogueTxtAPI(versionId, { lines: parsed.lines })
       ElMessage.success('导入成功')
       return true
     } catch {

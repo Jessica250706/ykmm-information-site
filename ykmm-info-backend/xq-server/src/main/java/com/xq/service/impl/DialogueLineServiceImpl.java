@@ -89,12 +89,17 @@ public class DialogueLineServiceImpl implements DialogueLineService {
         List<DialogueLine> entityList = new ArrayList<>();
         for (int i = 0; i < lines.size(); i++) {
             DialogueLineDTO dto = lines.get(i);
+            log.info("DialogueLineDTO:{}", dto.toString());
             validateLineDTO(dto, version);
 
             DialogueLine line = new DialogueLine();
+            log.info("DialogueLine:{}", line);
             BeanUtils.copyProperties(dto, line);
+            line.setSpeakerId(dto.getSpeakerId());
+            line.setSide(dto.getSide());
             line.setVersionId(versionId);
-            line.setSort(startSort + i);
+            line.setSort(dto.getSort() != null ? dto.getSort() :startSort + i);
+            line.setMonologue(dto.getMonologue() != null ? dto.getMonologue() : 0);
             entityList.add(line);
         }
 

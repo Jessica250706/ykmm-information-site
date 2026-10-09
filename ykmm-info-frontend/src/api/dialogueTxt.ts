@@ -1,4 +1,4 @@
-import type { DialogueLineDTO } from '@/types/dialogueLine'
+import type { DialogueTxtImportDTO } from '@/types/dialogueLine'
 import type { DialogueTxtParseVO } from '@/types/dialogueTxt'
 import request from '@/utils/http'
 
@@ -14,6 +14,6 @@ export const parseDialogueTxtAPI = (versionId: number, file: File) => {
 /**
  * @description: 确认导入解析结果
  */
-export const importDialogueTxtAPI = (versionId: number, data: DialogueLineDTO[]) => {
+export const importDialogueTxtAPI = (versionId: number, data: DialogueTxtImportDTO) => {
   return request.post(`/admin/dialogue-txt/import/${versionId}`, data)
 }
