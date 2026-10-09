@@ -66,4 +66,12 @@ public interface RcOptionMapper {
      * @return 影响行数
      */
     int deleteByLineIds(@Param("lineIds") List<Long> lineIds);
+
+    /**
+     * 删除所有引用某一行的 RC 选项
+     *
+     * @param lineId 句子ID
+     * @return 影响行数
+     */
+    int deleteByLineId(@Param("lineId") Long lineId);
 }

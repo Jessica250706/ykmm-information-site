@@ -106,4 +106,12 @@ public interface DialogueLineMapper {
      * 按版本ID批量查询行
      */
     List<DialogueLine> listByVersionIds(@Param("versionIds") Collection<Long> versionIds);
+
+    /**
+     * 根据ID列表批量删除
+     *
+     * @param ids 句子ID列表
+     * @return 影响行数
+     */
+    int deleteByIds(@Param("ids") List<Long> ids);
 }

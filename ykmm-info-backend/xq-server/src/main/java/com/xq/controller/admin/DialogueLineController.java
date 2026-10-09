@@ -74,4 +74,30 @@ public class DialogueLineController {
         dialogueLineService.sort(versionId, dto.getLineIds());
         return Result.success();
     }
+
+    /**
+     * 批量更新对话句子
+     *
+     * @param versionId 版本ID
+     * @param lines     句子列表（每行带 id）
+     * @return 统一返回
+     */
+    @PutMapping("/batch/{versionId}")
+    public Result<Void> updateBatch(@PathVariable Long versionId,
+                                    @RequestBody List<DialogueLineDTO> lines) {
+        dialogueLineService.updateBatch(versionId, lines);
+        return Result.success();
+    }
+
+    /**
+     * 批量删除对话句子
+     *
+     * @param lineIds 句子ID列表
+     * @return 统一返回
+     */
+    @DeleteMapping("/batch")
+    public Result<Void> deleteBatch(@RequestBody List<Long> lineIds) {
+        dialogueLineService.deleteBatch(lineIds);
+        return Result.success();
+    }
 }

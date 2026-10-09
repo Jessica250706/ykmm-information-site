@@ -87,85 +87,163 @@
             show-icon
           >
             {{
-              creatingAtStart
-                ? '将追加到开头'
-                : creatingAfterId != null
-                  ? '将在当前句之后插入新对话'
-                  : '将追加到末尾'
+              editorForm.editTarget === 'rcOption'
+                ? '正在新增 RC 选项'
+                : creatingAtStart
+                  ? '将追加到开头'
+                  : creatingAfterId != null
+                    ? '将在当前句之后插入新对话'
+                    : '将追加到末尾'
             }}
           </el-alert>
 
-          <el-form label-width="70px" size="default">
-            <el-form-item label="说话人">
-              <el-cascader
-                v-model="editorForm.speakerId"
-                :options="roleCascaderOptions"
-                :props="cascaderProps"
-                :show-all-levels="false"
-                class="w-full"
-                placeholder="请选择角色"
-                clearable
-                filterable
-              />
-            </el-form-item>
-            <el-form-item
-              v-if="sourceType === SOURCE_TYPE.STORY || sourceType === SOURCE_TYPE.RTV"
-              label="内心独白"
-            >
-              <el-switch
-                v-model="editorForm.monologue"
-                :active-value="MONOLOGUE.INNER"
-                :inactive-value="MONOLOGUE.SPOKEN"
-                active-text="内心独白"
-                inactive-text="说出来的话"
-                inline-prompt
-              />
-            </el-form-item>
-            <el-form-item label="内容">
-              <el-input
-                v-model="editorForm.content"
-                :rows="4"
-                placeholder="请输入对话内容，可含表情包标签，如 [国王布丁表情包]"
-                type="textarea"
-              />
-            </el-form-item>
-          </el-form>
+          <!-- =============================================
+               模式 A：RC 选项编辑
+               ============================================= -->
+          <template v-if="editorForm.editTarget === 'rcOption'">
+            <el-form label-width="70px" size="default">
+              <el-form-item label="选项编号">
+                <el-input-number
+                  v-model="editorForm.rcPair.optionNumber"
+                  :controls="false"
+                  :min="1"
+                  placeholder="如 1、2、3"
+                  style="width: 100%"
+                />
+              </el-form-item>
 
-          <div class="flex justify-between">
-            <div>
-              <template v-if="editorMode === 'edit'">
-                <el-button @click="onAdd">+ 新增</el-button>
-                <el-button
-                  v-if="editingLine"
-                  :loading="deleting"
-                  type="danger"
-                  plain
-                  @click="onDelete"
-                >
-                  删除
-                </el-button>
-              </template>
-              <template v-else>
-                <el-button @click="onCancelCreate">取消新增</el-button>
-                <el-button plain @click="onAddAtStart">↑ 追加到开头</el-button>
-              </template>
+              <div class="mb-2 text-xs font-medium text-slate-500">问句</div>
+              <el-form-item label="说话人">
+                <el-cascader
+                  v-model="editorForm.rcPair.question.speakerId"
+                  :options="roleCascaderOptions"
+                  :props="cascaderProps"
+                  :show-all-levels="false"
+                  class="w-full"
+                  placeholder="请选择角色"
+                  clearable
+                  filterable
+                />
+              </el-form-item>
+              <el-form-item label="内容">
+                <el-input
+                  v-model="editorForm.rcPair.question.content"
+                  :rows="3"
+                  placeholder="请输入问句内容"
+                  type="textarea"
+                />
+              </el-form-item>
+
+              <div class="mb-2 text-xs font-medium text-slate-500">回答</div>
+              <el-form-item label="说话人">
+                <el-cascader
+                  v-model="editorForm.rcPair.answer.speakerId"
+                  :options="roleCascaderOptions"
+                  :props="cascaderProps"
+                  :show-all-levels="false"
+                  class="w-full"
+                  placeholder="请选择角色"
+                  clearable
+                  filterable
+                />
+              </el-form-item>
+              <el-form-item label="内容">
+                <el-input
+                  v-model="editorForm.rcPair.answer.content"
+                  :rows="3"
+                  placeholder="请输入回答内容"
+                  type="textarea"
+                />
+              </el-form-item>
+            </el-form>
+
+            <div class="flex justify-between">
+              <el-button @click="onCancelCreate">取消</el-button>
+              <el-button :loading="saving" type="primary" @click="onSaveRcOptionPair">
+                保存选项
+              </el-button>
             </div>
-            <el-button
-              :disabled="!editorForm.id && editorMode === 'edit'"
-              :loading="saving"
-              type="primary"
-              @click="onSave"
-            >
-              {{ editorMode === 'create' ? '创建' : '保存' }}
-            </el-button>
-          </div>
+          </template>
 
-          <div v-if="editorMode === 'edit' && !editingLine" class="mt-2 text-xs text-slate-400">
-            点击左侧某一句对话可加载到编辑器；未选中时新增将追加到末尾。
-          </div>
-          <div v-else-if="editorMode === 'create'" class="mt-2 text-xs text-slate-400">
-            填写完成后点击“创建”，将作为新对话插入。
-          </div>
+          <!-- =============================================
+               模式 B：普通行编辑
+               ============================================= -->
+          <template v-else>
+            <el-form label-width="70px" size="default">
+              <el-form-item label="说话人">
+                <el-cascader
+                  v-model="editorForm.speakerId"
+                  :options="roleCascaderOptions"
+                  :props="cascaderProps"
+                  :show-all-levels="false"
+                  class="w-full"
+                  placeholder="请选择角色"
+                  clearable
+                  filterable
+                />
+              </el-form-item>
+              <el-form-item
+                v-if="sourceType === SOURCE_TYPE.STORY || sourceType === SOURCE_TYPE.RTV"
+                label="内心独白"
+              >
+                <el-switch
+                  v-model="editorForm.monologue"
+                  :active-value="MONOLOGUE.INNER"
+                  :inactive-value="MONOLOGUE.SPOKEN"
+                  active-text="内心独白"
+                  inactive-text="说出来的话"
+                  inline-prompt
+                />
+              </el-form-item>
+              <el-form-item label="内容">
+                <el-input
+                  v-model="editorForm.content"
+                  :rows="4"
+                  placeholder="请输入对话内容，可含表情包标签，如 [国王布丁表情包]"
+                  type="textarea"
+                />
+              </el-form-item>
+            </el-form>
+
+            <div class="flex justify-between">
+              <div class="flex items-center gap-1">
+                <template v-if="editorMode === 'edit'">
+                  <el-button @click="onAdd">+ 新增</el-button>
+                  <el-button v-if="sourceType === SOURCE_TYPE.RC" @click="onAddRcOption">
+                    + 新增选项
+                  </el-button>
+                  <el-button
+                    v-if="editingLine"
+                    :loading="deleting"
+                    type="danger"
+                    plain
+                    @click="onDelete"
+                  >
+                    删除
+                  </el-button>
+                </template>
+                <template v-else>
+                  <el-button @click="onCancelCreate">取消新增</el-button>
+                  <el-button plain @click="onAddAtStart">↑ 追加到开头</el-button>
+                </template>
+              </div>
+              <el-button
+                :disabled="!editorForm.id && editorMode === 'edit'"
+                :loading="saving"
+                type="primary"
+                @click="onSave"
+              >
+                {{ editorMode === 'create' ? '创建' : '保存' }}
+              </el-button>
+            </div>
+
+            <div v-if="editorMode === 'edit' && !editingLine" class="mt-2 text-xs text-slate-400">
+              点击左侧某一句对话可加载到编辑器；未选中时新增将追加到末尾。
+            </div>
+            <div v-else-if="editorMode === 'create'" class="mt-2 text-xs text-slate-400">
+              填写完成后点击"创建"，将作为新对话插入。
+            </div>
+          </template>
         </div>
       </template>
     </div>
@@ -182,10 +260,11 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import { useVModel } from '@vueuse/core'
-import { MONOLOGUE } from '@/constants'
-import { SOURCE_TYPE, type SourceTypeValue } from '@/constants'
+import { ElMessage } from 'element-plus'
+import { batchSaveDialogueLinesAPI, updateDialogueLinesBatchAPI } from '@/api/dialogueLine'
+import { DIALOGUE_ROLE, MONOLOGUE, SOURCE_TYPE, type SourceTypeValue } from '@/constants'
 import { useUserStore } from '@/stores/userStore'
-import type { DialogueLineVO } from '@/types/dialogueLine'
+import type { DialogueLineDTO, DialogueLineVO } from '@/types/dialogueLine'
 import type { DialogueVersionOptionVO, DialogueVersionVO } from '@/types/dialogueVersion'
 import type { StoryDetailVO } from '@/types/story'
 import { useEditorActions } from './composables/useEditorActions'
@@ -267,7 +346,6 @@ function onCreateVersion() {
   }
 }
 
-/** Dialog 确认后，把 payload 抛给父级 */
 function handleCreateVersionConfirm(payload: CreateVersionPayload) {
   emit('create-version', {
     option: payload.option,
@@ -281,27 +359,19 @@ function handleCreateVersionConfirm(payload: CreateVersionPayload) {
  * ============================================================ */
 const { roleOptions } = useRoleOptions(editingModeLocal)
 
-/** cascader 配置：只返回叶子 value，父节点不可选 */
 const cascaderProps = {
   value: 'value',
   label: 'label',
   children: 'children',
-  /** 只返回选中叶子的 value，而不是整条路径数组 */
   emitPath: false,
-  /** 父节点（person）不可选，只能选 role */
   checkStrictly: false,
 } as const
 
-/**
- * RoleGroupVO[] → cascader 树
- * - 第一级：person
- * - 第二级：该 person 下的 role
- */
 const roleCascaderOptions = computed(() =>
   roleOptions.value.map((g) => ({
     value: `person:${g.personId ?? 'other'}`,
     label: g.personName ?? '未分组',
-    disabled: false, // 分组节点本身不可选
+    disabled: false,
     children: (g.roles ?? []).map((r) => ({
       value: r.id!,
       label: r.name ?? '',
@@ -319,8 +389,9 @@ const {
   dirty,
   editorForm,
   enterCreateMode,
+  enterRcOptionCreate,
   exitCreateMode,
-} = useEditorForm(editingLineRef)
+} = useEditorForm(editingLineRef, allLinesRef)
 
 /* ============================================================
  * 编辑器动作
@@ -355,6 +426,72 @@ const {
   enterCreateMode,
   exitCreateMode,
 })
+
+/* ============================================================
+ * RC 选项：新增 / 保存
+ * ============================================================ */
+
+/** 进入"新增 RC 选项"模式 */
+function onAddRcOption() {
+  enterRcOptionCreate()
+}
+
+/** 保存 RC 选项对（问句 + 回答 一起提交） */
+async function onSaveRcOptionPair() {
+  const versionId = currentVersionRef.value?.id
+  if (!versionId) {
+    ElMessage.error('版本不存在')
+    return
+  }
+
+  const pair = editorForm.rcPair
+  if (pair.question.speakerId == null || !pair.question.content?.trim()) {
+    ElMessage.warning('请填写问句的说话人和内容')
+    return
+  }
+  if (pair.answer.speakerId == null || !pair.answer.content?.trim()) {
+    ElMessage.warning('请填写回答的说话人和内容')
+    return
+  }
+
+  const lines: DialogueLineDTO[] = [
+    {
+      id: pair.question.id ?? undefined,
+      speakerId: pair.question.speakerId,
+      content: pair.question.content,
+      dialogueRole: DIALOGUE_ROLE.QUESTION,
+      optionNumber: pair.optionNumber,
+    },
+    {
+      id: pair.answer.id ?? undefined,
+      speakerId: pair.answer.speakerId,
+      content: pair.answer.content,
+      dialogueRole: DIALOGUE_ROLE.ANSWER,
+      optionNumber: pair.optionNumber,
+    },
+  ]
+
+  const hasId = pair.question.id != null || pair.answer.id != null
+
+  saving.value = true
+  try {
+    if (hasId) {
+      await updateDialogueLinesBatchAPI(versionId, lines)
+      ElMessage.success('保存选项成功')
+    } else {
+      await batchSaveDialogueLinesAPI(versionId, lines)
+      ElMessage.success('新增选项成功')
+    }
+    dirty.value = false
+    /** 退出 create 模式；keepForm 防止覆盖刚才的清空动作 */
+    exitCreateMode({ keepForm: false })
+    emit('save-line')
+  } catch (err) {
+    console.error('保存选项失败', err)
+  } finally {
+    saving.value = false
+  }
+}
 
 /* ============================================================
  * 图片上传

@@ -47,4 +47,19 @@ public interface DialogueLineService {
      * @param versionId 版本ID
      */
     void clearByVersionId(Long versionId);
+
+    /**
+     * 批量更新对话句子
+     *
+     * @param versionId 版本ID
+     * @param lines     句子列表（每行带 id）
+     */
+    void updateBatch(Long versionId, List<DialogueLineDTO> lines);
+
+    /**
+     * 批量删除对话句子
+     *
+     * @param lineIds 句子ID列表
+     */
+    void deleteBatch(List<Long> lineIds);
 }

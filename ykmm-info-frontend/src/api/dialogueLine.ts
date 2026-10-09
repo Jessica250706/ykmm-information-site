@@ -28,3 +28,17 @@ export const deleteDialogueLineAPI = (id: number) => {
 export const sortDialogueLinesAPI = (versionId: number, data: DialogueLineSortDTO) => {
   return request.put(`/admin/dialogue-lines/sort/${versionId}`, data)
 }
+
+/**
+ * 批量更新对话句子
+ */
+export const updateDialogueLinesBatchAPI = (versionId: number, lines: DialogueLineDTO[]) => {
+  return request.put(`/admin/dialogue-line/batch/${versionId}`, lines)
+}
+
+/**
+ * 批量删除对话句子
+ */
+export const deleteDialogueLinesBatchAPI = (lineIds: number[]) => {
+  return request.delete('/admin/dialogue-line/batch', { data: lineIds })
+}

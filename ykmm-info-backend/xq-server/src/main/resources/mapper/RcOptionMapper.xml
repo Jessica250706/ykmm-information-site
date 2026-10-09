@@ -93,4 +93,11 @@
     </foreach>
   </delete>
 
+  <delete id="deleteByLineId">
+    DELETE
+    FROM rc_option
+    WHERE question_line_id = #{lineId}
+       OR answer_line_id = #{lineId}
+  </delete>
+
 </mapper>
