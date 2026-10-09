@@ -61,6 +61,7 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
 import { ElMessage } from 'element-plus'
+import { useRoute, useRouter } from 'vue-router'
 import { getCardDetailAPI } from '@/api/card'
 import { createDialogueVersionAPI } from '@/api/dialogueVersion'
 import { type SourceTypeValue } from '@/constants'
@@ -96,6 +97,9 @@ const emit = defineEmits<{
   back: []
 }>()
 
+const route = useRoute()
+const router = useRouter()
+
 /* -------- 卡面信息 -------- */
 const color = ref('blue')
 const cardInfo = ref<CardVO>({})
@@ -114,7 +118,36 @@ async function loadCardInfo() {
 }
 
 /* -------- 当前话数 -------- */
-const currentEpisodeId = ref<number | null>(null)
+/**
+ * 从 URL 读取初始话数。
+ * 若 query.sourceId 非法或不存在，返回 null。
+ */
+function resolveInitialEpisodeId(): number | null {
+  const raw = route.query.sourceId
+  if (typeof raw !== 'string' || !raw) return null
+  const n = Number(raw)
+  return Number.isFinite(n) && n > 0 ? n : null
+}
+
+const currentEpisodeId = ref<number | null>(resolveInitialEpisodeId())
+
+/**
+ * 把当前话数写回 URL query。
+ * 使用 replace 避免污染浏览器历史；保留其他 query 参数。
+ */
+function syncEpisodeToUrl(id: number | null) {
+  const cur = route.query.sourceId
+  const target = id == null ? undefined : String(id)
+  if ((cur ?? undefined) === target) return
+
+  const query = { ...route.query }
+  if (target == null) {
+    delete query.sourceId
+  } else {
+    query.sourceId = target
+  }
+  void router.replace({ query })
+}
 
 /* -------- 话数对话详情 -------- */
 const {
@@ -185,9 +218,11 @@ async function loadCurrentEpisode() {
   await applyPendingInsert()
 }
 
+/** 切换话数：更新状态 + 写回 URL */
 function handleSelectEpisode(id: number) {
   if (currentEpisodeId.value === id) return
   currentEpisodeId.value = id
+  syncEpisodeToUrl(id)
 }
 
 function handleBack() {
@@ -286,28 +321,49 @@ function handleSaveLine() {
 }
 
 /* -------- 生命周期 -------- */
+
+/**
+ * episodes 列表变化时：
+ * - 数据未加载完（空数组）：保留 currentEpisodeId（可能来自 URL）
+ * - 当前选中不在列表里：回退到第一话，并同步 URL
+ * - 否则保持
+ */
 watch(
   () => props.episodes,
   (list) => {
-    // 默认选中第一话
-    if (list.length && currentEpisodeId.value == null) {
-      currentEpisodeId.value = list[0]!.id ?? null
-    }
+    if (!list.length) return
+
+    const exists =
+      currentEpisodeId.value != null && list.some((e) => e.id === currentEpisodeId.value)
+
+    if (exists) return
+
+    const firstId = list[0]?.id ?? null
+    currentEpisodeId.value = firstId
+    if (firstId != null) syncEpisodeToUrl(firstId)
+  },
+  { immediate: true, deep: false },
+)
+
+/**
+ * 话数变化：清空旧数据 + 加载新话数。
+ * immediate: true 保证 URL 初始值触发首次加载。
+ */
+watch(
+  currentEpisodeId,
+  () => {
+    resetEpisodeDetail()
+    void loadCurrentEpisode()
   },
   { immediate: true },
 )
 
-watch(currentEpisodeId, () => {
-  resetEpisodeDetail()
-  void loadCurrentEpisode()
-})
-
 watch(
   () => props.sourceType,
   () => {
-    // 来源类型变化时，先清空，等待 episodes watch 重新选中
-    resetEpisodeDetail()
     currentEpisodeId.value = null
+    syncEpisodeToUrl(null)
+    // episodes 会由父组件重新加载，watch(episodes) 会自动选第一话
   },
 )
 

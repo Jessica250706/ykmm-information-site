@@ -159,11 +159,11 @@ async function handleSubmitEpisode(payload: {
 
 /* -------- 查看 / 删除 -------- */
 function chooseMode(mode: SourceTypeLabelValue) {
-  if (mode === SOURCE_TYPE_LABEL[SOURCE_TYPE.RC]) {
+  if (mode === SOURCE_TYPE_SMALL_LABEL[SOURCE_TYPE.RC]) {
     return UserRouteName.CARD_RC_BROWSE
-  } else if (mode === SOURCE_TYPE_LABEL[SOURCE_TYPE.RTV]) {
+  } else if (mode === SOURCE_TYPE_SMALL_LABEL[SOURCE_TYPE.RTV]) {
     return UserRouteName.CARD_RTV_BROWSE
-  } else if (mode === SOURCE_TYPE_LABEL[SOURCE_TYPE.RABITTER]) {
+  } else if (mode === SOURCE_TYPE_SMALL_LABEL[SOURCE_TYPE.RABITTER]) {
     return UserRouteName.CARD_RABITTER_BROWSE
   }
 }
@@ -171,7 +171,7 @@ function chooseMode(mode: SourceTypeLabelValue) {
 function handleView(mode: SourceTypeLabelValue, id: number) {
   router.push({
     name: chooseMode(mode),
-    query: { cardId: String(cardId.value), episodeId: String(id) },
+    query: { cardId: String(cardId.value), sourceId: String(id) },
   })
 }
 

@@ -20,19 +20,19 @@ export const userRoutes: RouteRecordRaw = {
       meta: { title: '卡面详情' },
     },
     {
-      path: 'card-rc/browse',
+      path: 'card/rc/browse',
       name: UserRouteName.CARD_RC_BROWSE,
       component: () => import('@/views/userCardPage/components/CardRCBrowse.vue'),
       meta: { title: 'RC 对话浏览' },
     },
     {
-      path: 'card-rtv/browse',
+      path: 'card/rtv/browse',
       name: UserRouteName.CARD_RTV_BROWSE,
       component: () => import('@/views/userCardPage/components/CardRTVBrowse.vue'),
       meta: { title: 'RTV 对话浏览' },
     },
     {
-      path: 'card-rabitter/browse',
+      path: 'card/rabitter/browse',
       name: UserRouteName.CARD_RABITTER_BROWSE,
       component: () => import('@/views/userCardPage/components/CardRabitterBrowse.vue'),
       meta: { title: 'Rabitter 对话浏览' },
