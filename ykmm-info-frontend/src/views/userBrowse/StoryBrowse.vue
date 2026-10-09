@@ -189,7 +189,13 @@ function handleSelectLine(line: DialogueLineVO) {
   selectLine(line)
 }
 
+/**
+ * 保存成功后的回调：
+ * 1. 清空当前选中行，让编辑区回到"未选中"状态
+ * 2. 重新加载当前版本数据
+ */
 function handleSaveLine() {
+  editingLineId.value = null
   void loadCurrent()
 }
 

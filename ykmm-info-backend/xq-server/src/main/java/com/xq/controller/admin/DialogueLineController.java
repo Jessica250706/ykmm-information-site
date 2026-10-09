@@ -14,7 +14,7 @@ import java.util.List;
  * 对话句子管理
  */
 @RestController("AdminDialogueLineController")
-@RequestMapping("/admin/dialogue-lines")
+@RequestMapping("/admin/dialogue-line")
 @Slf4j
 public class DialogueLineController {
 

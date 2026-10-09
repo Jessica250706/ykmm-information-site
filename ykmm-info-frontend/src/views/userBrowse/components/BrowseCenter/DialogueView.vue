@@ -34,8 +34,18 @@
             <RcRowInner :line="block.line" />
           </div>
 
-          <!-- 选项组（问句 + 回答） -->
-          <div v-else class="rc-option-card">
+          <!-- 选项组（问句 + 回答）：整张卡片可高亮 -->
+          <div
+            v-else
+            :class="[
+              'rc-option-card',
+              {
+                'rc-option-card--selected': block.optionNumber === editingOptionNumber,
+                'rc-option-card--editable': editingMode,
+              },
+            ]"
+            @click="onOptionCardClick(block.lines[0])"
+          >
             <div class="rc-option-card__badge">选项 {{ block.optionNumber }}</div>
 
             <div
@@ -50,7 +60,7 @@
                 },
               ]"
               class="rc-row"
-              @click="onLineClick(line)"
+              @click.stop="onLineClick(line)"
             >
               <RcRowInner :line="line" />
             </div>
@@ -140,6 +150,14 @@ type RcRenderBlock =
   | { type: 'line'; key: string; line: DialogueLineVO }
   | { type: 'option'; key: string; optionNumber: number; lines: DialogueLineVO[] }
 
+/** 当前 editingLineId 对应的选项编号，用于整张卡片高亮 */
+const editingOptionNumber = computed(() => {
+  if (props.editingLineId == null) return null
+  const lines = props.currentVersion?.lines ?? []
+  const line = lines.find((l) => l.id === props.editingLineId)
+  return line?.optionNumber ?? null
+})
+
 /**
  * 把 RC 的 lines 组装成渲染块：
  * - 普通行：独立渲染
@@ -200,6 +218,16 @@ function setLineRef(id: number | undefined, el: Element | ComponentPublicInstanc
 function onLineClick(line: DialogueLineVO) {
   if (!props.editingMode) return
   emit('select-line', line)
+}
+
+/**
+ * 点击选项卡片空白处：等同于点击该选项的第一行
+ *
+ * @param firstLine 选项内第一行
+ */
+function onOptionCardClick(firstLine: DialogueLineVO | undefined) {
+  if (!props.editingMode || !firstLine) return
+  emit('select-line', firstLine)
 }
 
 /* -------- 高亮时自动滚动 -------- */
@@ -337,6 +365,27 @@ const imageUrls = computed(() =>
   border-radius: 12px;
   border: 1px dashed var(--el-color-primary-light-5);
   background: var(--el-color-primary-light-9);
+  transition:
+    border-color 0.15s,
+    box-shadow 0.15s,
+    background-color 0.15s;
+}
+
+/* 选中：整张卡片高亮 */
+.rc-option-card--selected {
+  border-style: solid;
+  border-color: var(--el-color-primary);
+  background: var(--el-color-primary-light-8);
+  box-shadow: 0 0 0 2px var(--el-color-primary-light-5);
+}
+
+/* 编辑模式下可点 */
+.rc-option-card--editable {
+  cursor: pointer;
+}
+
+.rc-option-card--editable:hover {
+  border-color: var(--el-color-primary-light-3);
 }
 
 .rc-option-card__badge {

@@ -51,7 +51,7 @@
       @create-version="handleCreateVersion"
       @delete-line="handleDeleteLine"
       @refresh="loadCurrentEpisode"
-      @save-line="loadCurrentEpisode"
+      @save-line="handleSaveLine"
       @select-line="handleSelectLine"
     />
   </div>
@@ -272,6 +272,16 @@ async function handleCreateVersion(payload: {
     console.error('创建版本失败', err)
     ElMessage.error('创建失败')
   }
+}
+
+/**
+ * 保存成功后的回调：
+ * 1. 清空当前选中行，让编辑区回到"未选中"状态
+ * 2. 重新加载当前话数对话
+ */
+function handleSaveLine() {
+  editingLineId.value = null
+  void loadCurrentEpisode()
 }
 
 /* -------- 生命周期 -------- */
