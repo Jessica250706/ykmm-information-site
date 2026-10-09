@@ -52,6 +52,9 @@ public class DialogueLineServiceImpl implements DialogueLineService {
     @Autowired
     private CardRcMapper cardRcMapper;
 
+    @Autowired
+    private RcOptionMapper rcOptionMapper;
+
     /**
      * 批量保存句子
      *
@@ -216,6 +219,38 @@ public class DialogueLineServiceImpl implements DialogueLineService {
             dialogueLineMapper.updateSort(lineId, i + 1);
         }
         log.info("调整对话句子顺序成功，versionId={}", versionId);
+    }
+
+    /**
+     * 清空指定版本下所有对话句子及其关联数据
+     * 用于 txt 导入前的覆盖操作
+     *
+     * @param versionId 版本ID
+     */
+    @Override
+    @Transactional
+    public void clearByVersionId(Long versionId) {
+        if (versionId == null) {
+            throw new RuntimeException("版本ID不能为空");
+        }
+
+        /** 1. 查出该版本下所有句子ID */
+        List<Long> lineIds = dialogueLineMapper.listIdsByVersionId(versionId);
+        if (lineIds == null || lineIds.isEmpty()) {
+            log.info("清空对话：版本 {} 下无句子，跳过", versionId);
+            return;
+        }
+
+        /** 2. 删除片段 */
+        dialogueSegmentMapper.deleteByLineIds(lineIds);
+
+        /** 3. 删除引用这些句子的 RC 选项 */
+        rcOptionMapper.deleteByLineIds(lineIds);
+
+        /** 4. 删除句子本身 */
+        dialogueLineMapper.deleteByVersionId(versionId);
+
+        log.info("清空版本对话成功，versionId={}, lineCount={}", versionId, lineIds.size());
     }
 
     // ---------------------------------------------------

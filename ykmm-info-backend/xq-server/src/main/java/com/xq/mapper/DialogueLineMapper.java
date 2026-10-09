@@ -22,6 +22,14 @@ public interface DialogueLineMapper {
     List<DialogueLine> listByVersionId(@Param("versionId") Long versionId);
 
     /**
+     * 查询版本下所有句子ID
+     *
+     * @param versionId 版本ID
+     * @return 句子ID列表
+     */
+    List<Long> listIdsByVersionId(@Param("versionId") Long versionId);
+
+    /**
      * 根据 id 查询
      *
      * @param id 主键

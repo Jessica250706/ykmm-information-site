@@ -81,4 +81,16 @@
     ORDER BY version_id, sort, id
   </select>
 
+  <delete id="deleteByLineIds">
+    DELETE FROM rc_option
+    WHERE question_line_id IN
+    <foreach collection="lineIds" item="id" open="(" separator="," close=")">
+      #{id}
+    </foreach>
+    OR answer_line_id IN
+    <foreach collection="lineIds" item="id" open="(" separator="," close=")">
+      #{id}
+    </foreach>
+  </delete>
+
 </mapper>

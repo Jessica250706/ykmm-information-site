@@ -22,6 +22,10 @@
     ORDER BY sort, id
   </select>
 
+  <select id="listIdsByVersionId" resultType="java.lang.Long">
+    SELECT id FROM dialogue_line WHERE version_id = #{versionId}
+  </select>
+
   <select id="getById" resultType="com.xq.entity.DialogueLine">
     SELECT
     <include refid="baseColumns"/>

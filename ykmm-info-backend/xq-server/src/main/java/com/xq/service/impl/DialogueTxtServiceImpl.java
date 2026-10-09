@@ -117,7 +117,13 @@ public class DialogueTxtServiceImpl implements DialogueTxtService {
         if (dto == null || dto.getLines() == null || dto.getLines().isEmpty()) {
             throw new RuntimeException("导入内容不能为空");
         }
+
+        /* ★ 先清空当前版本下所有对话，避免追加导致重复 */
+        dialogueLineService.clearByVersionId(versionId);
+
+        /* 再批量写入新对话 */
         dialogueLineService.saveBatch(versionId, dto.getLines());
+
         log.info("导入 txt 对话成功，versionId={}, count={}",
                 versionId, dto.getLines().size());
     }

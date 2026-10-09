@@ -39,4 +39,12 @@ public interface DialogueLineService {
      * @param lineIds   句子ID顺序
      */
     void sort(Long versionId, List<Long> lineIds);
+
+    /**
+     * 清空指定版本下所有对话句子及其关联数据
+     * 用于 txt 导入前的覆盖操作
+     *
+     * @param versionId 版本ID
+     */
+    void clearByVersionId(Long versionId);
 }
