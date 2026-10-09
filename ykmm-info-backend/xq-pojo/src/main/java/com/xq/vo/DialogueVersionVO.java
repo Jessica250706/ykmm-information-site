@@ -71,7 +71,7 @@ public class DialogueVersionVO implements Serializable {
     /**
      * 状态
      */
-    private Long status;
+    private Integer status;
 
     /**
      * 文字版本时的句子列表

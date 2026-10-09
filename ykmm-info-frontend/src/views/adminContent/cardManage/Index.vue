@@ -73,7 +73,7 @@
 
     <!-- 表格 -->
     <el-card class="flex-1" shadow="never">
-      <ProTable ref="tableRef" :columns="columns" :request="fetchList" row-key="id" stripe>
+      <ProTable ref="tableRef" :columns="columns" :request="fetchList" row-key="id">
         <!-- 封面图 -->
         <template #cover="{ row }">
           <el-image

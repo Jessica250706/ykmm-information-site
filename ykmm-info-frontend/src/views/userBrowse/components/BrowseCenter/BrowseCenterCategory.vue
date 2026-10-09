@@ -1,24 +1,13 @@
 <template>
   <div class="flex h-full flex-col overflow-hidden">
     <!-- 标题区：固定 -->
-    <div class="mb-4 shrink-0">
-      <div class="flex justify-between items-center">
-        <h2 class="text-lg font-semibold">{{ currentCategory.name }}</h2>
-        <el-button v-if="currentCategory.parentId !== 0" @click="emit('goBack')">← 返回</el-button>
-      </div>
-      <div class="mt-2 flex items-center gap-2 text-xs text-slate-400">
-        <el-tag
-          :style="{
-            borderColor: `var(--color-${color})`,
-            color: `var(--color-${color})`,
-          }"
-          effect="plain"
-          size="small"
-        >
-          {{ currentCategory.categoryTypeLabel ?? typeLabel }}
-        </el-tag>
-      </div>
-    </div>
+    <BrowseHeader
+      :color="color"
+      :show-back="currentCategory.parentId !== 0"
+      :tag="currentCategory.categoryTypeLabel ?? typeLabel"
+      :title="currentCategory.name"
+      @go-back="emit('goBack')"
+    />
 
     <!-- 子分类区 -->
     <section
@@ -42,7 +31,7 @@
     </section>
 
     <!-- 简介 + 剧情列表 -->
-    <section v-if="stories.length" class="shrink-0">
+    <section v-else-if="stories.length" class="shrink-0 overflow-y-auto flex-1 min-h-0">
       <div v-if="currentCategory.description">
         <h3 class="mb-2 text-sm font-medium text-slate-500">简介</h3>
         <div class="mb-2 text-sm whitespace-pre-line">{{ currentCategory.description }}</div>
@@ -64,6 +53,7 @@
         </div>
       </div>
     </section>
+
     <section v-else>
       <el-empty description="暂无故事详情" />
     </section>
@@ -73,6 +63,7 @@
 <script setup lang="ts">
 import type { StoryVO } from '@/types/story'
 import type { StoryCategoryVO } from '@/types/storyCategory'
+import BrowseHeader from './BrowseHeader.vue'
 
 defineProps<{
   currentCategory: StoryCategoryVO

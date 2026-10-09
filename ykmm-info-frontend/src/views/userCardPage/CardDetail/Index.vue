@@ -30,30 +30,32 @@
         <CardImageLegend :items="imageLegend" />
 
         <!-- RC / RTV / Rabitter 列表 -->
-        <CardEpisodeList
-          v-if="isRc"
-          :list="rcList"
-          mode="rc"
-          @delete="(ep) => handleRemove(RC_MODE, ep)"
-          @edit="(ep) => handleEdit(RC_MODE, ep)"
-          @view="(id) => handleView(RC_MODE, id)"
-        />
-        <CardEpisodeList
-          v-if="isRtv"
-          :list="rtvList"
-          mode="rtv"
-          @delete="(ep) => handleRemove(RTV_MODE, ep)"
-          @edit="(ep) => handleEdit(RTV_MODE, ep)"
-          @view="(id) => handleView(RTV_MODE, id)"
-        />
-        <CardEpisodeList
-          v-if="isRabitter"
-          :list="rabitterList"
-          mode="rabitter"
-          @delete="(ep) => handleRemove(RABITTER_MODE, ep)"
-          @edit="(ep) => handleEdit(RABITTER_MODE, ep)"
-          @view="(id) => handleView(RABITTER_MODE, id)"
-        />
+        <div class="min-h-0 flex-1">
+          <CardEpisodeList
+            v-if="isRc"
+            :list="rcList"
+            mode="rc"
+            @delete="(ep) => handleRemove(RC_MODE, ep)"
+            @edit="(ep) => handleEdit(RC_MODE, ep)"
+            @view="(id) => handleView(RC_MODE, id)"
+          />
+          <CardEpisodeList
+            v-if="isRtv"
+            :list="rtvList"
+            mode="rtv"
+            @delete="(ep) => handleRemove(RTV_MODE, ep)"
+            @edit="(ep) => handleEdit(RTV_MODE, ep)"
+            @view="(id) => handleView(RTV_MODE, id)"
+          />
+          <CardEpisodeList
+            v-if="isRabitter"
+            :list="rabitterList"
+            mode="rabitter"
+            @delete="(ep) => handleRemove(RABITTER_MODE, ep)"
+            @edit="(ep) => handleEdit(RABITTER_MODE, ep)"
+            @view="(id) => handleView(RABITTER_MODE, id)"
+          />
+        </div>
       </aside>
     </div>
 
@@ -190,7 +192,9 @@ function handleRemove(mode: SourceTypeSmallLabelValue, ep: CardRcVO | CardRtvVO)
 
 /* -------- 返回 / 跳转 -------- */
 function handleBack() {
-  router.back()
+  router.push({
+    name: UserRouteName.CARD_LIST,
+  })
 }
 
 function handleGoto() {

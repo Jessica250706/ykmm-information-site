@@ -1,7 +1,7 @@
 import { computed, ref, type Ref } from 'vue'
 import { VERSION_FORMAT } from '@/constants'
+import type { DialogueSourceDetail } from '@/types/dialogueSource'
 import type { DialogueVersionOptionVO, DialogueVersionVO } from '@/types/dialogueVersion'
-import type { StoryDetailVO } from '@/types/story'
 
 export interface VersionSelectItem {
   /** el-option 的 value */
@@ -39,11 +39,11 @@ function comboKey(v: { language?: number; format?: number; scope?: number }): st
 /**
  * 版本选中态 + 下拉项
  *
- * 关键点：versionSelectItems 会合并 versionOptions 和 storyDetail.versions，
- * 保证「新创建但 options 尚未刷新」的版本也能出现在下拉里。
+ * 泛型 T 约束为 DialogueSourceDetail，
+ * StoryDetailVO（剧情）和 CardEpisodeVO（卡面话数）都适用。
  */
-export function useVersionSelection(
-  storyDetail: Ref<StoryDetailVO | null>,
+export function useVersionSelection<T extends DialogueSourceDetail>(
+  sourceDetail: Ref<T | null>,
   versionOptions: Ref<DialogueVersionOptionVO[] | null>,
 ) {
   /** 当前选中的 option key（UI 层 source of truth） */
@@ -52,7 +52,7 @@ export function useVersionSelection(
   /** id -> version 索引 */
   const versionMapById = computed(() => {
     const map = new Map<number, DialogueVersionVO>()
-    for (const v of storyDetail.value?.versions ?? []) {
+    for (const v of sourceDetail.value?.versions ?? []) {
       if (v.id != null) map.set(v.id, v)
     }
     return map
@@ -61,29 +61,25 @@ export function useVersionSelection(
   /** 下拉项，合并 options + versions */
   const versionSelectItems = computed<VersionSelectItem[]>(() => {
     const options = versionOptions.value ?? []
-    const versions = storyDetail.value?.versions ?? []
+    const versions = sourceDetail.value?.versions ?? []
 
-    // 组合 key -> version
     const versionByCombo = new Map<string, DialogueVersionVO>()
     for (const v of versions) {
       versionByCombo.set(comboKey(v), v)
     }
 
-    // 记录被 options 消费掉的 versionId，用于第二遍去重
     const consumedIds = new Set<number>()
     const items: VersionSelectItem[] = []
 
-    /* -------- 第一遍：按 options 顺序生成 -------- */
+    /* 第一遍：按 options 顺序生成 */
     options.forEach((opt, index) => {
       let versionId = opt.versionId ?? null
       let matchedVersion: DialogueVersionVO | undefined
 
       if (versionId != null) {
-        // option 自带 id，直接查
         matchedVersion = versionMapById.value.get(versionId)
         consumedIds.add(versionId)
       } else {
-        // option 无 id，用组合匹配
         matchedVersion = versionByCombo.get(comboKey(opt))
         if (matchedVersion?.id != null) {
           versionId = matchedVersion.id
@@ -106,7 +102,7 @@ export function useVersionSelection(
       })
     })
 
-    /* -------- 第二遍：补上 options 没有的版本 -------- */
+    /* 第二遍：补上 options 没有的版本 */
     for (const v of versions) {
       if (v.id == null || consumedIds.has(v.id)) continue
 
@@ -143,8 +139,6 @@ export function useVersionSelection(
   const currentOptionVersion = computed<DialogueVersionOptionVO | null>(
     () => versionItemMap.value.get(selectedVersionKey.value)?.option ?? null,
   )
-
-  /* -------- setter -------- */
 
   function setSelectedVersionKey(key: string) {
     if (selectedVersionKey.value === key) return

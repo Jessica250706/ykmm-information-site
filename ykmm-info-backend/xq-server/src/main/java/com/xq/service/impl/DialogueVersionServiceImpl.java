@@ -2,6 +2,7 @@ package com.xq.service.impl;
 
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
+import com.xq.constant.UserRoleConstant;
 import com.xq.context.BaseContext;
 import com.xq.dto.DialogueVersionDTO;
 import com.xq.dto.DialogueVersionPageQueryDTO;
@@ -24,6 +25,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -66,7 +68,7 @@ public class DialogueVersionServiceImpl implements DialogueVersionService {
         List<DialogueVersionVO> voList = page.getResult().stream()
                 .map(this::toBasicVO)
                 .collect(Collectors.toList());
-        return new PageResult(page.getTotal(), voList);
+        return new PageResult<>(page.getTotal(), voList);
     }
 
     /**
@@ -160,8 +162,30 @@ public class DialogueVersionServiceImpl implements DialogueVersionService {
 
         DialogueVersion version = new DialogueVersion();
         BeanUtils.copyProperties(dto, version);
-        version.setCreatorId(BaseContext.getCurrentId());
-        version.setCreatorRole(BaseContext.getCurrentRole());
+
+        /** 当前操作人 */
+        Long currentUserId = BaseContext.getCurrentId();
+        Integer creatorRole = BaseContext.getCurrentRole(); // 1-管理员 2-普通用户
+        version.setCreatorId(currentUserId);
+        version.setCreatorRole(creatorRole);
+
+        /**
+         * 关键：根据角色决定初始审核状态
+         * - 管理员：直接已发布
+         * - 普通用户：待审核
+         */
+        if (UserRoleConstant.ADMIN == creatorRole) {
+            version.setStatus(StatusEnum.PUBLISHED.getValue());
+            version.setReviewerId(currentUserId);
+            version.setReviewTime(LocalDateTime.now());
+            version.setReviewRemark("管理员直接发布");
+        } else {
+            version.setStatus(StatusEnum.PENDING.getValue());
+            version.setReviewerId(null);
+            version.setReviewTime(null);
+            version.setReviewRemark(null);
+        }
+
         dialogueVersionMapper.insert(version);
 
         Long versionId = version.getId();

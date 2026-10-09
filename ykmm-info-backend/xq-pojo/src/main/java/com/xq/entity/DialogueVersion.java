@@ -52,7 +52,7 @@ public class DialogueVersion implements Serializable {
     /**
      * 状态
      */
-    private Long status;
+    private Integer status;
 
     /**
      * 审批ID

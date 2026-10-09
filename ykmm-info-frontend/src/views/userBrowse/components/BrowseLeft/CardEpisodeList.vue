@@ -1,7 +1,7 @@
 <template>
   <el-card
     body-class="flex flex-col h-full overflow-hidden p-0"
-    class="flex w-56 shrink-0 flex-col overflow-hidden border-r bg-white"
+    class="flex w-64 shrink-0 flex-col overflow-hidden border-r bg-white"
   >
     <!-- 标题 -->
     <div class="flex shrink-0 items-center justify-between border-b py-3">

@@ -1,21 +1,15 @@
 import { ref } from 'vue'
 import { getCardEpisodeDialogueAPI } from '@/api/card'
 import { listDialogueVersionOptionsAPI } from '@/api/dialogueVersion'
+import type { CardEpisodeVO } from '@/types/card'
 import type { DialogueVersionOptionVO } from '@/types/dialogueVersion'
-import type { StoryDetailVO } from '@/types/story'
 
 /**
  * 卡面话数对话详情 composable
- *
- * 复用 StoryDetailVO 形状，使 BrowseCenter / BrowseRight /
- * useDialogueEdit / useVersionSelection 无需区分来源。
  */
 export function useCardEpisodeDetail() {
-  /**
-   * 当前话数详情
-   * 形状对齐 StoryDetailVO：至少包含 id / title / versions
-   */
-  const episodeDetail = ref<StoryDetailVO | null>(null)
+  /** 当前话数详情 */
+  const episodeDetail = ref<CardEpisodeVO | null>(null)
 
   /** 拉取中 */
   const loading = ref(false)
@@ -41,7 +35,7 @@ export function useCardEpisodeDetail() {
     loading.value = true
     try {
       const res = await getCardEpisodeDialogueAPI({ sourceType, sourceId })
-      episodeDetail.value = res.data
+      episodeDetail.value = res.data ?? null
     } finally {
       loading.value = false
     }
@@ -53,7 +47,6 @@ export function useCardEpisodeDetail() {
   async function fetchVersionOptions(sourceType: number, sourceId: number) {
     const res = await listDialogueVersionOptionsAPI(sourceType, sourceId)
     versionOptions.value = res.data ?? []
-    versionOptions.value = null
   }
 
   return {

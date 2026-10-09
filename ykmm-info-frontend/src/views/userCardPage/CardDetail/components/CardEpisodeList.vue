@@ -1,11 +1,12 @@
 <template>
-  <div>
+  <div class="flex flex-col h-full">
     <h2 class="mb-3 text-sm font-medium text-slate-500">{{ getSourceTypeLabel(mode) }} 列表</h2>
 
     <el-empty
       v-if="!list.length"
       :description="`暂无 ${getSourceTypeLabel(mode)}`"
       :image-size="60"
+      class="min-h-0 flex-1"
     />
 
     <ul v-else class="space-y-2">

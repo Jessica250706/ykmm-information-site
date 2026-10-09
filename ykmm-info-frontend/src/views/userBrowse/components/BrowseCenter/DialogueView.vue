@@ -76,12 +76,13 @@
 <script setup lang="ts">
 import { type ComponentPublicInstance, computed, nextTick, watch } from 'vue'
 import { MONOLOGUE, VERSION_FORMAT } from '@/constants'
+import type { CardEpisodeVO } from '@/types/card'
 import type { DialogueLineVO } from '@/types/dialogueLine'
 import type { DialogueVersionOptionVO } from '@/types/dialogueVersion'
 import type { DialogueVersionVO, StoryDetailVO } from '@/types/story'
 
 const props = defineProps<{
-  detail: StoryDetailVO
+  detail: StoryDetailVO | CardEpisodeVO
   /** 当前版本的 id */
   currentVersionId: number | null
   /** 当前版本（已由父组件计算好） */

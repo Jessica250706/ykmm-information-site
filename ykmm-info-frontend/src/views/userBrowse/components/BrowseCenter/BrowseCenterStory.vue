@@ -25,6 +25,17 @@
       "
       @go-back="emit('goBack')"
     />
+    <BrowseHeader
+      v-else-if="sourceType === SOURCE_TYPE.RTV || sourceType === SOURCE_TYPE.RABITTER"
+      :color="color"
+      :subtitle="cardName"
+      :tag="SOURCE_TYPE_LABEL[sourceType]"
+      :title="
+        `第${cardDetail?.episodeNo}话 ${cardDetail?.title}` ||
+        `${SOURCE_TYPE_LABEL[sourceType]} #${cardDetail?.id}`
+      "
+      @go-back="emit('goBack')"
+    />
 
     <!-- 版本选择 -->
     <div class="mb-4 flex items-center gap-2 shrink-0">
@@ -64,7 +75,7 @@
           :current-option-version="currentOptionVersion"
           :current-version="currentVersion"
           :current-version-id="resolvedVersionId"
-          :detail="storyDetail"
+          :detail="sourceType === SOURCE_TYPE.STORY ? storyDetail : cardDetail"
           :editing-line-id="editingLineId ?? null"
           :editing-mode="editingMode"
           @select-line="(line) => emit('select-line', line)"

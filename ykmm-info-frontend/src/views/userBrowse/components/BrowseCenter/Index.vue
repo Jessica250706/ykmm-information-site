@@ -96,7 +96,7 @@ const props = defineProps<{
   /** 来源类型：1-RC 2-RTV 3-Rabitter 4-story */
   sourceType: SourceTypeValue
   /** 卡片名称 */
-  cardName: string
+  cardName?: string
 }>()
 
 const emit = defineEmits<{
