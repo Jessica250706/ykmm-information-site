@@ -1,21 +1,15 @@
-package com.xq.entity;
+package com.xq.vo;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
 
 /**
- * 表情包资源表
+ * 表情包VO
  */
 @Data
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
-public class Sticker implements Serializable {
+public class StickerVO implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
@@ -25,12 +19,17 @@ public class Sticker implements Serializable {
     private Long id;
 
     /**
-     * 所属分组ID
+     * 分组ID
      */
     private Long groupId;
 
     /**
-     * 标签，如：国王布丁表情包
+     * 分组名称
+     */
+    private String groupName;
+
+    /**
+     * 标签
      */
     private String label;
 
@@ -40,7 +39,7 @@ public class Sticker implements Serializable {
     private String imageUrl;
 
     /**
-     * 对应emoji，如 🍮
+     * 对应emoji
      */
     private String emoji;
 
@@ -48,6 +47,11 @@ public class Sticker implements Serializable {
      * 1自定义图片 2 emoji
      */
     private Integer stickerType;
+
+    /**
+     * 表情包类型描述
+     */
+    private String stickerTypeDesc;
 
     /**
      * 创建者用户ID

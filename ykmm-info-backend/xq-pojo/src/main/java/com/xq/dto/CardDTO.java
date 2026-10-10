@@ -7,7 +7,6 @@ import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.List;
 
 /**
@@ -18,30 +17,56 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class CardDTO implements Serializable {
-    /** 卡面名称 */
+    /**
+     * 卡面名称
+     */
     private String name;
-    /** 所属系列ID */
+    /**
+     * 所属系列ID
+     */
     private Long seriesId;
-    /** 关联 card_category.id */
+    /**
+     * 关联 card_category.id
+     */
     private Integer category;
-    /** 最高等级：1-SSR 2-UR */
+    /**
+     * 最高等级：1-SSR 2-UR
+     */
     private Integer maxRarity;
-    /** 首次入池时间 */
+    /**
+     * 首次入池时间
+     */
     private LocalDate firstPoolTime;
-    /** 属性：1-Shout 2-Beat 3-Melody */
+    /**
+     * 属性：1-Shout 2-Beat 3-Melody
+     */
     private Integer attribute;
-    /** 魅力技能描述 */
+    /**
+     * 魅力技能描述
+     */
     private String skillDesc;
-    /** 附属剧情类型：0无 1RC 2RTV 3Rabbiter */
+    /**
+     * 附属剧情类型：0无 1RC 2RTV 3Rabbiter
+     */
     private Integer attachedStoryType;
-    /** 服装类型：1偶像小人 2 3D造型 */
+    /**
+     * 服装类型：1偶像小人 2 3D造型
+     */
     private Integer costumeType;
-    /** 偶像小人ID */
+    /**
+     * 偶像小人ID
+     */
     private Long chibiId;
-    /** 造型ID */
+    /**
+     * 造型ID
+     */
     private Long costumeId;
-    /** 关联人物ID列表 */
+    /**
+     * 关联人物ID列表
+     */
     private List<Long> personIds;
-    /** 卡面图片列表 */
+    /**
+     * 卡面图片列表
+     */
     private List<CardImageDTO> images;
 }

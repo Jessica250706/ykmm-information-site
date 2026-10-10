@@ -9,13 +9,13 @@ import java.io.Serializable;
 import java.time.LocalDateTime;
 
 /**
- * 表情包资源表
+ * 表情包分组表
  */
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class Sticker implements Serializable {
+public class StickerGroup implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
@@ -25,29 +25,19 @@ public class Sticker implements Serializable {
     private Long id;
 
     /**
-     * 所属分组ID
+     * 分组名称，如：国王布丁、奇娜子
      */
-    private Long groupId;
+    private String name;
 
     /**
-     * 标签，如：国王布丁表情包
+     * 分组描述
      */
-    private String label;
+    private String description;
 
     /**
-     * 图片地址
+     * 排序
      */
-    private String imageUrl;
-
-    /**
-     * 对应emoji，如 🍮
-     */
-    private String emoji;
-
-    /**
-     * 1自定义图片 2 emoji
-     */
-    private Integer stickerType;
+    private Integer sort;
 
     /**
      * 创建者用户ID
@@ -58,4 +48,9 @@ public class Sticker implements Serializable {
      * 创建时间
      */
     private LocalDateTime createdAt;
+
+    /**
+     * 更新时间
+     */
+    private LocalDateTime updatedAt;
 }

@@ -203,6 +203,46 @@ export const adminRoutes: RouteRecordRaw = {
         import('@/views/adminContent/storyCategoryTypeManage/components/EditStoryCategoryType.vue'),
       meta: { title: '编辑剧情分类类型' },
     },
+    // ---------- 表情包管理 ----------
+    {
+      path: 'content/sticker',
+      name: AdminRouteName.STICKER_MANAGE,
+      component: () => import('@/views/adminContent/stickerManage/Index.vue'),
+      meta: { title: '表情包管理' },
+    },
+    {
+      path: 'content/sticker/create',
+      name: AdminRouteName.STICKER_CREATE,
+      component: () => import('@/views/adminContent/stickerManage/components/EditSticker.vue'),
+      meta: { title: '新增表情包' },
+    },
+    {
+      path: 'content/sticker/edit/:id',
+      name: AdminRouteName.STICKER_EDIT,
+      component: () => import('@/views/adminContent/stickerManage/components/EditSticker.vue'),
+      meta: { title: '编辑表情包' },
+    },
+    // ---------- 表情包分组管理 ----------
+    {
+      path: 'content/sticker-group',
+      name: AdminRouteName.STICKER_GROUP_MANAGE,
+      component: () => import('@/views/adminContent/stickerGroupManage/Index.vue'),
+      meta: { title: '表情包分组' },
+    },
+    {
+      path: 'content/sticker-group/create',
+      name: AdminRouteName.STICKER_GROUP_CREATE,
+      component: () =>
+        import('@/views/adminContent/stickerGroupManage/components/EditStickerGroup.vue'),
+      meta: { title: '新增表情包分组' },
+    },
+    {
+      path: 'content/sticker-group/edit/:id',
+      name: AdminRouteName.STICKER_GROUP_EDIT,
+      component: () =>
+        import('@/views/adminContent/stickerGroupManage/components/EditStickerGroup.vue'),
+      meta: { title: '编辑表情包分组' },
+    },
     // ---------- 贡献者管理 ----------
     {
       path: 'contributor',

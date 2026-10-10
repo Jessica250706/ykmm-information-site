@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xq.mapper.StickerGroupMapper">
+
+  <sql id="StickerGroupVOColumns">
+    g.id,
+    g.name,
+    g.description,
+    g.sort,
+    g.creator_id AS creatorId,
+    g.created_at AS createdAt,
+    g.updated_at AS updatedAt,
+    (
+        SELECT COUNT(1)
+        FROM sticker s
+        WHERE s.group_id = g.id
+    ) AS stickerCount
+  </sql>
+
+  <select id="pageQuery" resultType="com.xq.vo.StickerGroupVO">
+    SELECT
+    <include refid="StickerGroupVOColumns"/>
+    FROM sticker_group g
+    <where>
+      <if test="name != null and name != ''">
+        AND g.name LIKE CONCAT('%', #{name}, '%')
+      </if>
+    </where>
+    ORDER BY g.sort ASC, g.id DESC
+  </select>
+
+  <select id="listAll" resultType="com.xq.vo.StickerGroupVO">
+    SELECT
+    <include refid="StickerGroupVOColumns"/>
+    FROM sticker_group g
+    ORDER BY g.sort, g.id
+  </select>
+
+  <select id="getVOById" resultType="com.xq.vo.StickerGroupVO">
+    SELECT
+    <include refid="StickerGroupVOColumns"/>
+    FROM sticker_group g
+    WHERE g.id = #{id}
+  </select>
+
+  <select id="getEntityById" resultType="com.xq.entity.StickerGroup">
+    SELECT id,
+           name,
+           description,
+           sort,
+           creator_id AS creatorId,
+           created_at AS createdAt,
+           updated_at AS updatedAt
+    FROM sticker_group
+    WHERE id = #{id}
+  </select>
+
+  <select id="countByName" resultType="long">
+    SELECT COUNT(1)
+    FROM sticker_group
+    WHERE name = #{name}
+    <if test="excludeId != null">
+      AND id != #{excludeId}
+    </if>
+  </select>
+
+  <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+    INSERT INTO sticker_group (name,
+                               description,
+                               sort,
+                               creator_id)
+    VALUES (#{name},
+            #{description},
+            #{sort},
+            #{creatorId})
+  </insert>
+
+  <update id="update">
+    UPDATE sticker_group
+    <set>
+      <if test="name != null">
+        name = #{name},
+      </if>
+      <if test="description != null">
+        description = #{description},
+      </if>
+      <if test="sort != null">
+        sort = #{sort},
+      </if>
+    </set>
+    WHERE id = #{id}
+  </update>
+
+  <delete id="deleteById">
+    DELETE
+    FROM sticker_group
+    WHERE id = #{id}
+  </delete>
+
+</mapper>

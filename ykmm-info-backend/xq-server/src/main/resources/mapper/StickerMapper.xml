@@ -3,6 +3,23 @@
     "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.xq.mapper.StickerMapper">
 
+  <sql id="StickerVOColumns">
+    s.id,
+    s.group_id AS groupId,
+    g.name AS groupName,
+    s.label,
+    s.image_url AS imageUrl,
+    s.emoji,
+    s.sticker_type AS stickerType,
+    CASE s.sticker_type
+        WHEN 1 THEN '自定义图片'
+        WHEN 2 THEN 'emoji'
+        ELSE ''
+    END AS stickerTypeDesc,
+    s.creator_id AS creatorId,
+    s.created_at AS createdAt
+  </sql>
+
   <select id="listByCondition" resultType="com.xq.entity.Sticker">
     SELECT id,
     label,
@@ -52,6 +69,95 @@
     FROM sticker
     WHERE label = #{label}
     LIMIT 1
+  </select>
+
+  <select id="pageQuery" resultType="com.xq.vo.StickerVO">
+    SELECT
+    <include refid="StickerVOColumns"/>
+    FROM sticker s
+    LEFT JOIN sticker_group g ON s.group_id = g.id
+    <where>
+      <if test="groupId != null">
+        AND s.group_id = #{groupId}
+      </if>
+      <if test="label != null and label != ''">
+        AND s.label LIKE CONCAT('%', #{label}, '%')
+      </if>
+      <if test="stickerType != null">
+        AND s.sticker_type = #{stickerType}
+      </if>
+    </where>
+    ORDER BY g.sort ASC, s.id DESC
+  </select>
+
+  <select id="getVOById" resultType="com.xq.vo.StickerVO">
+    SELECT
+    <include refid="StickerVOColumns"/>
+    FROM sticker s
+    LEFT JOIN sticker_group g ON s.group_id = g.id
+    WHERE s.id = #{id}
+  </select>
+
+  <select id="getEntityById" resultType="com.xq.entity.Sticker">
+    SELECT id,
+           group_id     AS groupId,
+           label,
+           image_url    AS imageUrl,
+           emoji,
+           sticker_type AS stickerType,
+           creator_id   AS creatorId,
+           created_at   AS createdAt
+    FROM sticker
+    WHERE id = #{id}
+  </select>
+
+  <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+    INSERT INTO sticker (group_id,
+                         label,
+                         image_url,
+                         emoji,
+                         sticker_type,
+                         creator_id)
+    VALUES (#{groupId},
+            #{label},
+            #{imageUrl},
+            #{emoji},
+            #{stickerType},
+            #{creatorId})
+  </insert>
+
+  <update id="update">
+    UPDATE sticker
+    <set>
+      <if test="groupId != null">
+        group_id = #{groupId},
+      </if>
+      <if test="label != null">
+        label = #{label},
+      </if>
+      <if test="imageUrl != null">
+        image_url = #{imageUrl},
+      </if>
+      <if test="emoji != null">
+        emoji = #{emoji},
+      </if>
+      <if test="stickerType != null">
+        sticker_type = #{stickerType},
+      </if>
+    </set>
+    WHERE id = #{id}
+  </update>
+
+  <delete id="deleteById">
+    DELETE
+    FROM sticker
+    WHERE id = #{id}
+  </delete>
+
+  <select id="countByGroupId" resultType="long">
+    SELECT COUNT(1)
+    FROM sticker
+    WHERE group_id = #{groupId}
   </select>
 
 </mapper>

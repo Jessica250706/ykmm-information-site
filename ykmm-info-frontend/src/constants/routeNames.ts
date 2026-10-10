@@ -100,6 +100,16 @@ export const AdminRouteName = {
   STORY_CATEGORY_TYPE_MANAGE: 'AdminStoryCategoryTypeManage',
   STORY_CATEGORY_TYPE_EDIT: 'AdminStoryCategoryTypeEdit',
 
+  // ---------- 表情包管理 ----------
+  STICKER_MANAGE: 'AdminStickerManage',
+  STICKER_CREATE: 'AdminStickerCreate',
+  STICKER_EDIT: 'AdminStickerEdit',
+
+  // ---------- 表情包分组管理 ----------
+  STICKER_GROUP_MANAGE: 'AdminStickerGroupManage',
+  STICKER_GROUP_CREATE: 'AdminStickerGroupCreate',
+  STICKER_GROUP_EDIT: 'AdminStickerGroupEdit',
+
   // ---------- 贡献者管理 ----------
   CONTRIBUTOR_MANAGE: 'AdminDialogueVersionContributorManage',
   CONTRIBUTOR_CREATE: 'AdminDialogueVersionContributorCreate',
