@@ -1,5 +1,10 @@
 import type { PageResult } from '@/types/common'
-import type { StickerGroupDTO, StickerGroupPageQueryDTO, StickerGroupVO } from '@/types/sticker'
+import type {
+  StickerGroupDTO,
+  StickerGroupPageQueryDTO,
+  StickerGroupVO,
+  StickerGroupWithStickersVO,
+} from '@/types/sticker'
 import request from '@/utils/http'
 
 /**
@@ -42,4 +47,11 @@ export const updateStickerGroupAPI = (id: number, data: StickerGroupDTO) => {
  */
 export const deleteStickerGroupAPI = (id: number) => {
   return request.delete(`/admin/sticker-group/${id}`)
+}
+
+/**
+ * @description: 查询所有分组及下属表情包（表情选择器用）
+ */
+export const listStickerGroupWithStickersAPI = () => {
+  return request.get<StickerGroupWithStickersVO[]>('/admin/sticker-group/with-stickers')
 }

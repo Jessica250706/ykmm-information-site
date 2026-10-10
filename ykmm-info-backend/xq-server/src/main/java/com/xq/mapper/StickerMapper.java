@@ -77,4 +77,9 @@ public interface StickerMapper {
      * 统计分组下表情包数量
      */
     long countByGroupId(@Param("groupId") Long groupId);
+
+    /**
+     * 根据分组ID列表查询表情包
+     */
+    List<StickerVO> listByGroupIds(@Param("groupIds") List<Long> groupIds);
 }

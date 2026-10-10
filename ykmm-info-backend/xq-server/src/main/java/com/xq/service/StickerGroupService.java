@@ -5,6 +5,7 @@ import com.xq.dto.StickerGroupDTO;
 import com.xq.dto.StickerGroupPageQueryDTO;
 import com.xq.result.PageResult;
 import com.xq.vo.StickerGroupVO;
+import com.xq.vo.StickerGroupWithStickersVO;
 
 import java.util.List;
 
@@ -42,4 +43,9 @@ public interface StickerGroupService {
      * 删除表情包分组
      */
     void delete(Long id);
+
+    /**
+     * 查询所有分组及其表情包（用于表情选择器）
+     */
+    List<StickerGroupWithStickersVO> listWithStickers();
 }

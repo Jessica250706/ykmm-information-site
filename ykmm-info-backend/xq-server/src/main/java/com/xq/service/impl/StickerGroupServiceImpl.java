@@ -11,11 +11,17 @@ import com.xq.mapper.StickerMapper;
 import com.xq.result.PageResult;
 import com.xq.service.StickerGroupService;
 import com.xq.vo.StickerGroupVO;
+import com.xq.vo.StickerGroupWithStickersVO;
+import com.xq.vo.StickerVO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * 表情包分组Service实现
@@ -126,5 +132,34 @@ public class StickerGroupServiceImpl implements StickerGroupService {
         }
 
         stickerGroupMapper.deleteById(id);
+    }
+
+    /**
+     * 查询所有分组及其表情包（用于表情选择器）
+     */
+    @Override
+    public List<StickerGroupWithStickersVO> listWithStickers() {
+        List<StickerGroupVO> groups = stickerGroupMapper.listAll();
+        if (groups.isEmpty()) return new ArrayList<>();
+
+        List<Long> groupIds = groups.stream()
+                .map(StickerGroupVO::getId)
+                .filter(Objects::nonNull)
+                .toList();
+
+        List<StickerVO> all = stickerMapper.listByGroupIds(groupIds);
+        Map<Long, List<StickerVO>> stickerMap = all.stream()
+                .filter(s -> s.getGroupId() != null)
+                .collect(Collectors.groupingBy(StickerVO::getGroupId));
+
+        return groups.stream().map(g -> {
+            StickerGroupWithStickersVO vo = new StickerGroupWithStickersVO();
+            vo.setId(g.getId());
+            vo.setName(g.getName());
+            vo.setDescription(g.getDescription());
+            vo.setSort(g.getSort());
+            vo.setStickers(stickerMap.getOrDefault(g.getId(), new ArrayList<>()));
+            return vo;
+        }).toList();
     }
 }

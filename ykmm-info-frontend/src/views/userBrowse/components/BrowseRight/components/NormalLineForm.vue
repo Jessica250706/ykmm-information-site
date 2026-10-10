@@ -24,12 +24,18 @@
         />
       </el-form-item>
       <el-form-item label="内容">
-        <el-input
-          v-model="form.content"
-          :rows="4"
-          placeholder="请输入对话内容，可含表情包标签，如 [国王布丁表情包]"
-          type="textarea"
-        />
+        <div class="w-full">
+          <el-input
+            ref="contentInputRef"
+            v-model="form.content"
+            :rows="4"
+            placeholder="请输入对话内容，可含表情包标签，如 [国王布丁表情包]"
+            type="textarea"
+          />
+          <div class="mt-1 flex justify-end">
+            <StickerPicker @pick="handleStickerPick" />
+          </div>
+        </div>
       </el-form-item>
     </el-form>
 
@@ -76,7 +82,8 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, nextTick, ref } from 'vue'
+import { ElInput } from 'element-plus'
 import {
   EDITOR_MODE,
   type EditorMode,
@@ -85,6 +92,7 @@ import {
   type SourceTypeValue,
 } from '@/constants'
 import type { RoleGroupVO } from '@/types/role'
+import StickerPicker from './StickerPicker.vue'
 import type { EditorForm } from '../composables/useEditorForm'
 
 /**
@@ -136,4 +144,34 @@ const roleCascaderOptions = computed(() =>
     })),
   })),
 )
+
+/* -------- 表情包插入 -------- */
+
+const contentInputRef = ref<InstanceType<typeof ElInput>>()
+
+/**
+ * 在内容输入框光标处插入表情包标签。
+ * 若无法获取光标，则追加到末尾。
+ */
+function handleStickerPick(text: string) {
+  const textarea = contentInputRef.value?.textarea
+  const content = form.value.content ?? ''
+
+  if (!textarea) {
+    form.value.content = content + text
+    return
+  }
+
+  const start = textarea.selectionStart ?? content.length
+  const end = textarea.selectionEnd ?? start
+
+  form.value.content = content.slice(0, start) + text + content.slice(end)
+
+  // 插入后把光标放到插入文本的末尾
+  void nextTick(() => {
+    textarea.focus()
+    const pos = start + text.length
+    textarea.setSelectionRange(pos, pos)
+  })
+}
 </script>

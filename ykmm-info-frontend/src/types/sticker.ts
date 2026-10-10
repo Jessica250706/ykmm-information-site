@@ -177,3 +177,30 @@ export interface StickerGroupDTO {
   sort?: number
   [property: string]: any
 }
+
+/**
+ * 表情包分组（含下属表情包），用于表情选择器
+ */
+export interface StickerGroupWithStickersVO {
+  /**
+   * 分组ID
+   */
+  id?: number
+  /**
+   * 分组名称
+   */
+  name?: string
+  /**
+   * 分组描述
+   */
+  description?: string
+  /**
+   * 排序
+   */
+  sort?: number
+  /**
+   * 该分组下的表情包
+   */
+  stickers?: StickerVO[]
+  [property: string]: any
+}

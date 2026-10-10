@@ -25,12 +25,18 @@
         />
       </el-form-item>
       <el-form-item label="内容">
-        <el-input
-          v-model="pair.question.content"
-          :rows="3"
-          placeholder="请输入问句内容"
-          type="textarea"
-        />
+        <div class="w-full">
+          <el-input
+            ref="questionInputRef"
+            v-model="pair.question.content"
+            :rows="3"
+            placeholder="请输入问句内容"
+            type="textarea"
+          />
+          <div class="mt-1 flex justify-end">
+            <StickerPicker @pick="(text) => handlePick('question', text)" />
+          </div>
+        </div>
       </el-form-item>
 
       <div class="mb-2 text-xs font-medium text-slate-500">回答</div>
@@ -47,12 +53,18 @@
         />
       </el-form-item>
       <el-form-item label="内容">
-        <el-input
-          v-model="pair.answer.content"
-          :rows="3"
-          placeholder="请输入回答内容"
-          type="textarea"
-        />
+        <div class="w-full">
+          <el-input
+            ref="answerInputRef"
+            v-model="pair.answer.content"
+            :rows="3"
+            placeholder="请输入回答内容"
+            type="textarea"
+          />
+          <div class="mt-1 flex justify-end">
+            <StickerPicker @pick="(text) => handlePick('answer', text)" />
+          </div>
+        </div>
       </el-form-item>
     </el-form>
 
@@ -75,8 +87,10 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, nextTick, ref } from 'vue'
+import { ElInput } from 'element-plus'
 import type { RoleGroupVO } from '@/types/role'
+import StickerPicker from './StickerPicker.vue'
 import type { RcPairForm } from '../composables/useEditorForm'
 
 /** 双向绑定的 RC 选项对 */
@@ -114,4 +128,37 @@ const roleCascaderOptions = computed(() =>
     })),
   })),
 )
+
+/* -------- 表情包插入 -------- */
+
+const questionInputRef = ref<InstanceType<typeof ElInput>>()
+const answerInputRef = ref<InstanceType<typeof ElInput>>()
+
+/**
+ * 在问句 / 回答输入框光标处插入表情包标签。
+ *
+ * @param target 目标输入框：question / answer
+ * @param text   带方括号的标签文本
+ */
+function handlePick(target: 'question' | 'answer', text: string) {
+  const inputRef = target === 'question' ? questionInputRef : answerInputRef
+  const model = target === 'question' ? pair.value.question : pair.value.answer
+  const textarea = inputRef.value?.textarea
+  const content = model.content ?? ''
+
+  if (!textarea) {
+    model.content = content + text
+    return
+  }
+
+  const start = textarea.selectionStart ?? content.length
+  const end = textarea.selectionEnd ?? start
+  model.content = content.slice(0, start) + text + content.slice(end)
+
+  void nextTick(() => {
+    textarea.focus()
+    const pos = start + text.length
+    textarea.setSelectionRange(pos, pos)
+  })
+}
 </script>

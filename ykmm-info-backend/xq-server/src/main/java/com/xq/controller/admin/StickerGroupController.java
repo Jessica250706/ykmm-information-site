@@ -7,6 +7,7 @@ import com.xq.result.PageResult;
 import com.xq.result.Result;
 import com.xq.service.StickerGroupService;
 import com.xq.vo.StickerGroupVO;
+import com.xq.vo.StickerGroupWithStickersVO;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.validation.annotation.Validated;
@@ -75,5 +76,13 @@ public class StickerGroupController {
     public Result<Void> delete(@PathVariable Long id) {
         stickerGroupService.delete(id);
         return Result.success();
+    }
+
+    /**
+     * 查询所有分组及下属表情包（表情选择器用）
+     */
+    @GetMapping("/with-stickers")
+    public Result<List<StickerGroupWithStickersVO>> listWithStickers() {
+        return Result.success(stickerGroupService.listWithStickers());
     }
 }
