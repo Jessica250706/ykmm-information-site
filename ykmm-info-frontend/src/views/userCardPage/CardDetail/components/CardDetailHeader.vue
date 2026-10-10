@@ -27,7 +27,16 @@
         新增 RTV
       </el-button>
 
-      <el-button v-if="card?.attachedStoryTypeLabel" type="primary" @click="emit('goto')">
+      <el-button
+        v-if="attachedType === SOURCE_TYPE.RABITTER"
+        type="primary"
+        @click="emit('addEpisode', SOURCE_TYPE_SMALL_LABEL[SOURCE_TYPE.RABITTER])"
+      >
+        <el-icon><Plus /></el-icon>
+        新增 Rabitter
+      </el-button>
+
+      <el-button v-if="card?.attachedStoryTypeLabel && isList" type="primary" @click="emit('goto')">
         查看{{ card.attachedStoryTypeLabel }}
       </el-button>
     </div>
@@ -48,6 +57,7 @@ import { getCardRarityTagType } from '@/utils'
 defineProps<{
   card: CardVO | null
   attachedType: number
+  isList: boolean
 }>()
 
 const emit = defineEmits<{

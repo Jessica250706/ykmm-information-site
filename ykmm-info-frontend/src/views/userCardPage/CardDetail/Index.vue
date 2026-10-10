@@ -3,6 +3,7 @@
     <CardDetailHeader
       :attached-type="attachedType"
       :card="card"
+      :is-list="isList"
       @add-episode="handleAddEpisode"
       @back="handleBack"
       @goto="handleGoto"
@@ -108,6 +109,7 @@ const { loading, card, attachedType, imageUrls, isRc, isRtv, isRabitter, load } 
 
 /* -------- 话数管理 -------- */
 const {
+  isList,
   rcList,
   rtvList,
   rabitterList,

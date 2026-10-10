@@ -29,6 +29,10 @@ export function useEpisodeManagement(cardId: Ref<number>, attachedType: Ref<numb
   const rtvList = ref<CardRtvVO[]>([])
   const rabitterList = ref<CardRabitterVO[]>([])
 
+  const isList = computed(
+    () => rcList.value.length > 0 || rtvList.value.length > 0 || rabitterList.value.length > 0,
+  )
+
   /** 当前 attachedType 对应的话数列表，用于 dialog 里计算默认话数 */
   const currentEpisodes = computed(() =>
     attachedType.value === SOURCE_TYPE.RC ? rcList.value : rtvList.value,
@@ -136,6 +140,7 @@ export function useEpisodeManagement(cardId: Ref<number>, attachedType: Ref<numb
   }
 
   return {
+    isList,
     rcList,
     rtvList,
     rabitterList,
