@@ -1,6 +1,10 @@
 import { ref } from 'vue'
 import { getCardEpisodeDialogueAPI } from '@/api/card'
-import { listDialogueVersionOptionsAPI } from '@/api/dialogueVersion'
+import {
+  listDialogueVersionOptionsAPI,
+  listImageDialogueVersionOptionsAPI,
+} from '@/api/dialogueVersion'
+import { SOURCE_TYPE } from '@/constants'
 import type { CardEpisodeVO } from '@/types/card'
 import type { DialogueVersionOptionVO } from '@/types/dialogueVersion'
 
@@ -45,8 +49,13 @@ export function useCardEpisodeDetail() {
    * 拉取该话的版本选项
    */
   async function fetchVersionOptions(sourceType: number, sourceId: number) {
-    const res = await listDialogueVersionOptionsAPI(sourceType, sourceId)
-    versionOptions.value = res.data ?? []
+    if (sourceType === SOURCE_TYPE.RABITTER) {
+      const res = await listImageDialogueVersionOptionsAPI(sourceType, sourceId)
+      versionOptions.value = res.data ?? []
+    } else {
+      const res = await listDialogueVersionOptionsAPI(sourceType, sourceId)
+      versionOptions.value = res.data ?? []
+    }
   }
 
   return {
