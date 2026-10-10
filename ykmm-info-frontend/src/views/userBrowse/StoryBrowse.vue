@@ -173,8 +173,6 @@ const { goCategory, goStory, goBack, handleSwitchType } = useBrowseNavigation()
 
 /* -------- 加载当前视图 -------- */
 async function loadCurrent() {
-  resetStory()
-
   if (kind.value === BROWSE_KIND.STORY && nodeId.value != null) {
     await fetchStoryDetail(nodeId.value)
     if (!storyDetail.value) return
@@ -186,13 +184,23 @@ async function loadCurrent() {
     return
   }
 
-  // 非 story 视图，清理编辑状态
+  /* 非 story 分支才清空 */
+  resetStory()
   resetEditState()
 
   if (kind.value === BROWSE_KIND.CATEGORY && nodeId.value != null) {
     await fetchStories(nodeId.value)
   }
 }
+
+/* 路由切换时显式清空 */
+watch(
+  () => [kind.value, nodeId.value],
+  () => {
+    resetStory()
+    void loadCurrent()
+  },
+)
 
 /* -------- 交互 -------- */
 function handleNodeClick(data: StoryCategoryVO) {
@@ -204,12 +212,9 @@ function handleSelectLine(line: DialogueLineVO) {
 }
 
 /**
- * 保存成功后的回调：
- * 1. 清空当前选中行，让编辑区回到"未选中"状态
- * 2. 重新加载当前版本数据
+ * 保存成功后的回调
  */
 function handleSaveLine() {
-  editingLineId.value = null
   void loadCurrent()
 }
 

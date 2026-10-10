@@ -70,6 +70,7 @@
           'overflow-hidden': currentVersion?.format === VERSION_FORMAT.IMAGE,
         }"
         class="h-full app-scrollbar"
+        @scroll.passive="onScroll"
       >
         <DialogueView
           :current-option-version="currentOptionVersion"
@@ -98,7 +99,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, nextTick, ref, watch } from 'vue'
 import { useScrollShadow } from '@/composables/useScrollShadow'
 import { SOURCE_TYPE, SOURCE_TYPE_LABEL, VERSION_FORMAT } from '@/constants'
 import type { CardEpisodeVO } from '@/types/card'
@@ -165,6 +166,29 @@ const { atTop, atBottom, canScroll } = useScrollShadow(scrollerRef)
 const showTopShadow = computed(() => canScroll.value && !atTop.value)
 // 有内容可滚 且 未到底 → 显示底部阴影
 const showBottomShadow = computed(() => canScroll.value && !atBottom.value)
+
+/**
+ * 缓存最近一次滚动位置。
+ * 数据刷新前记录，刷新后恢复，避免 v-if 分支切换导致 DOM 重建、滚动归零。
+ */
+let cachedScrollTop = 0
+
+function onScroll() {
+  if (scrollerRef.value) {
+    cachedScrollTop = scrollerRef.value.scrollTop
+  }
+}
+
+/** 数据对象变化后（比如保存刷新），恢复滚动 */
+watch(
+  () => [props.storyDetail, props.cardDetail],
+  async () => {
+    await nextTick()
+    if (scrollerRef.value && cachedScrollTop > 0) {
+      scrollerRef.value.scrollTop = cachedScrollTop
+    }
+  },
+)
 </script>
 
 <style lang="scss" scoped>

@@ -330,7 +330,7 @@ async function handleCreateVersion(payload: {
  * 2. 重新加载当前话数对话
  */
 function handleSaveLine() {
-  editingLineId.value = null
+  // editingLineId.value = null
   void loadCurrentEpisode()
 }
 
