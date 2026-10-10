@@ -1,19 +1,7 @@
 import { computed, ref, type Ref, watch } from 'vue'
 import { listUserStoryCategoryTreeAPI } from '@/api/story'
-import type { StoryCategoryTypeValue } from '@/constants'
+import { BROWSE_KIND, type StoryCategoryTypeValue } from '@/constants'
 import type { StoryCategoryVO } from '@/types/storyCategory'
-
-function collectIds(list: StoryCategoryVO[]): number[] {
-  const ids: number[] = []
-  const walk = (arr: StoryCategoryVO[]) => {
-    arr.forEach((n) => {
-      if (n.id != null) ids.push(n.id)
-      if (n.children?.length) walk(n.children)
-    })
-  }
-  walk(list)
-  return ids
-}
 
 function findCategory(list: StoryCategoryVO[], id: number): StoryCategoryVO | null {
   for (const n of list) {
@@ -37,14 +25,14 @@ export function useCategoryTree(
 
   const currentHighlightId = computed(() => {
     // story 模式：高亮它所属的分类
-    if (kind.value === 'story') return storyCategoryId.value
+    if (kind.value === BROWSE_KIND.STORY) return storyCategoryId.value
     // category 模式：高亮当前节点
-    if (kind.value === 'category') return nodeId.value
+    if (kind.value === BROWSE_KIND.CATEGORY) return nodeId.value
     return null
   })
 
   const currentCategory = computed(() => {
-    if (kind.value !== 'category' || nodeId.value == null) return null
+    if (kind.value !== BROWSE_KIND.CATEGORY || nodeId.value == null) return null
     return findCategory(categoryTree.value, nodeId.value)
   })
 
@@ -69,7 +57,7 @@ export function useCategoryTree(
   watch(
     () => [kind.value, storyCategoryId.value] as const,
     ([k, id]) => {
-      if (k !== 'story' || id == null) return
+      if (k !== BROWSE_KIND.CATEGORY || id == null) return
       const path = findAncestorPath(categoryTree.value, id)
       if (!path) return
       // 合并去重

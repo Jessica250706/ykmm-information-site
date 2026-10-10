@@ -2,6 +2,7 @@
   <div class="story-browse flex h-full gap-4 overflow-hidden">
     <!-- 左侧：分类树 -->
     <BrowseLeft
+      v-show="showLeft"
       :category-tree="categoryTree"
       :current-id="currentHighlightId"
       :expanded-keys="expandedKeys"
@@ -15,6 +16,10 @@
     <!-- 中间：内容 -->
     <BrowseCenter
       v-model:current-version-id="currentVersionId"
+      :class="[
+        'h-full flex-1 min-w-0 overflow-hidden max-w-1/2',
+        { 'mx-auto': !showLeft && !showRight },
+      ]"
       :color="
         storyCategoryTypeStore.getTypeColor(
           currentCategory ? currentCategory?.categoryType : storyDetail?.categoryType,
@@ -26,22 +31,26 @@
       :loading-content="loadingContent"
       :loading-stories="loadingStories"
       :selected-version-key="selectedVersionKey"
+      :show-left="showLeft"
+      :show-right="showRight"
       :source-type="SOURCE_TYPE.STORY"
       :stories="stories"
       :story-detail="storyDetail"
       :type-label="typeLabel"
       :version-options="versionOptions"
       :version-select-items="versionSelectItems"
-      class="h-full flex-1 min-w-0 overflow-hidden"
       @go-back="handleGoBack"
       @go-category="(id: number) => goCategory(type, id)"
       @go-story="(id: number) => goStory(type, id)"
       @select-line="handleSelectLine"
+      @toggle-left="showLeft = !showLeft"
+      @toggle-right="showRight = !showRight"
       @update:selected-version-key="handleSelectedVersionKeyChange"
     />
 
     <!-- 右侧：编辑区 -->
     <BrowseRight
+      v-show="showRight"
       v-model:editing-mode="editingMode"
       :all-lines="currentVersion?.lines ?? []"
       :current-option-version="currentOptionVersion"
@@ -63,10 +72,10 @@
 </template>
 
 <script setup lang="ts">
-import { computed, watch } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { ElMessage } from 'element-plus'
 import { createDialogueVersionAPI } from '@/api/dialogueVersion'
-import { SOURCE_TYPE } from '@/constants'
+import { BROWSE_KIND, SOURCE_TYPE } from '@/constants'
 import { useStoryCategoryTypeStore } from '@/stores'
 import type { DialogueLineVO } from '@/types/dialogueLine'
 import type { DialogueVersionOptionVO } from '@/types/dialogueVersion'
@@ -85,6 +94,11 @@ const storyCategoryTypeStore = useStoryCategoryTypeStore()
 
 /* -------- 路由 -------- */
 const { type, kind, nodeId, typeLabel } = useBrowseRoute()
+
+/** 左侧目录是否展开 */
+const showLeft = ref(true)
+/** 右侧编辑区是否展开 */
+const showRight = ref(true)
 
 /* -------- 详情 / 列表 -------- */
 const {
@@ -161,7 +175,7 @@ const { goCategory, goStory, goBack, handleSwitchType } = useBrowseNavigation()
 async function loadCurrent() {
   resetStory()
 
-  if (kind.value === 'story' && nodeId.value != null) {
+  if (kind.value === BROWSE_KIND.STORY && nodeId.value != null) {
     await fetchStoryDetail(nodeId.value)
     if (!storyDetail.value) return
 
@@ -175,7 +189,7 @@ async function loadCurrent() {
   // 非 story 视图，清理编辑状态
   resetEditState()
 
-  if (kind.value === 'category' && nodeId.value != null) {
+  if (kind.value === BROWSE_KIND.CATEGORY && nodeId.value != null) {
     await fetchStories(nodeId.value)
   }
 }

@@ -1,72 +1,74 @@
 <template>
-  <el-card
-    body-class="flex flex-col h-full overflow-hidden p-4"
-    class="w-96 shrink-0 flex flex-col border-l bg-white"
-  >
-    <!-- 顶部：编辑模式开关 -->
-    <div class="flex items-center justify-between border-b pb-3 mb-3 shrink-0">
-      <div class="font-medium">编辑区</div>
-      <el-switch v-model="editingModeLocal" active-text="编辑模式" inline-prompt />
-    </div>
+  <div class="browse-right-root flex h-full min-h-0 flex-col">
+    <el-card
+      body-class="flex flex-col h-full overflow-hidden p-4"
+      class="w-96 flex-1 min-h-0 shrink-0 flex flex-col border-l bg-white"
+    >
+      <!-- 顶部：编辑模式开关 -->
+      <div class="flex items-center justify-between border-b pb-3 mb-3 shrink-0">
+        <div class="font-medium">编辑区</div>
+        <el-switch v-model="editingModeLocal" active-text="编辑模式" inline-prompt />
+      </div>
 
-    <!-- 1. 未开启编辑模式 -->
-    <div v-if="!editingModeLocal" class="flex-1 flex items-center justify-center">
-      <el-empty description="开启编辑模式以编辑对话" />
-    </div>
+      <!-- 1. 未开启编辑模式 -->
+      <div v-if="!editingModeLocal" class="flex-1 flex items-center justify-center">
+        <el-empty description="开启编辑模式以编辑对话" />
+      </div>
 
-    <!-- 2. 无故事 -->
-    <div v-else-if="!storyDetail" class="flex-1 flex items-center justify-center">
-      <el-empty description="请选择一个剧情" />
-    </div>
+      <!-- 2. 无故事 -->
+      <div v-else-if="!storyDetail" class="flex-1 flex items-center justify-center">
+        <el-empty description="请选择一个剧情" />
+      </div>
 
-    <!-- 3. 未选择版本 -->
-    <div v-else-if="!currentOptionVersion" class="flex-1 flex items-center justify-center">
-      <el-empty description="请选择一个对话版本" />
-    </div>
+      <!-- 3. 未选择版本 -->
+      <div v-else-if="!currentOptionVersion" class="flex-1 flex items-center justify-center">
+        <el-empty description="请选择一个对话版本" />
+      </div>
 
-    <!-- 4. 版本无内容 -->
-    <div v-else-if="!currentVersion" class="flex-1 flex items-center justify-center">
-      <el-empty :description="emptyVersionText">
-        <el-button :loading="creatingVersion" type="primary" @click="onCreateVersion">
-          创建该版本内容
-        </el-button>
-      </el-empty>
-    </div>
+      <!-- 4. 版本无内容 -->
+      <div v-else-if="!currentVersion" class="flex-1 flex items-center justify-center">
+        <el-empty :description="emptyVersionText">
+          <el-button :loading="creatingVersion" type="primary" @click="onCreateVersion">
+            创建该版本内容
+          </el-button>
+        </el-empty>
+      </div>
 
-    <!-- 5. 编辑内容 -->
-    <div v-else class="flex-1 overflow-auto min-h-0">
-      <!-- 图片版本 -->
-      <ImageVersionEditor
-        v-if="currentVersion.format === VERSION_FORMAT.IMAGE"
-        :current-version="currentVersion"
-        @refresh="emit('refresh')"
-      />
+      <!-- 5. 编辑内容 -->
+      <div v-else class="flex-1 overflow-auto min-h-0">
+        <!-- 图片版本 -->
+        <ImageVersionEditor
+          v-if="currentVersion.format === VERSION_FORMAT.IMAGE"
+          :current-version="currentVersion"
+          @refresh="emit('refresh')"
+        />
 
-      <!-- 文字版本 -->
-      <TextVersionEditor
-        v-else-if="currentVersion.format === VERSION_FORMAT.TEXT"
-        :all-lines="allLines"
-        :current-version="currentVersion"
-        :editing-line="editingLine"
-        :editing-line-index="editingLineIndex"
-        :editing-mode="editingModeLocal"
-        :source-type="sourceType"
-        @add-line="(payload) => emit('add-line', payload)"
-        @clear-line="emit('clear-line')"
-        @delete-line="(payload) => emit('delete-line', payload)"
-        @refresh="emit('refresh')"
-        @save-line="emit('save-line')"
-        @select-line="(line) => emit('select-line', line)"
-      />
-    </div>
-  </el-card>
+        <!-- 文字版本 -->
+        <TextVersionEditor
+          v-else-if="currentVersion.format === VERSION_FORMAT.TEXT"
+          :all-lines="allLines"
+          :current-version="currentVersion"
+          :editing-line="editingLine"
+          :editing-line-index="editingLineIndex"
+          :editing-mode="editingModeLocal"
+          :source-type="sourceType"
+          @add-line="(payload) => emit('add-line', payload)"
+          @clear-line="emit('clear-line')"
+          @delete-line="(payload) => emit('delete-line', payload)"
+          @refresh="emit('refresh')"
+          @save-line="emit('save-line')"
+          @select-line="(line) => emit('select-line', line)"
+        />
+      </div>
+    </el-card>
 
-  <!-- 创建版本弹窗 -->
-  <CreateVersionDialog
-    ref="createVersionDialogRef"
-    :confirming="creatingVersion"
-    @confirm="handleCreateVersionConfirm"
-  />
+    <!-- 创建版本弹窗 -->
+    <CreateVersionDialog
+      ref="createVersionDialogRef"
+      :confirming="creatingVersion"
+      @confirm="handleCreateVersionConfirm"
+    />
+  </div>
 </template>
 
 <script setup lang="ts">

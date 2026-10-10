@@ -3,6 +3,18 @@
     body-class="flex-1 min-h-0 flex flex-col p-5"
     class="min-w-0 flex-1 flex flex-col overflow-hidden bg-slate-50"
   >
+    <!-- 顶部：左右栏开关 -->
+    <div class="mb-3 flex shrink-0 items-center justify-between border-b pb-2">
+      <el-button size="small" text @click="emit('toggleLeft')">
+        <span class="mr-1">{{ showLeft ? '◀' : '▶' }}</span>
+        {{ showLeft ? '收起目录' : '展开目录' }}
+      </el-button>
+      <el-button size="small" text @click="emit('toggleRight')">
+        {{ showRight ? '收起编辑区' : '展开编辑区' }}
+        <span class="ml-1">{{ showRight ? '▶' : '◀' }}</span>
+      </el-button>
+    </div>
+
     <el-skeleton v-if="loadingContent" :rows="6" animated />
 
     <BrowseCenterStory
@@ -97,6 +109,10 @@ const props = defineProps<{
   sourceType: SourceTypeValue
   /** 卡片名称 */
   cardName?: string
+  /** 左侧目录是否展开 */
+  showLeft?: boolean
+  /** 右侧编辑区是否展开 */
+  showRight?: boolean
 }>()
 
 const emit = defineEmits<{
@@ -109,6 +125,10 @@ const emit = defineEmits<{
   'update:currentVersionId': [id: number | null]
   'update:selectedVersionKey': [key: string]
   'select-line': [line: DialogueLineVO]
+  /** 切换左侧目录 */
+  toggleLeft: []
+  /** 切换右侧编辑区 */
+  toggleRight: []
 }>()
 
 const currentVersionIdComputed = computed({

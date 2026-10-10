@@ -161,3 +161,49 @@ export function dialogueSegmentTypeLabel(type?: number | null): string {
     return DIALOGUE_SEGMENT_TYPE_LABEL[DIALOGUE_SEGMENT_TYPE.STICKER]
   return '未知'
 }
+
+/** 创建方式：为自己创建 / 代他人创建 */
+export const CREATE_MODE = {
+  SELF: 'self',
+  DELEGATE: 'delegate',
+} as const
+
+export type CreateMode = (typeof CREATE_MODE)[keyof typeof CREATE_MODE]
+
+export const CREATE_MODE_LABEL: Record<CreateMode, string> = {
+  [CREATE_MODE.SELF]: '为自己创建',
+  [CREATE_MODE.DELEGATE]: '代他人创建',
+}
+
+/** 是否为自己创建 */
+export function isSelfCreate(mode: CreateMode): boolean {
+  return mode === CREATE_MODE.SELF
+}
+
+/** 是否为代他人创建 */
+export function isDelegateCreate(mode: CreateMode): boolean {
+  return mode === CREATE_MODE.DELEGATE
+}
+
+/** 贡献者类型：已注册用户 / 无账号 */
+export const CONTRIBUTOR_KIND = {
+  USER: 'user',
+  ANONYMOUS: 'anonymous',
+} as const
+
+export type ContributorKind = (typeof CONTRIBUTOR_KIND)[keyof typeof CONTRIBUTOR_KIND]
+
+export const CONTRIBUTOR_KIND_LABEL: Record<ContributorKind, string> = {
+  [CONTRIBUTOR_KIND.USER]: '已注册用户',
+  [CONTRIBUTOR_KIND.ANONYMOUS]: '无账号（仅姓名）',
+}
+
+/** 是否已注册用户 */
+export function isRegisteredContributor(kind: ContributorKind): boolean {
+  return kind === CONTRIBUTOR_KIND.USER
+}
+
+/** 是否无账号贡献者 */
+export function isAnonymousContributor(kind: ContributorKind): boolean {
+  return kind === CONTRIBUTOR_KIND.ANONYMOUS
+}

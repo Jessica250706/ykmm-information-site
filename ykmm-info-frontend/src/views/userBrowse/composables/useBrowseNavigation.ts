@@ -1,5 +1,5 @@
 import { useRouter } from 'vue-router'
-import { UserRouteName } from '@/constants'
+import { BROWSE_KIND, UserRouteName } from '@/constants'
 
 export function useBrowseNavigation() {
   const router = useRouter()
@@ -7,14 +7,14 @@ export function useBrowseNavigation() {
   function goCategory(type: number, id: number) {
     router.push({
       name: UserRouteName.STORY_BROWSE_DETAIL,
-      params: { type: String(type), kind: 'category', id: String(id) },
+      params: { type: String(type), kind: BROWSE_KIND.CATEGORY, id: String(id) },
     })
   }
 
   function goStory(type: number, id: number) {
     router.push({
       name: UserRouteName.STORY_BROWSE_DETAIL,
-      params: { type: String(type), kind: 'story', id: String(id) },
+      params: { type: String(type), kind: BROWSE_KIND.STORY, id: String(id) },
     })
   }
 

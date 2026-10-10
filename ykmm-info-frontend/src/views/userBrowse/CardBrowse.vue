@@ -2,6 +2,7 @@
   <div class="card-dialogue-editor flex h-full gap-4 overflow-hidden">
     <!-- 左侧：话数列表 -->
     <CardEpisodeList
+      v-show="showLeft"
       :card-info="cardInfo"
       :current-id="currentEpisodeId"
       :episodes="episodes"
@@ -15,6 +16,10 @@
       v-model:current-version-id="currentVersionId"
       :card-detail="episodeDetail"
       :card-name="cardName"
+      :class="[
+        'h-full flex-1 min-w-0 overflow-hidden max-w-1/2',
+        { 'mx-auto': !showLeft && !showRight },
+      ]"
       :color="color"
       :current-category="null"
       :editing-line-id="editingLineId"
@@ -22,21 +27,25 @@
       :loading-content="loadingDetail"
       :loading-stories="false"
       :selected-version-key="selectedVersionKey"
+      :show-left="showLeft"
+      :show-right="showRight"
       :source-type="sourceType as SourceTypeValue"
       :stories="[]"
       :type-label="sourceLabel"
       :version-options="versionOptions"
       :version-select-items="versionSelectItems"
-      class="h-full flex-1 min-w-0 overflow-hidden"
       @go-back="handleBack"
       @go-category="() => {}"
       @go-story="() => {}"
       @select-line="handleSelectLine"
+      @toggle-left="showLeft = !showLeft"
+      @toggle-right="showRight = !showRight"
       @update:selected-version-key="handleSelectedVersionKeyChange"
     />
 
     <!-- 右侧：编辑区 -->
     <BrowseRight
+      v-show="showRight"
       v-model:editing-mode="editingMode"
       :all-lines="currentVersion?.lines ?? []"
       :current-option-version="currentOptionVersion"
@@ -99,6 +108,11 @@ const emit = defineEmits<{
 
 const route = useRoute()
 const router = useRouter()
+
+/** 左侧话数列表是否展开 */
+const showLeft = ref(true)
+/** 右侧编辑区是否展开 */
+const showRight = ref(true)
 
 /* -------- 卡面信息 -------- */
 const color = ref('blue')

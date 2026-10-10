@@ -2,7 +2,7 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import { useRouter } from 'vue-router'
 import { deleteStoryAPI } from '@/api/story'
 import { deleteStoryCategoryAPI } from '@/api/storyCategory'
-import { AdminRouteName, UserRouteName } from '@/constants'
+import { AdminRouteName, BROWSE_KIND, UserRouteName } from '@/constants'
 import type { StoryVO } from '@/types/story'
 import type { StoryCategoryVO } from '@/types/storyCategory'
 
@@ -98,7 +98,7 @@ export function useDetailActions(opts: Options) {
   function openStoryInNewTab(row: StoryVO) {
     const { href } = router.resolve({
       name: UserRouteName.STORY_BROWSE_DETAIL,
-      params: { type: String(row.categoryType ?? 1), kind: 'story', id: String(row.id) },
+      params: { type: String(row.categoryType ?? 1), kind: BROWSE_KIND.STORY, id: String(row.id) },
     })
     window.open(href, '_blank', 'noopener,noreferrer')
   }

@@ -66,10 +66,8 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
 import { ElMessage } from 'element-plus'
+import { CONTRIBUTOR_KIND, type ContributorKind, CREATE_MODE, type CreateMode } from '@/constants'
 import type { DialogueVersionOptionVO } from '@/types/dialogueVersion'
-
-type CreateMode = 'self' | 'delegate'
-type ContributorKind = 'user' | 'anonymous'
 
 /** 创建版本时携带的贡献者信息 */
 export interface CreateVersionPayload {
@@ -105,8 +103,8 @@ const dialogTitle = computed(() =>
 /** 打开对话框，重置状态 */
 function open(option: DialogueVersionOptionVO) {
   currentOption.value = option
-  mode.value = 'self'
-  contributorKind.value = 'user'
+  mode.value = CREATE_MODE.SELF
+  contributorKind.value = CONTRIBUTOR_KIND.USER
   contributorUserId.value = undefined
   contributorName.value = ''
   visible.value = true
@@ -128,7 +126,7 @@ function onConfirm() {
   if (!option) return
 
   // 为自己创建：不需要传贡献者信息，后端用当前登录用户
-  if (mode.value === 'self') {
+  if (mode.value === CREATE_MODE.SELF) {
     emit('confirm', {
       option,
       contributorUserId: null,
@@ -139,7 +137,7 @@ function onConfirm() {
   }
 
   // 代传已注册用户
-  if (contributorKind.value === 'user') {
+  if (contributorKind.value === CONTRIBUTOR_KIND.USER) {
     if (contributorUserId.value == null) {
       ElMessage.warning('请输入用户ID')
       return

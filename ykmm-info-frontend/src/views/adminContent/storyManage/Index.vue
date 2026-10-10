@@ -131,6 +131,7 @@ import {
 } from '@/components/ProTable'
 import {
   AdminRouteName,
+  BROWSE_KIND,
   STATUS,
   STATUS_LABEL,
   STATUS_OPTIONS,
@@ -216,7 +217,11 @@ function handleCreate() {
 function handleDetail(row: StoryVO) {
   const { href } = router.resolve({
     name: UserRouteName.STORY_BROWSE_DETAIL,
-    params: { type: String(row.categoryType), kind: 'category', id: String(row.categoryId) },
+    params: {
+      type: String(row.categoryType),
+      kind: BROWSE_KIND.CATEGORY,
+      id: String(row.categoryId),
+    },
   })
   window.open(href, '_blank')
 }
