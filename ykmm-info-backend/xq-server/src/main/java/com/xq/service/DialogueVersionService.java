@@ -63,6 +63,15 @@ public interface DialogueVersionService {
     List<DialogueVersionOptionVO> listTextVersionOptions(Integer sourceType, Long sourceId);
 
     /**
+     * 查询全部图片版本选项
+     *
+     * @param sourceType 来源类型：1-RC 2-RTV 3-Rabitter 4-剧情
+     * @param sourceId   来源主键
+     * @return 选项列表
+     */
+    List<DialogueVersionOptionVO> listImageVersionOptions(Integer sourceType, Long sourceId);
+
+    /**
      * 查询全部版本选项
      *
      * @param sourceType 来源类型：1-RC 2-RTV 3-Rabitter 4-剧情

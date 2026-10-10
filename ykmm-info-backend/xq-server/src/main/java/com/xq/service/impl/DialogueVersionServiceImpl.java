@@ -26,10 +26,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -244,68 +241,32 @@ public class DialogueVersionServiceImpl implements DialogueVersionService {
         log.info("删除对话版本成功，id={}", versionId);
     }
 
-    /**
-     * 查询全部文字版本选项
-     *
-     * @param sourceType 来源类型
-     * @param sourceId   来源主键
-     * @return 选项列表
-     */
     @Override
     public List<DialogueVersionOptionVO> listTextVersionOptions(Integer sourceType, Long sourceId) {
-        if (!DialogueSourceTypeEnum.isValid(sourceType)) {
-            throw new RuntimeException("来源类型不合法");
-        }
-        if (sourceId == null) {
-            throw new RuntimeException("来源ID不能为空");
-        }
+        return buildVersionOptions(sourceType, sourceId, EnumSet.of(DialogueFormatEnum.TEXT));
+    }
 
-        // 1. 查出当前来源下已有的文字版本
-        List<DialogueVersion> existed =
-                dialogueVersionMapper.listBySourceAndFormat(
-                        sourceType, sourceId, DialogueFormatEnum.TEXT.getValue());
+    @Override
+    public List<DialogueVersionOptionVO> listImageVersionOptions(Integer sourceType, Long sourceId) {
+        return buildVersionOptions(sourceType, sourceId, EnumSet.of(DialogueFormatEnum.IMAGE));
+    }
 
-        // 2. 建索引：language-scope -> versionId
-        Map<String, Long> existedMap = new HashMap<>();
-        if (existed != null) {
-            for (DialogueVersion v : existed) {
-                existedMap.put(keyOf(v.getLanguage(), v.getScope()), v.getId());
-            }
-        }
-
-        // 3. 枚举所有语言 × 范围的组合
-        List<DialogueVersionOptionVO> result = new ArrayList<>();
-        for (DialogueLanguageEnum lang : DialogueLanguageEnum.values()) {
-            for (DialogueScopeEnum scope : DialogueScopeEnum.values()) {
-                DialogueVersionOptionVO vo = new DialogueVersionOptionVO();
-                vo.setLanguage(lang.getValue());
-                vo.setLanguageLabel(lang.getLabel());
-                vo.setFormat(DialogueFormatEnum.TEXT.getValue());
-                vo.setFormatLabel(DialogueFormatEnum.TEXT.getLabel());
-                vo.setScope(scope.getValue());
-                vo.setScopeLabel(scope.getLabel());
-                vo.setLabel(lang.getLabel() + " · " + DialogueFormatEnum.TEXT.getLabel()
-                        + " · " + scope.getLabel());
-
-                Long versionId = existedMap.get(keyOf(lang.getValue(), scope.getValue()));
-                vo.setVersionId(versionId);
-                vo.setExists(versionId != null);
-
-                result.add(vo);
-            }
-        }
-        return result;
+    @Override
+    public List<DialogueVersionOptionVO> listVersionOptions(Integer sourceType, Long sourceId) {
+        return buildVersionOptions(sourceType, sourceId, EnumSet.allOf(DialogueFormatEnum.class));
     }
 
     /**
-     * 查询全部版本选项
+     * 构建版本选项列表的通用逻辑。
      *
      * @param sourceType 来源类型
      * @param sourceId   来源主键
+     * @param formats    需要枚举的 format 集合（文本版传 TEXT，图片版传 IMAGE，全部传所有）
      * @return 选项列表
      */
-    @Override
-    public List<DialogueVersionOptionVO> listVersionOptions(Integer sourceType, Long sourceId) {
+    private List<DialogueVersionOptionVO> buildVersionOptions(
+            Integer sourceType, Long sourceId, Set<DialogueFormatEnum> formats) {
+
         if (!DialogueSourceTypeEnum.isValid(sourceType)) {
             throw new RuntimeException("来源类型不合法");
         }
@@ -313,22 +274,25 @@ public class DialogueVersionServiceImpl implements DialogueVersionService {
             throw new RuntimeException("来源ID不能为空");
         }
 
-        // 1. 查出当前来源下已有的版本
+        // 1. 查库
         List<DialogueVersion> existed = dialogueVersionMapper.listBySource(sourceType, sourceId);
 
-        // 2. 建索引：language-scope -> versionId
+        // 2. 建索引：language + format + scope -> versionId
         Map<String, Long> existedMap = new HashMap<>();
         if (existed != null) {
             for (DialogueVersion v : existed) {
-                existedMap.put(keyOf(v.getLanguage(), v.getFormat(), v.getScope()), v.getId());
+                existedMap.put(
+                        keyOf(v.getLanguage(), v.getFormat(), v.getScope()), v.getId());
             }
         }
 
-        // 3. 枚举所有语言 × 范围的组合
+        // 3. 枚举所有语言 × 范围 × format（filter 用）
         List<DialogueVersionOptionVO> result = new ArrayList<>();
         for (DialogueLanguageEnum lang : DialogueLanguageEnum.values()) {
             for (DialogueScopeEnum scope : DialogueScopeEnum.values()) {
                 for (DialogueFormatEnum format : DialogueFormatEnum.values()) {
+                    if (!formats.contains(format)) continue;
+
                     DialogueVersionOptionVO vo = new DialogueVersionOptionVO();
                     vo.setLanguage(lang.getValue());
                     vo.setLanguageLabel(lang.getLabel());
@@ -338,7 +302,8 @@ public class DialogueVersionServiceImpl implements DialogueVersionService {
                     vo.setScopeLabel(scope.getLabel());
                     vo.setLabel(lang.getLabel() + " · " + format.getLabel() + " · " + scope.getLabel());
 
-                    Long versionId = existedMap.get(keyOf(lang.getValue(), format.getValue(), scope.getValue()));
+                    Long versionId = existedMap.get(
+                            keyOf(lang.getValue(), format.getValue(), scope.getValue()));
                     vo.setVersionId(versionId);
                     vo.setExists(versionId != null);
 

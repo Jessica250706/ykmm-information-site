@@ -47,7 +47,12 @@
       />
 
       <BrowseCenterStory
-        v-else-if="cardDetail && sourceType === SOURCE_TYPE.RC"
+        v-else-if="
+          cardDetail &&
+          (sourceType === SOURCE_TYPE.RC ||
+            sourceType === SOURCE_TYPE.RTV ||
+            sourceType === SOURCE_TYPE.RABITTER)
+        "
         v-model:current-version-id="currentVersionIdComputed"
         v-model:selected-version-key="selectedVersionKeyComputed"
         :card-detail="cardDetail"

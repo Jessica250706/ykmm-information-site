@@ -1,7 +1,7 @@
 <template>
-  <section class="card-list">
+  <section class="card-list h-full flex flex-col">
     <!-- 标题 + 搜索 -->
-    <div class="mb-5 flex flex-wrap items-center justify-between gap-3">
+    <div class="mb-5 flex flex-wrap items-center justify-between gap-3 shrink-0">
       <div class="flex items-center gap-3">
         <h1 class="text-xl font-semibold">卡面</h1>
         <!-- 卡片大小切换 -->
@@ -27,7 +27,7 @@
     </div>
 
     <!-- 筛选行 -->
-    <div class="mb-5 flex items-center gap-3 col-4">
+    <div class="mb-5 flex items-center gap-3 col-4 shrink-0">
       <el-select
         v-model="filter.personIds"
         :max-collapse-tags="2"
@@ -96,7 +96,7 @@
       v-loading="loading && !list.length"
       :infinite-scroll-disabled="disabled || loading"
       :infinite-scroll-distance="80"
-      class="min-h-40"
+      class="min-h-40 flex-1 overflow-y-auto"
     >
       <div v-if="list.length" :class="['grid gap-4', gridClass]">
         <article

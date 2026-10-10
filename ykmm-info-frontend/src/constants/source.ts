@@ -44,7 +44,7 @@ export const SOURCE_TYPE_OPTIONS = [
   { value: SOURCE_TYPE.STORY, label: SOURCE_TYPE_LABEL[SOURCE_TYPE.STORY] },
 ] as const
 
-/** el-tag 的 type 映射（可选，视视觉需要调整） */
+/** el-tag 的 type 映射 */
 export const SOURCE_TYPE_TAG_TYPE: Record<SourceTypeValue, TagType> = {
   [SOURCE_TYPE.NONE]: 'info',
   [SOURCE_TYPE.RC]: 'warning',

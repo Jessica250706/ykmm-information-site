@@ -198,10 +198,30 @@ function handleBack() {
   })
 }
 
+function chooseOption() {
+  if (isRc.value) {
+    return UserRouteName.CARD_RC_BROWSE
+  } else if (isRtv.value) {
+    return UserRouteName.CARD_RTV_BROWSE
+  } else if (isRabitter.value) {
+    return UserRouteName.CARD_RABITTER_BROWSE
+  }
+}
+
+function chooseType() {
+  if (isRc.value) {
+    return SOURCE_TYPE.RC
+  } else if (isRtv.value) {
+    return SOURCE_TYPE.RTV
+  } else if (isRabitter.value) {
+    return SOURCE_TYPE.RABITTER
+  }
+}
+
 function handleGoto() {
   router.push({
-    name: UserRouteName.CARD_RC_BROWSE,
-    query: { sourceType: SOURCE_TYPE.RC, cardId: String(cardId.value) },
+    name: chooseOption(),
+    query: { sourceType: chooseType(), cardId: String(cardId.value) },
   })
 }
 

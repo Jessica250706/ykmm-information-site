@@ -151,6 +151,7 @@
 
         <!-- 操作 -->
         <template #action="{ row }">
+          <el-button size="small" type="primary" link @click="handleDetail(row)">详情</el-button>
           <el-button size="small" type="primary" link @click="handleEdit(row)">编辑</el-button>
           <el-dropdown trigger="click">
             <el-button size="small" type="primary" link>
@@ -194,6 +195,7 @@ import {
   cardAttributeLabel,
   cardMaxRarityLabel,
   statusLabel,
+  UserRouteName,
 } from '@/constants'
 import { usePersonStore } from '@/stores'
 import type { CardPageQueryDTO, CardVO } from '@/types/card'
@@ -287,6 +289,16 @@ function handleEdit(row: CardVO) {
     name: AdminRouteName.CARD_EDIT,
     params: { id: String(row.id) },
   })
+}
+
+function handleDetail(row: CardVO) {
+  const { href } = router.resolve({
+    name: UserRouteName.CARD_DETAIL,
+    params: {
+      id: String(row.id),
+    },
+  })
+  window.open(href, '_blank')
 }
 
 /** 管理 RC */

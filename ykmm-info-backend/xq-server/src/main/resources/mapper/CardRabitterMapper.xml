@@ -20,7 +20,7 @@
 
   <select id="getById" resultType="com.xq.entity.CardRabitter">
     SELECT <include refid="baseColumns"/>
-    FROM card_rabbiter
+    FROM card_rabitter
     WHERE id = #{id}
   </select>
 

@@ -35,13 +35,12 @@ export function getCoverImage(row: CardVO): string | undefined {
   const images = row.images ?? []
   const byType = (t: number) => images.find((i) => i.imageType === t)?.url
 
-  if (row.maxRarity === CARD_MAX_RARITY.UR) {
-    // UR：优先竖卡 → 横卡
-    return byType(CARD_IMAGE_TYPE.UR_VERTICAL) ?? byType(CARD_IMAGE_TYPE.UR_HORIZONTAL)
-  }
-  // 非 UR：优先普通 SSR → SSR隐藏款 → SR
   return (
-    byType(CARD_IMAGE_TYPE.SSR) ?? byType(CARD_IMAGE_TYPE.SSR_HIDDEN) ?? byType(CARD_IMAGE_TYPE.SR)
+    byType(CARD_IMAGE_TYPE.UR_VERTICAL) ??
+    byType(CARD_IMAGE_TYPE.UR_HORIZONTAL) ??
+    byType(CARD_IMAGE_TYPE.SSR) ??
+    byType(CARD_IMAGE_TYPE.SSR_HIDDEN) ??
+    byType(CARD_IMAGE_TYPE.SR)
   )
 }
 

@@ -99,6 +99,20 @@ public class DialogueVersionController {
     }
 
     /**
+     * 查询全部图片版本选项（供下拉框使用）
+     *
+     * @param sourceType 来源类型：1-RC 2-RTV 3-Rabitter 4-剧情
+     * @param sourceId   来源主键
+     * @return 选项列表
+     */
+    @GetMapping("/img-options")
+    public Result<List<DialogueVersionOptionVO>> imgOptions(
+            @RequestParam Integer sourceType,
+            @RequestParam Long sourceId) {
+        return Result.success(dialogueVersionService.listImageVersionOptions(sourceType, sourceId));
+    }
+
+    /**
      * 查询全部版本选项（供下拉框使用）
      *
      * @param sourceType 来源类型：1-RC 2-RTV 3-Rabitter 4-剧情
