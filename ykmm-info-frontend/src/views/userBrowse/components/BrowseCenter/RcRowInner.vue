@@ -17,7 +17,14 @@
         {{ line.speakerName }}
       </div>
 
+      <!-- 纯图片表情包：无气泡，只显示大图 -->
+      <div v-if="isStickerImageOnly" class="rc-sticker">
+        <DialogueLineContent :line="line" />
+      </div>
+
+      <!-- 文字 / 混合内容：正常气泡 -->
       <div
+        v-else
         :class="right ? 'rc-bubble--right' : 'rc-bubble--left'"
         :style="right ? chatBubbleStyle(line.personThemeColor) : undefined"
         class="rc-bubble"
@@ -30,6 +37,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
+import { DIALOGUE_SEGMENT_TYPE } from '@/constants'
 import { isRightSide } from '@/constants/dialogueLine'
 import type { DialogueLineVO } from '@/types/dialogueLine'
 import { avatarBubbleStyle, chatBubbleStyle } from '@/utils'
@@ -40,6 +48,20 @@ const props = defineProps<{
 }>()
 
 const right = computed(() => isRightSide(props.line.side))
+
+/**
+ * 是否为“纯图片表情包”行：
+ * - 至少有一个 segment
+ * - 所有 segment 都是 STICKER 类型
+ * - 所有 STICKER 都带 stickerImageUrl
+ *
+ * 满足时去掉气泡，直接渲染大图。
+ */
+const isStickerImageOnly = computed(() => {
+  const segs = props.line.segments ?? []
+  if (!segs.length) return false
+  return segs.every((s) => s.segmentType === DIALOGUE_SEGMENT_TYPE.STICKER && !!s.stickerImageUrl)
+})
 </script>
 
 <style lang="scss" scoped>
@@ -84,5 +106,14 @@ const right = computed(() => isRightSide(props.line.side))
 .rc-bubble--right {
   border-top-right-radius: 2px;
   background: var(--el-color-primary-light-9);
+}
+
+/* 纯图片表情包容器：无背景、无内边距，让图片直接呈现 */
+.rc-sticker {
+  display: inline-block;
+  line-height: 0;
+  background: transparent;
+  padding: 0;
+  border: none;
 }
 </style>
