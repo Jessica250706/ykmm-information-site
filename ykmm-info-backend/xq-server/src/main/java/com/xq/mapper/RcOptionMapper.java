@@ -74,4 +74,12 @@ public interface RcOptionMapper {
      * @return 影响行数
      */
     int deleteByLineId(@Param("lineId") Long lineId);
+
+    /**
+     * 根据版本ID列表批量删除 RC 选项
+     *
+     * @param versionIds 版本ID列表（不能为空）
+     * @return 影响行数
+     */
+    int deleteByVersionIds(@Param("versionIds") List<Long> versionIds);
 }

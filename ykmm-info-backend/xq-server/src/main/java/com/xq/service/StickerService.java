@@ -1,6 +1,5 @@
 package com.xq.service;
 
-import com.github.pagehelper.PageInfo;
 import com.xq.dto.StickerDTO;
 import com.xq.dto.StickerPageQueryDTO;
 import com.xq.result.PageResult;

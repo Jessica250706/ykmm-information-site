@@ -61,4 +61,12 @@
     ORDER BY version_id, sort
   </select>
 
+  <delete id="deleteByVersionIds">
+    DELETE FROM dialogue_image
+    WHERE version_id IN
+    <foreach collection="versionIds" item="vid" open="(" separator="," close=")">
+      #{vid}
+    </foreach>
+  </delete>
+
 </mapper>

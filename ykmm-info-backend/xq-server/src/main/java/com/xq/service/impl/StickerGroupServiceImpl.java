@@ -14,6 +14,7 @@ import com.xq.vo.StickerGroupVO;
 import com.xq.vo.StickerGroupWithStickersVO;
 import com.xq.vo.StickerVO;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -30,7 +31,9 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class StickerGroupServiceImpl implements StickerGroupService {
 
+    @Autowired
     private final StickerGroupMapper stickerGroupMapper;
+    @Autowired
     private final StickerMapper stickerMapper;
 
     /**
@@ -40,7 +43,6 @@ public class StickerGroupServiceImpl implements StickerGroupService {
     public PageResult<StickerGroupVO> pageQuery(StickerGroupPageQueryDTO queryDTO) {
         PageHelper.startPage(queryDTO.getPageNum(), queryDTO.getPageSize());
         Page<StickerGroupVO> page = stickerGroupMapper.pageQuery(queryDTO);
-
         return new PageResult<>(page.getTotal(), page);
     }
 
@@ -91,10 +93,6 @@ public class StickerGroupServiceImpl implements StickerGroupService {
     @Override
     @Transactional
     public void update(StickerGroupDTO stickerGroupDTO) {
-        if (stickerGroupDTO.getId() == null) {
-            throw new RuntimeException("分组ID不能为空");
-        }
-
         StickerGroup existing = stickerGroupMapper.getEntityById(stickerGroupDTO.getId());
         if (existing == null) {
             throw new RuntimeException("表情包分组不存在");

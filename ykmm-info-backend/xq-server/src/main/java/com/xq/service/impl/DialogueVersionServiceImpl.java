@@ -1,9 +1,9 @@
 package com.xq.service.impl;
 
-import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
-import com.xq.constant.UserRoleConstant;
+import com.github.pagehelper.PageInfo;
 import com.xq.context.BaseContext;
+import com.xq.context.RoleContext;
 import com.xq.dto.DialogueVersionDTO;
 import com.xq.dto.DialogueVersionPageQueryDTO;
 import com.xq.entity.DialogueImage;
@@ -11,6 +11,8 @@ import com.xq.entity.DialogueLine;
 import com.xq.entity.DialogueSegment;
 import com.xq.entity.DialogueVersion;
 import com.xq.enums.*;
+import com.xq.exception.ForbiddenException;
+import com.xq.exception.UnauthorizedException;
 import com.xq.mapper.DialogueImageMapper;
 import com.xq.mapper.DialogueLineMapper;
 import com.xq.mapper.DialogueSegmentMapper;
@@ -18,6 +20,7 @@ import com.xq.mapper.DialogueVersionMapper;
 import com.xq.result.PageResult;
 import com.xq.service.DialogueVersionContributorService;
 import com.xq.service.DialogueVersionService;
+import com.xq.support.ViewerFilterSupport;
 import com.xq.vo.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
@@ -38,81 +41,64 @@ public class DialogueVersionServiceImpl implements DialogueVersionService {
 
     @Autowired
     private DialogueVersionMapper dialogueVersionMapper;
-
     @Autowired
     private DialogueLineMapper dialogueLineMapper;
-
     @Autowired
     private DialogueSegmentMapper dialogueSegmentMapper;
-
     @Autowired
     private DialogueImageMapper dialogueImageMapper;
-
     @Autowired
     private DialogueVersionContributorService dialogueVersionContributorService;
 
     /**
-     * 分页查询对话版本
-     *
-     * @param query 查询条件
-     * @return 分页结果
+     * 分页查询（三身份过滤）
      */
     @Override
     public PageResult<DialogueVersionVO> pageQuery(DialogueVersionPageQueryDTO query) {
+        // 由角色上下文决定 status / viewerId
+        Long viewerId = ViewerFilterSupport.apply(query::setStatus);
+
         PageHelper.startPage(query.getPageNum(), query.getPageSize());
-        Page<DialogueVersion> page = (Page<DialogueVersion>)
-                dialogueVersionMapper.pageQuery(query);
-        List<DialogueVersionVO> voList = page.getResult().stream()
+        List<DialogueVersion> list = dialogueVersionMapper.pageQuery(query, viewerId);
+        PageInfo<DialogueVersion> page = new PageInfo<>(list);
+
+        List<DialogueVersionVO> voList = page.getList().stream()
                 .map(this::toBasicVO)
                 .collect(Collectors.toList());
+
         return new PageResult<>(page.getTotal(), voList);
     }
 
     /**
-     * 查询某来源下的全部版本
-     *
-     * @param sourceType 来源类型
-     * @param sourceId   来源ID
-     * @return 版本列表
+     * 管理端：按来源查询全部版本
      */
     @Override
     public List<DialogueVersionVO> listBySource(Integer sourceType, Long sourceId) {
-        if (!DialogueSourceTypeEnum.isValid(sourceType)) {
-            throw new RuntimeException("来源类型不合法");
+        List<DialogueVersion> list = dialogueVersionMapper.listBySource(sourceType, sourceId);
+        if (list == null || list.isEmpty()) {
+            return Collections.emptyList();
         }
-        if (sourceId == null) {
-            throw new RuntimeException("来源ID不能为空");
-        }
-        List<DialogueVersion> list =
-                dialogueVersionMapper.listBySource(sourceType, sourceId);
-        List<DialogueVersionVO> result = new ArrayList<>();
-        if (list == null) {
-            return result;
-        }
-        for (DialogueVersion v : list) {
-            result.add(toBasicVO(v));
-        }
-        return result;
+        return list.stream()
+                .map(this::toBasicVO)
+                .collect(Collectors.toList());
     }
 
     /**
-     * 查询版本详情
-     *
-     * @param versionId 版本ID
-     * @return 版本详情
+     * 查询版本详情（三身份可见性校验）
      */
     @Override
     public DialogueVersionVO detail(Long versionId) {
-        if (versionId == null) {
-            throw new RuntimeException("版本ID不能为空");
-        }
         DialogueVersion version = dialogueVersionMapper.getById(versionId);
         if (version == null) {
             throw new RuntimeException("对话版本不存在");
         }
+
+        // 三身份可见性校验
+        ViewerFilterSupport.checkCanView(version.getStatus(), version.getCreatorId());
+
         DialogueVersionVO vo = toBasicVO(version);
 
-        // 根据 format 加载内容
+        // 按 format 加载内容
         if (DialogueFormatEnum.TEXT.getValue().equals(version.getFormat())) {
             vo.setLines(loadLines(versionId));
         } else if (DialogueFormatEnum.IMAGE.getValue().equals(version.getFormat())) {
@@ -123,33 +109,15 @@ public class DialogueVersionServiceImpl implements DialogueVersionService {
 
     /**
      * 创建版本
-     *
-     * @param dto 创建参数
-     * @return 新版本ID
+     * <p>
+     * - 管理员：直接已发布，reviewer = 自己
+     * - 用户：待审核
+     * - 游客：拒绝
      */
     @Override
     @Transactional
     public Long create(DialogueVersionDTO dto) {
-        if (dto == null) {
-            throw new RuntimeException("参数不能为空");
-        }
-        if (!DialogueSourceTypeEnum.isValid(dto.getSourceType())) {
-            throw new RuntimeException("来源类型不合法");
-        }
-        if (dto.getSourceId() == null) {
-            throw new RuntimeException("来源ID不能为空");
-        }
-        if (!DialogueLanguageEnum.isValid(dto.getLanguage())) {
-            throw new RuntimeException("语言不合法");
-        }
-        if (!DialogueFormatEnum.isValid(dto.getFormat())) {
-            throw new RuntimeException("形式不合法");
-        }
-        if (!DialogueScopeEnum.isValid(dto.getScope())) {
-            throw new RuntimeException("范围不合法");
-        }
-
-        // 唯一性校验
+        // 唯一性校验（业务）
         DialogueVersion exist = dialogueVersionMapper.getByUniqueKey(
                 dto.getSourceType(), dto.getSourceId(),
                 dto.getLanguage(), dto.getFormat(), dto.getScope());
@@ -160,67 +128,73 @@ public class DialogueVersionServiceImpl implements DialogueVersionService {
         DialogueVersion version = new DialogueVersion();
         BeanUtils.copyProperties(dto, version);
 
-        /** 当前操作人 */
         Long currentUserId = BaseContext.getCurrentId();
-        Integer creatorRole = BaseContext.getCurrentRole(); // 1-管理员 2-普通用户
+        Integer creatorRole = BaseContext.getCurrentRole();
         version.setCreatorId(currentUserId);
         version.setCreatorRole(creatorRole);
 
-        /**
-         * 关键：根据角色决定初始审核状态
-         * - 管理员：直接已发布
-         * - 普通用户：待审核
-         */
-        if (UserRoleConstant.ADMIN == creatorRole) {
-            version.setStatus(StatusEnum.PUBLISHED.getValue());
-            version.setReviewerId(currentUserId);
-            version.setReviewTime(LocalDateTime.now());
-            version.setReviewRemark("管理员直接发布");
-        } else {
-            version.setStatus(StatusEnum.PENDING.getValue());
-            version.setReviewerId(null);
-            version.setReviewTime(null);
-            version.setReviewRemark(null);
+        // 身份决定初始状态
+        switch (UserRoleEnum.current()) {
+            case ADMIN -> {
+                version.setStatus(StatusEnum.PUBLISHED.getValue());
+                version.setReviewerId(currentUserId);
+                version.setReviewTime(LocalDateTime.now());
+                version.setReviewRemark("管理员直接发布");
+            }
+            case USER -> {
+                version.setStatus(StatusEnum.PENDING.getValue());
+                version.setReviewerId(null);
+                version.setReviewTime(null);
+                version.setReviewRemark(null);
+            }
+            case GUEST -> throw new UnauthorizedException("请先登录");
         }
 
         dialogueVersionMapper.insert(version);
 
         Long versionId = version.getId();
-        log.info("创建对话版本成功，id={}", versionId);
+        log.info("创建对话版本成功，id={}, status={}, creatorId={}",
+                versionId, version.getStatus(), currentUserId);
 
-        // 记录贡献者：uploader 是当前登录用户，contributorId 由 DTO 决定（管理员代传时传）
-        Long uploaderId = BaseContext.getCurrentId();
-        Integer uploaderRole = BaseContext.getCurrentRole();
+        // 记录贡献者
         dialogueVersionContributorService.recordCreator(
                 versionId,
-                uploaderId,
-                uploaderRole,
+                currentUserId,
+                creatorRole,
                 dto.getContributorUserId(),
-                dto.getContributorName()
-        );
+                dto.getContributorName());
 
         return versionId;
     }
 
     /**
      * 删除版本
-     *
-     * @param versionId 版本ID
+     * <p>
+     * - 管理员：可删任意
+     * - 用户：只能删自己创建的
+     * - 游客：拒绝
      */
     @Override
     @Transactional
     public void delete(Long versionId) {
-        if (versionId == null) {
-            throw new RuntimeException("版本ID不能为空");
-        }
         DialogueVersion version = dialogueVersionMapper.getById(versionId);
         if (version == null) {
             throw new RuntimeException("对话版本不存在");
         }
 
+        // 权限：三身份
+        if (RoleContext.isGuest()) {
+            throw new UnauthorizedException("请先登录");
+        }
+        if (RoleContext.isUser()) {
+            if (!Objects.equals(version.getCreatorId(), BaseContext.getCurrentId())) {
+                throw new ForbiddenException("只能删除自己创建的对话版本");
+            }
+        }
+        // 管理员直接放行
+
         // 级联删除文字内容
-        List<DialogueLine> lines =
-                dialogueLineMapper.listByVersionId(versionId);
+        List<DialogueLine> lines = dialogueLineMapper.listByVersionId(versionId);
         if (lines != null && !lines.isEmpty()) {
             List<Long> lineIds = lines.stream()
                     .map(DialogueLine::getId)
@@ -238,8 +212,13 @@ public class DialogueVersionServiceImpl implements DialogueVersionService {
         // 级联清理贡献者
         dialogueVersionContributorService.deleteByVersionId(versionId);
 
-        log.info("删除对话版本成功，id={}", versionId);
+        log.info("删除对话版本成功，id={}, 操作人={}, 角色={}",
+                versionId, BaseContext.getCurrentId(), UserRoleEnum.current());
     }
+
+    /* ============================================================
+     * 版本选项（三身份过滤）
+     * ============================================================ */
 
     @Override
     public List<DialogueVersionOptionVO> listTextVersionOptions(Integer sourceType, Long sourceId) {
@@ -257,12 +236,7 @@ public class DialogueVersionServiceImpl implements DialogueVersionService {
     }
 
     /**
-     * 构建版本选项列表的通用逻辑。
-     *
-     * @param sourceType 来源类型
-     * @param sourceId   来源主键
-     * @param formats    需要枚举的 format 集合（文本版传 TEXT，图片版传 IMAGE，全部传所有）
-     * @return 选项列表
+     * 构建版本选项列表
      */
     private List<DialogueVersionOptionVO> buildVersionOptions(
             Integer sourceType, Long sourceId, Set<DialogueFormatEnum> formats) {
@@ -274,19 +248,28 @@ public class DialogueVersionServiceImpl implements DialogueVersionService {
             throw new RuntimeException("来源ID不能为空");
         }
 
-        // 1. 查库
-        List<DialogueVersion> existed = dialogueVersionMapper.listBySource(sourceType, sourceId);
+        // 计算 viewer 过滤条件
+        Integer statusFilter = null;
+        Long viewerId = null;
+        if (RoleContext.isGuest()) {
+            statusFilter = StatusEnum.PUBLISHED.getValue();
+        } else if (RoleContext.isUser()) {
+            viewerId = BaseContext.getCurrentId();
+        }
 
-        // 2. 建索引：language + format + scope -> versionId
+        // 查库
+        List<DialogueVersion> existed = dialogueVersionMapper.listBySourceIds(
+                sourceType, List.of(sourceId), statusFilter, viewerId);
+
+        // 建索引：language + format + scope -> versionId
         Map<String, Long> existedMap = new HashMap<>();
         if (existed != null) {
             for (DialogueVersion v : existed) {
-                existedMap.put(
-                        keyOf(v.getLanguage(), v.getFormat(), v.getScope()), v.getId());
+                existedMap.put(keyOf(v.getLanguage(), v.getFormat(), v.getScope()), v.getId());
             }
         }
 
-        // 3. 枚举所有语言 × 范围 × format（filter 用）
+        // 枚举所有组合
         List<DialogueVersionOptionVO> result = new ArrayList<>();
         for (DialogueLanguageEnum lang : DialogueLanguageEnum.values()) {
             for (DialogueScopeEnum scope : DialogueScopeEnum.values()) {
@@ -300,7 +283,8 @@ public class DialogueVersionServiceImpl implements DialogueVersionService {
                     vo.setFormatLabel(format.getLabel());
                     vo.setScope(scope.getValue());
                     vo.setScopeLabel(scope.getLabel());
-                    vo.setLabel(lang.getLabel() + " · " + format.getLabel() + " · " + scope.getLabel());
+                    vo.setLabel(lang.getLabel() + " · " + format.getLabel()
+                            + " · " + scope.getLabel());
 
                     Long versionId = existedMap.get(
                             keyOf(lang.getValue(), format.getValue(), scope.getValue()));
@@ -314,20 +298,15 @@ public class DialogueVersionServiceImpl implements DialogueVersionService {
         return result;
     }
 
-    // ---------------------------------------------------
-    // 私有方法
-    // ---------------------------------------------------
+    /* ============================================================
+     * 私有方法
+     * ============================================================ */
 
     /**
-     * 基础 VO 转换
-     *
-     * @param version 实体
-     * @return VO
+     * 实体 → 基础 VO
      */
     private DialogueVersionVO toBasicVO(DialogueVersion version) {
-        if (version == null) {
-            return null;
-        }
+        if (version == null) return null;
         DialogueVersionVO vo = new DialogueVersionVO();
         BeanUtils.copyProperties(version, vo);
         vo.setSourceTypeLabel(DialogueSourceTypeEnum.getLabel(version.getSourceType()));
@@ -339,22 +318,17 @@ public class DialogueVersionServiceImpl implements DialogueVersionService {
 
     /**
      * 加载文字版本内容
-     *
-     * @param versionId 版本ID
-     * @return 句子列表
      */
     private List<DialogueLineVO> loadLines(Long versionId) {
         List<DialogueLine> lines = dialogueLineMapper.listByVersionId(versionId);
-        List<DialogueLineVO> result = new ArrayList<>();
         if (lines == null || lines.isEmpty()) {
-            return result;
+            return new ArrayList<>();
         }
 
         List<Long> lineIds = lines.stream()
                 .map(DialogueLine::getId)
                 .collect(Collectors.toList());
-        List<DialogueSegment> allSegments =
-                dialogueSegmentMapper.listByLineIds(lineIds);
+        List<DialogueSegment> allSegments = dialogueSegmentMapper.listByLineIds(lineIds);
 
         Map<Long, List<DialogueSegment>> segmentMap = new HashMap<>();
         if (allSegments != null) {
@@ -363,6 +337,7 @@ public class DialogueVersionServiceImpl implements DialogueVersionService {
             }
         }
 
+        List<DialogueLineVO> result = new ArrayList<>(lines.size());
         for (DialogueLine line : lines) {
             DialogueLineVO vo = new DialogueLineVO();
             BeanUtils.copyProperties(line, vo);
@@ -384,16 +359,13 @@ public class DialogueVersionServiceImpl implements DialogueVersionService {
 
     /**
      * 加载图片版本内容
-     *
-     * @param versionId 版本ID
-     * @return 图片列表
      */
     private List<DialogueImageVO> loadImages(Long versionId) {
         List<DialogueImage> images = dialogueImageMapper.listByVersionId(versionId);
-        List<DialogueImageVO> result = new ArrayList<>();
         if (images == null) {
-            return result;
+            return new ArrayList<>();
         }
+        List<DialogueImageVO> result = new ArrayList<>(images.size());
         for (DialogueImage img : images) {
             DialogueImageVO vo = new DialogueImageVO();
             BeanUtils.copyProperties(img, vo);
@@ -403,41 +375,9 @@ public class DialogueVersionServiceImpl implements DialogueVersionService {
     }
 
     /**
-     * 生成 language-scope 键
-     *
-     * @param language 语言
-     * @param scope    范围
-     * @return 键
-     */
-    private String keyOf(Integer language, Integer scope) {
-        return language + "-" + scope;
-    }
-
-    /**
      * 组合 key：language-format-scope
-     * 用于把「枚举组合」映射到「已存在的 versionId」
      */
     private String keyOf(Integer language, Integer format, Integer scope) {
         return language + "-" + format + "-" + scope;
-    }
-
-    private void checkEditPermission(DialogueVersion version) {
-        Long currentUserId = BaseContext.getCurrentId();
-        if (currentUserId == null) {
-            throw new RuntimeException("未登录");
-        }
-        Integer currentRole = BaseContext.getCurrentRole();
-        // 管理员直接放行
-        if (currentRole != null && currentRole == 1) {
-            return;
-        }
-        // 是否实际操作人
-        boolean isCreator = currentUserId.equals(version.getCreatorId());
-        // 是否是内容作者（涵盖管理员代传后的原作者）
-        boolean isAuthor = dialogueVersionContributorService.hasRole(
-                version.getId(), currentUserId, ContributorRoleEnum.AUTHOR.getValue());
-        if (!isCreator && !isAuthor) {
-            throw new RuntimeException("无权修改该对话版本");
-        }
     }
 }

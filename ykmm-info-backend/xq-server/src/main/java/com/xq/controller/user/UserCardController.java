@@ -1,59 +1,52 @@
 package com.xq.controller.user;
 
-import com.xq.dto.CardPageQueryDTO;
-import com.xq.result.PageResult;
+import com.xq.dto.CardDTO;
 import com.xq.result.Result;
 import com.xq.service.CardService;
-import com.xq.vo.CardEpisodeVO;
-import com.xq.vo.CardVO;
+import com.xq.validation.CreateGroup;
+import com.xq.validation.UpdateGroup;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 /**
- * 用户端 - 卡面浏览
+ * 用户端 - 卡面（写操作，仅自己）
+ * <p>
+ * 说明：
+ * - 新增：status 由 Service 设为"待审核"，creatorId 取 BaseContext
+ * - 更新：Service 层校验 creatorId 是否为当前用户（管理员例外）
  */
 @RestController("UserCardController")
 @RequestMapping("/user/card")
 @Slf4j
+@Validated
 public class UserCardController {
 
     @Autowired
     private CardService cardService;
 
     /**
-     * 分页查询已发布卡面
+     * 新增卡面
      *
-     * @param query 查询条件
-     * @return 分页结果
+     * @param dto 新增参数
+     * @return 新增后的主键
      */
-    @GetMapping("/page")
-    public Result<PageResult<CardVO>> page(CardPageQueryDTO query) {
-        return Result.success(cardService.pageQuery(query));
+    @PostMapping
+    public Result<Long> create(@RequestBody @Validated(CreateGroup.class) CardDTO dto) {
+        return Result.success(cardService.create(dto));
     }
 
     /**
-     * 查询卡面详情（不含对话）
+     * 编辑卡面
      *
-     * @param id 主键
-     * @return 卡面详情
+     * @param id  主键
+     * @param dto 编辑参数
+     * @return 统一返回
      */
-    @GetMapping("/{id}")
-    public Result<CardVO> detail(@PathVariable Long id) {
-        return Result.success(cardService.getById(id));
-    }
-
-    /**
-     * 查询某一话的对话
-     *
-     * @param sourceType 来源类型：1-RC 2-RTV 3-Rabitter
-     * @param sourceId   来源ID
-     * @return 话详情（含对话版本）
-     */
-    @GetMapping("/episode/dialogue")
-    public Result<CardEpisodeVO> episodeDialogue(
-            @RequestParam Integer sourceType,
-            @RequestParam Long sourceId) {
-        return Result.success(cardService.getEpisodeDialogue(sourceType, sourceId));
+    @PutMapping("/{id}")
+    public Result<Void> update(@PathVariable Long id, @RequestBody @Validated(UpdateGroup.class) CardDTO dto) {
+        cardService.update(id, dto);
+        return Result.success();
     }
 }

@@ -40,4 +40,21 @@ public interface CardRtvMapper {
      * 删除卡面下的全部 RTV
      */
     int deleteByCardId(@Param("cardId") Long cardId);
+
+    /**
+     * 根据卡面ID查询全部 RTV 主键
+     * <p>用于级联删除卡面时，先查出下属所有 RTV 主键</p>
+     *
+     * @param cardId 卡面ID
+     * @return RTV 主键列表
+     */
+    List<Long> listIdsByCardId(@Param("cardId") Long cardId);
+
+    /**
+     * 根据主键列表批量删除
+     *
+     * @param ids 主键列表（不能为空）
+     * @return 影响行数
+     */
+    int deleteByIds(@Param("ids") List<Long> ids);
 }

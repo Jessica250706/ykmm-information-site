@@ -7,43 +7,99 @@ import java.util.function.Consumer;
 
 /**
  * 角色上下文工具
+ * <p>
+ * 三种身份：
+ * - 游客（GUEST）：未登录，BaseContext.getCurrentRole() == null
+ * - 用户（USER）：已登录，role = 2
+ * - 管理员（ADMIN）：已登录，role = 1
  */
 public final class RoleContext {
 
     private RoleContext() {
     }
 
+    /* ============================================================
+     * 身份判断
+     * ============================================================ */
+
     /**
-     * 获取当前用户角色，未登录或未设置时默认 ADMIN
+     * 是否游客（未登录）
      */
-    public static int currentOrDefaultAdmin() {
-        Integer role = BaseContext.getCurrentRole();
-        return role == null ? UserRoleConstant.ADMIN : role;
+    public static boolean isGuest() {
+        return BaseContext.getCurrentRole() == null;
     }
 
     /**
-     * 当前用户是否管理员（未设置时视为管理员）
+     * 是否管理员
      */
     public static boolean isAdmin() {
-        return currentOrDefaultAdmin() == UserRoleConstant.ADMIN;
+        Integer role = BaseContext.getCurrentRole();
+        return role != null && role == UserRoleConstant.ADMIN;
     }
 
     /**
-     * 当前用户是否普通用户（未设置时视为管理员 → 返回 false）
+     * 是否普通用户
      */
     public static boolean isUser() {
-        return currentOrDefaultAdmin() == UserRoleConstant.USER;
+        Integer role = BaseContext.getCurrentRole();
+        return role != null && role == UserRoleConstant.USER;
+    }
+
+    /* ============================================================
+     * 查询过滤
+     * ============================================================ */
+
+    /**
+     * 应用访客过滤规则：
+     * - 管理员：不加任何限制
+     * - 游客：只查已发布
+     * - 用户：已发布 + 自己创建的
+     *
+     * <p>配合 Mapper XML 使用：</p>
+     * <pre>{@code
+     * <if test="status != null">
+     *   AND status = #{status}
+     * </if>
+     * <if test="viewerId != null">
+     *   AND (status = 1 OR creator_id = #{viewerId})
+     * </if>
+     * }</pre>
+     *
+     * @param setStatus   设置 status 的回调，例如 query::setStatus
+     * @param setViewerId 设置 viewerId 的回调，例如 query::setViewerId
+     */
+    public static void applyViewerFilter(Consumer<Integer> setStatus,
+                                         Consumer<Long> setViewerId) {
+        // 管理员：不限制
+        if (isAdmin()) {
+            if (setStatus != null) setStatus.accept(null);
+            if (setViewerId != null) setViewerId.accept(null);
+            return;
+        }
+
+        // 游客：只看已发布
+        if (isGuest()) {
+            if (setStatus != null) setStatus.accept(StatusEnum.PUBLISHED.getValue());
+            if (setViewerId != null) setViewerId.accept(null);
+            return;
+        }
+
+        // 用户：已发布 + 自己创建的
+        // 不设置 status，让 viewerId 分支接管
+        if (setStatus != null) setStatus.accept(null);
+        if (setViewerId != null) setViewerId.accept(BaseContext.getCurrentId());
     }
 
     /**
-     * 普通用户视角强制只查已发布内容。
-     * 管理员不覆盖，保持调用方传入的查询条件。
+     * 只关心"游客强制已发布"这一条的场景（等价于不查自己内容的接口）。
+     * 管理员和用户不覆盖调用方传入的 status。
      *
-     * @param setStatus 状态设置回调，例如 query::setStatus
+     * @param setStatus 状态设置回调
      */
-    public static void restrictToPublishedIfUser(Consumer<Integer> setStatus) {
+    public static void restrictToPublishedIfGuest(Consumer<Integer> setStatus) {
         if (setStatus == null) return;
-        if (!isUser()) return;
-        setStatus.accept(StatusEnum.PUBLISHED.getValue());
+        if (isGuest()) {
+            setStatus.accept(StatusEnum.PUBLISHED.getValue());
+        }
     }
 }

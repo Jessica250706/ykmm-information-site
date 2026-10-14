@@ -100,4 +100,12 @@
        OR answer_line_id = #{lineId}
   </delete>
 
+  <delete id="deleteByVersionIds">
+    DELETE FROM rc_option
+    WHERE version_id IN
+    <foreach collection="versionIds" item="vid" open="(" separator="," close=")">
+      #{vid}
+    </foreach>
+  </delete>
+
 </mapper>

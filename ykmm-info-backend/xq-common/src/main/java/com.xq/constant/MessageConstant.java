@@ -15,5 +15,8 @@ public class MessageConstant {
     public static final String USER_CANCEL = "用户取消";
     public static final String LOGIN_FAILED = "登录失败";
     public static final String UPLOAD_FAILED = "文件上传失败";
+    public static final String UNAUTHORIZED = "未登录或登录已失效，请重新登录";
+    public static final String FORBIDDEN = "无权限访问";
+    public static final String NOT_CONTENT_OWNER = "只能操作自己创建的内容";
 
 }

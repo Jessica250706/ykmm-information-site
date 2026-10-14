@@ -136,4 +136,12 @@ public interface DialogueVersionContributorMapper {
      * @return 贡献者列表
      */
     List<DialogueVersionContributorVO> listByVersionIds(@Param("versionIds") List<Long> versionIds);
+
+    /**
+     * 根据版本ID列表批量删除贡献者
+     *
+     * @param versionIds 版本ID列表（不能为空）
+     * @return 影响行数
+     */
+    int deleteByVersionIds(@Param("versionIds") List<Long> versionIds);
 }

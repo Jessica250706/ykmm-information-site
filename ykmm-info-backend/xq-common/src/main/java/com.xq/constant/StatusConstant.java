@@ -1,17 +1,24 @@
 package com.xq.constant;
 
 /**
- * 状态常量，启用或者禁用
+ * 状态常量
  */
 public class StatusConstant {
 
     /**
-     * 启用
+     * 已发布
      */
-    public static final Integer ENABLE = 1;
+    public static final int PUBLISHED = 1;
 
     /**
-     * 禁用
+     * 待审核
      */
-    public static final Integer DISABLE = 0;
+    public static final int PENDING = 2;
+
+    /**
+     * 已拒绝
+     */
+    public static final int REJECTED = 3;
+
+    private StatusConstant() {}
 }

@@ -1,17 +1,17 @@
 package com.xq.controller.admin;
 
-import com.github.pagehelper.PageInfo;
 import com.xq.dto.StickerDTO;
 import com.xq.dto.StickerPageQueryDTO;
 import com.xq.result.PageResult;
 import com.xq.result.Result;
 import com.xq.service.StickerService;
+import com.xq.validation.CreateGroup;
+import com.xq.validation.UpdateGroup;
 import com.xq.vo.StickerVO;
+import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-
-import jakarta.validation.Valid;
 
 /**
  * 表情包Controller
@@ -28,7 +28,7 @@ public class StickerController {
      * 分页查询表情包
      */
     @GetMapping("/page")
-    public Result<PageResult<StickerVO>> page(StickerPageQueryDTO queryDTO) {
+    public Result<PageResult<StickerVO>> page(@Validated StickerPageQueryDTO queryDTO) {
         return Result.success(stickerService.pageQuery(queryDTO));
     }
 
@@ -36,7 +36,7 @@ public class StickerController {
      * 根据ID查询表情包
      */
     @GetMapping("/{id}")
-    public Result<StickerVO> getById(@PathVariable Long id) {
+    public Result<StickerVO> getById(@PathVariable @NotNull(message = "表情包ID不能为空") Long id) {
         return Result.success(stickerService.getById(id));
     }
 
@@ -44,7 +44,7 @@ public class StickerController {
      * 新增表情包
      */
     @PostMapping
-    public Result<Void> save(@RequestBody @Valid StickerDTO stickerDTO) {
+    public Result<Void> save(@RequestBody @Validated(CreateGroup.class) StickerDTO stickerDTO) {
         stickerService.save(stickerDTO);
         return Result.success();
     }
@@ -53,7 +53,10 @@ public class StickerController {
      * 更新表情包
      */
     @PutMapping("/{id}")
-    public Result<Void> update(@PathVariable Long id, @RequestBody @Valid StickerDTO stickerDTO) {
+    public Result<Void> update(
+            @PathVariable @NotNull(message = "表情包ID不能为空") Long id,
+            @RequestBody @Validated(UpdateGroup.class) StickerDTO stickerDTO
+    ) {
         stickerDTO.setId(id);
         stickerService.update(stickerDTO);
         return Result.success();
@@ -63,7 +66,7 @@ public class StickerController {
      * 删除表情包
      */
     @DeleteMapping("/{id}")
-    public Result<Void> delete(@PathVariable Long id) {
+    public Result<Void> delete(@PathVariable @NotNull(message = "表情包ID不能为空") Long id) {
         stickerService.delete(id);
         return Result.success();
     }

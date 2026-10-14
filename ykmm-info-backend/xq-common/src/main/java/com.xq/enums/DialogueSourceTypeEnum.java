@@ -1,5 +1,6 @@
 package com.xq.enums;
 
+import com.xq.constant.DialogueSourceTypeConstant;
 import lombok.Getter;
 
 /**
@@ -11,27 +12,27 @@ public enum DialogueSourceTypeEnum {
     /**
      * 无
      */
-    NONE(0, "无"),
+    NONE(DialogueSourceTypeConstant.NONE, "无"),
 
     /**
      * 卡面 RC
      */
-    RC(1, "RC"),
+    RC(DialogueSourceTypeConstant.RC, "RC"),
 
     /**
      * 卡面 RTV
      */
-    RTV(2, "RTV"),
+    RTV(DialogueSourceTypeConstant.RTV, "RTV"),
+
+    /**
+     * Rabitter
+     */
+    RABITTER(DialogueSourceTypeConstant.RABITTER, "Rabitter"),
 
     /**
      * 剧情
      */
-    RABITTER(3, "Rabitter"),
-
-    /**
-     * 剧情
-     */
-    STORY(4, "剧情");
+    STORY(DialogueSourceTypeConstant.STORY, "剧情");
 
     private final Integer value;
     private final String label;

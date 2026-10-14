@@ -16,10 +16,11 @@ public interface StoryMapper {
     /**
      * 分页查询
      *
-     * @param query 查询条件
+     * @param query    查询条件
+     * @param viewerId 访客ID
      * @return 剧情列表
      */
-    List<Story> pageQuery(@Param("query") StoryPageQueryDTO query);
+    List<Story> pageQuery(@Param("query") StoryPageQueryDTO query, @Param("viewerId") Long viewerId);
 
     /**
      * 根据 id 查询

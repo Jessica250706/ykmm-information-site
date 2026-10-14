@@ -66,4 +66,12 @@ public interface DialogueImageMapper {
      * 按版本ID批量查询图片
      */
     List<DialogueImage> listByVersionIds(@Param("versionIds") Collection<Long> versionIds);
+
+    /**
+     * 根据版本ID列表批量删除对话图片
+     *
+     * @param versionIds 版本ID列表（不能为空）
+     * @return 影响行数
+     */
+    int deleteByVersionIds(@Param("versionIds") List<Long> versionIds);
 }

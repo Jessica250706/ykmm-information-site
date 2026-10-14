@@ -182,4 +182,12 @@
     ORDER BY dvc.version_id, dvc.contributor_role, dvc.id
   </select>
 
+  <delete id="deleteByVersionIds">
+    DELETE FROM dialogue_version_contributor
+    WHERE version_id IN
+    <foreach collection="versionIds" item="vid" open="(" separator="," close=")">
+      #{vid}
+    </foreach>
+  </delete>
+
 </mapper>

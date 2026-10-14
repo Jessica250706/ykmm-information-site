@@ -1,19 +1,17 @@
 package com.xq.controller.admin;
 
-import com.github.pagehelper.PageInfo;
 import com.xq.dto.StickerGroupDTO;
 import com.xq.dto.StickerGroupPageQueryDTO;
 import com.xq.result.PageResult;
 import com.xq.result.Result;
 import com.xq.service.StickerGroupService;
+import com.xq.validation.CreateGroup;
+import com.xq.validation.UpdateGroup;
 import com.xq.vo.StickerGroupVO;
-import com.xq.vo.StickerGroupWithStickersVO;
-import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 /**
  * 表情包分组Controller
@@ -35,18 +33,10 @@ public class StickerGroupController {
     }
 
     /**
-     * 查询所有表情包分组，用于下拉选择
-     */
-    @GetMapping("/list")
-    public Result<List<StickerGroupVO>> list() {
-        return Result.success(stickerGroupService.listAll());
-    }
-
-    /**
      * 根据ID查询表情包分组
      */
     @GetMapping("/{id}")
-    public Result<StickerGroupVO> getById(@PathVariable Long id) {
+    public Result<StickerGroupVO> getById(@PathVariable @NotNull(message = "表情包分组ID不能为空") Long id) {
         return Result.success(stickerGroupService.getById(id));
     }
 
@@ -54,7 +44,7 @@ public class StickerGroupController {
      * 新增表情包分组
      */
     @PostMapping
-    public Result<Void> save(@RequestBody @Valid StickerGroupDTO stickerGroupDTO) {
+    public Result<Void> save(@RequestBody @Validated(CreateGroup.class) StickerGroupDTO stickerGroupDTO) {
         stickerGroupService.save(stickerGroupDTO);
         return Result.success();
     }
@@ -63,7 +53,10 @@ public class StickerGroupController {
      * 更新表情包分组
      */
     @PutMapping("/{id}")
-    public Result<Void> update(@PathVariable Long id, @RequestBody @Valid StickerGroupDTO stickerGroupDTO) {
+    public Result<Void> update(
+            @PathVariable @NotNull(message = "表情包分组ID不能为空") Long id,
+            @RequestBody @Validated(UpdateGroup.class) StickerGroupDTO stickerGroupDTO
+    ) {
         stickerGroupDTO.setId(id);
         stickerGroupService.update(stickerGroupDTO);
         return Result.success();
@@ -73,16 +66,8 @@ public class StickerGroupController {
      * 删除表情包分组
      */
     @DeleteMapping("/{id}")
-    public Result<Void> delete(@PathVariable Long id) {
+    public Result<Void> delete(@PathVariable @NotNull(message = "表情包分组ID不能为空") Long id) {
         stickerGroupService.delete(id);
         return Result.success();
-    }
-
-    /**
-     * 查询所有分组及下属表情包（表情选择器用）
-     */
-    @GetMapping("/with-stickers")
-    public Result<List<StickerGroupWithStickersVO>> listWithStickers() {
-        return Result.success(stickerGroupService.listWithStickers());
     }
 }

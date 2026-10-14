@@ -1,5 +1,9 @@
 package com.xq.dto;
 
+import com.xq.enums.DialogueRoleEnum;
+import com.xq.validation.EnumValue;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
 import java.io.Serializable;
@@ -18,6 +22,7 @@ public class DialogueLineDTO implements Serializable {
     /**
      * 说话角色ID
      */
+    @NotNull(message = "说话人不能为空")
     private Long speakerId;
 
     /**
@@ -28,6 +33,7 @@ public class DialogueLineDTO implements Serializable {
     /**
      * 文本内容，可含表情包标签
      */
+    @NotBlank(message = "内容不能为空")
     private String content;
 
     /**
@@ -43,6 +49,7 @@ public class DialogueLineDTO implements Serializable {
     /**
      * 对话角色：0-普通 1-问句 2-回答
      */
+    @EnumValue(enumClass = DialogueRoleEnum.class, nullable = true, message = "对话角色不合法")
     private Integer dialogueRole;
 
     /**

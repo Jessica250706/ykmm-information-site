@@ -1,6 +1,7 @@
 package com.xq.service.impl;
 
 import com.xq.constant.DialogueConstant;
+import com.xq.constant.DialogueSegmentTypeConstant;
 import com.xq.dto.DialogueTxtImportDTO;
 import com.xq.entity.DialogueVersion;
 import com.xq.entity.Role;
@@ -73,35 +74,27 @@ public class DialogueTxtServiceImpl implements DialogueTxtService {
      */
     @Override
     public DialogueTxtParseVO parseTxt(Long versionId, MultipartFile file) {
-        /* 版本ID不能为空 */
-        if (versionId == null) {
-            throw new RuntimeException("版本ID不能为空");
-        }
-        /* 文件不能为空 */
-        if (file == null || file.isEmpty()) {
-            throw new RuntimeException("文件不能为空");
-        }
-        /* 文件大小限制 */
+        // 文件大小限制
         if (file.getSize() > DialogueConstant.TXT_MAX_SIZE) {
             throw new RuntimeException("txt 文件大小不能超过 2MB");
         }
         String originalFilename = file.getOriginalFilename();
-        /* 必须是 txt 文件 */
+        // 必须是 txt 文件
         if (originalFilename == null
                 || !originalFilename.toLowerCase().endsWith(DialogueConstant.TXT_EXTENSION)) {
             throw new RuntimeException("只允许上传 .txt 文件");
         }
         DialogueVersion version = dialogueVersionMapper.getById(versionId);
-        /* 版本必须存在 */
+        // 版本必须存在
         if (version == null) {
             throw new RuntimeException("对话版本不存在");
         }
-        /* 必须是文字版本 */
+        // 必须是文字版本
         if (!DialogueFormatEnum.TEXT.getValue().equals(version.getFormat())) {
             throw new RuntimeException("该版本不是文字版本");
         }
 
-        /* 只有 RC 才解析选项结构 */
+        // 只有 RC 才解析选项结构
         boolean allowOptions = Objects.equals(DialogueSourceTypeEnum.RC.getValue(), version.getSourceType());
 
         String text = readTxt(file);
@@ -117,23 +110,13 @@ public class DialogueTxtServiceImpl implements DialogueTxtService {
     @Override
     @Transactional
     public void importParsed(Long versionId, DialogueTxtImportDTO dto) {
-        /* 版本ID不能为空 */
-        if (versionId == null) {
-            throw new RuntimeException("版本ID不能为空");
-        }
-        /* 导入内容不能为空 */
-        if (dto == null || dto.getLines() == null || dto.getLines().isEmpty()) {
-            throw new RuntimeException("导入内容不能为空");
-        }
-
-        /* 先清空当前版本下所有对话，避免追加导致重复 */
+        // 先清空当前版本下所有对话，避免追加导致重复
         dialogueLineService.clearByVersionId(versionId);
 
-        /* 再批量写入新对话（saveBatch 内部会处理 rc_option） */
+        // 再批量写入新对话（saveBatch 内部会处理 rc_option）
         dialogueLineService.saveBatch(versionId, dto.getLines());
 
-        log.info("导入 txt 对话成功，versionId={}, count={}",
-                versionId, dto.getLines().size());
+        log.info("导入 txt 对话成功，versionId={}, count={}", versionId, dto.getLines().size());
     }
 
     // ---------------------------------------------------
@@ -214,14 +197,12 @@ public class DialogueTxtServiceImpl implements DialogueTxtService {
         List<List<String>> blocks = splitIntoBlocks(text);
         int sort = 1;
 
-        for (int b = 0; b < blocks.size(); b++) {
-            List<String> block = blocks.get(b);
-
-            /**
-             * 是否是选项块：
-             * - 必须允许解析选项（RC 版本）
-             * - 块内第一行必须匹配 "N." 编号行
-             */
+        /*
+          是否是选项块：
+          - 必须允许解析选项（RC 版本）
+          - 块内第一行必须匹配 "N." 编号行
+         */
+        for (List<String> block : blocks) {
             Integer optionNumber = detectOptionNumber(block);
             boolean isOption = allowOptions && optionNumber != null;
 
@@ -240,7 +221,7 @@ public class DialogueTxtServiceImpl implements DialogueTxtService {
 
     /**
      * 检测块是否为选项块
-     *
+     * <p>
      * 规则：块内第一个非空行必须是 "N." 形式的编号行。
      * 如果是，解析出编号 N 并返回；否则返回 null。
      *
@@ -251,12 +232,12 @@ public class DialogueTxtServiceImpl implements DialogueTxtService {
         if (block == null || block.isEmpty()) {
             return null;
         }
-        /** 第一行必须是编号行 */
+        // 第一行必须是编号行
         String first = block.get(0);
         if (!OPTION_NUMBER_PATTERN.matcher(first).matches()) {
             return null;
         }
-        /** 取出 "N." 里的 N */
+        // 取出 "N." 里的 N
         try {
             String numStr = first.substring(0, first.length() - 1).trim();
             int n = Integer.parseInt(numStr);
@@ -295,7 +276,7 @@ public class DialogueTxtServiceImpl implements DialogueTxtService {
         int sort = startSort;
 
         for (String line : block) {
-            /* 选项块内，忽略 "N." 编号行 */
+            // 选项块内，忽略 "N." 编号行
             if (isOption && OPTION_NUMBER_PATTERN.matcher(line).matches()) {
                 continue;
             }
@@ -318,7 +299,7 @@ public class DialogueTxtServiceImpl implements DialogueTxtService {
                 continue;
             }
 
-            /* 普通内容行：追加到当前说话人缓冲 */
+            // 普通内容行：追加到当前说话人缓冲
             if (currentSpeaker == null) {
                 errors.add("块内缺少说话人：" + line);
                 continue;
@@ -329,7 +310,7 @@ public class DialogueTxtServiceImpl implements DialogueTxtService {
             buffer.append(line);
         }
 
-        /* 块末尾的最后一条 */
+        // 块末尾的最后一条
         if (currentSpeaker != null && !buffer.isEmpty()) {
             DialogueRoleEnum role = isOption
                     ? (stage == 0 ? DialogueRoleEnum.QUESTION : DialogueRoleEnum.ANSWER)
@@ -371,14 +352,14 @@ public class DialogueTxtServiceImpl implements DialogueTxtService {
         }
         speakers.add(speakerName);
 
-        /* 匹配角色 */
+        // 匹配角色
         Role role = matchRole(speakerName);
         Long speakerId = role == null ? null : role.getId();
         if (speakerId == null) {
             unmatchedSpeakers.add(speakerName);
         }
 
-        /* 解析片段 */
+        // 解析片段
         List<DialogueSegmentVO> segments = new ArrayList<>();
         Matcher matcher = STICKER_PATTERN.matcher(content);
         int lastEnd = 0;
@@ -386,7 +367,7 @@ public class DialogueTxtServiceImpl implements DialogueTxtService {
         while (matcher.find()) {
             if (matcher.start() > lastEnd) {
                 DialogueSegmentVO seg = new DialogueSegmentVO();
-                seg.setSegmentType(1);
+                seg.setSegmentType(DialogueSegmentTypeConstant.TEXT);
                 seg.setContent(content.substring(lastEnd, matcher.start()));
                 seg.setSort(segSort++);
                 segments.add(seg);
@@ -394,7 +375,7 @@ public class DialogueTxtServiceImpl implements DialogueTxtService {
             String label = matcher.group(1);
             Sticker sticker = stickerMapper.getByLabel(label);
             DialogueSegmentVO seg = new DialogueSegmentVO();
-            seg.setSegmentType(2);
+            seg.setSegmentType(DialogueSegmentTypeConstant.STICKER);
             seg.setStickerLabel(label);
             if (sticker != null) {
                 seg.setStickerId(sticker.getId());
@@ -409,7 +390,7 @@ public class DialogueTxtServiceImpl implements DialogueTxtService {
         }
         if (lastEnd < content.length()) {
             DialogueSegmentVO seg = new DialogueSegmentVO();
-            seg.setSegmentType(1);
+            seg.setSegmentType(DialogueSegmentTypeConstant.TEXT);
             seg.setContent(content.substring(lastEnd));
             seg.setSort(segSort);
             segments.add(seg);
@@ -438,12 +419,12 @@ public class DialogueTxtServiceImpl implements DialogueTxtService {
         if (speakerName == null || speakerName.isBlank()) {
             return null;
         }
-        /* 先按 role.name 精确匹配 */
+        // 先按 role.name 精确匹配
         Role role = roleMapper.getByName(speakerName);
         if (role != null) {
             return role;
         }
-        /* 再按 person.name_cn 反查 */
+        // 再按 person.name_cn 反查
         return roleMapper.getByPersonNameCn(speakerName);
     }
 }

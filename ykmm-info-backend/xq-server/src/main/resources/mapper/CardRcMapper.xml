@@ -72,4 +72,18 @@
     WHERE card_id = #{cardId}
   </delete>
 
+  <select id="listIdsByCardId" resultType="java.lang.Long">
+    SELECT id
+    FROM card_rc
+    WHERE card_id = #{cardId}
+  </select>
+
+  <delete id="deleteByIds">
+    DELETE FROM card_rc
+    WHERE id IN
+    <foreach collection="ids" item="id" open="(" separator="," close=")">
+      #{id}
+    </foreach>
+  </delete>
+
 </mapper>

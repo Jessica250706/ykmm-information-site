@@ -4,25 +4,25 @@
 <mapper namespace="com.xq.mapper.CardMapper">
 
   <sql id="baseColumns">
-    id,
-    name,
-    series_id AS seriesId,
-    category,
-    max_rarity AS maxRarity,
-    first_pool_time AS firstPoolTime,
-    attribute,
-    skill_desc AS skillDesc,
-    attached_story_type AS attachedStoryType,
-    costume_type AS costumeType,
-    chibi_id AS chibiId,
-    costume_id AS costumeId,
-    status,
-    creator_id AS creatorId,
-    reviewer_id AS reviewerId,
-    review_time AS reviewTime,
-    review_remark AS reviewRemark,
-    created_at AS createdAt,
-    updated_at AS updatedAt
+    c.id,
+    c.name,
+    c.series_id AS seriesId,
+    c.category,
+    c.max_rarity AS maxRarity,
+    c.first_pool_time AS firstPoolTime,
+    c.attribute,
+    c.skill_desc AS skillDesc,
+    c.attached_story_type AS attachedStoryType,
+    c.costume_type AS costumeType,
+    c.chibi_id AS chibiId,
+    c.costume_id AS costumeId,
+    c.status,
+    c.creator_id AS creatorId,
+    c.reviewer_id AS reviewerId,
+    c.review_time AS reviewTime,
+    c.review_remark AS reviewRemark,
+    c.created_at AS createdAt,
+    c.updated_at AS updatedAt
   </sql>
 
   <select id="pageQuery" resultType="com.xq.entity.Card">
@@ -30,13 +30,36 @@
     <include refid="baseColumns"/>
     FROM card c
     <where>
+      <!-- ==================== 业务筛选 ==================== -->
       <if test="query.keyword != null and query.keyword != ''">
         AND c.name LIKE CONCAT('%', #{query.keyword}, '%')
       </if>
-      <if test="query.seriesId != null">AND c.series_id = #{query.seriesId}</if>
-      <if test="query.maxRarity != null">AND c.max_rarity = #{query.maxRarity}</if>
-      <if test="query.attribute != null">AND c.attribute = #{query.attribute}</if>
-      <if test="query.status != null">AND c.status = #{query.status}</if>
+      <if test="query.seriesId != null">
+        AND c.series_id = #{query.seriesId}
+      </if>
+      <if test="query.maxRarity != null">
+        AND c.max_rarity = #{query.maxRarity}
+      </if>
+      <if test="query.attribute != null">
+        AND c.attribute = #{query.attribute}
+      </if>
+
+      <!-- ==================== 三身份过滤 ==================== -->
+
+      <!-- 游客：强制只看已发布（Service 设置 query.status = 1） -->
+      <if test="query.status != null and viewerId == null">
+        AND c.status = #{query.status}
+      </if>
+
+      <!-- 用户：已发布 OR 自己创建的（Service 传 viewerId） -->
+      <if test="viewerId != null">
+        AND (c.status = 1 OR c.creator_id = #{viewerId})
+      </if>
+
+      <!-- 管理员：query.status 可为空也可为具体值，viewerId 始终为 null -->
+      <!-- 若前端传了 status（如只查待审核），上面的第一个 <if> 会生效 -->
+
+      <!-- ==================== 其他 ==================== -->
       <if test="query.personIds != null and query.personIds.size() > 0">
         AND c.id IN (
         SELECT card_id FROM card_person_rel

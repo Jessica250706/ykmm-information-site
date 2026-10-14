@@ -1,17 +1,15 @@
 package com.xq.controller.admin;
 
-import com.xq.dto.DialogueVersionDTO;
 import com.xq.dto.DialogueVersionPageQueryDTO;
 import com.xq.result.PageResult;
 import com.xq.result.Result;
 import com.xq.service.DialogueVersionService;
-import com.xq.vo.DialogueVersionOptionVO;
 import com.xq.vo.DialogueVersionVO;
+import jakarta.validation.constraints.NotNull;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 /**
  * 对话版本管理
@@ -19,6 +17,7 @@ import java.util.List;
 @RestController("AdminDialogueVersionController")
 @RequestMapping("/admin/dialogue-versions")
 @Slf4j
+@Validated
 public class DialogueVersionController {
 
     @Autowired
@@ -31,45 +30,8 @@ public class DialogueVersionController {
      * @return 分页结果
      */
     @GetMapping
-    public Result<PageResult<DialogueVersionVO>> page(DialogueVersionPageQueryDTO query) {
+    public Result<PageResult<DialogueVersionVO>> page(@NotNull(message = "查询条件不能为空") DialogueVersionPageQueryDTO query) {
         return Result.success(dialogueVersionService.pageQuery(query));
-    }
-
-    /**
-     * 查询某来源下的全部版本
-     *
-     * @param sourceType 来源类型
-     * @param sourceId   来源ID
-     * @return 版本列表
-     */
-    @GetMapping("/list")
-    public Result<List<DialogueVersionVO>> listBySource(
-            @RequestParam Integer sourceType,
-            @RequestParam Long sourceId) {
-        return Result.success(
-                dialogueVersionService.listBySource(sourceType, sourceId));
-    }
-
-    /**
-     * 查询版本详情
-     *
-     * @param id 版本ID
-     * @return 版本详情
-     */
-    @GetMapping("/{id}")
-    public Result<DialogueVersionVO> detail(@PathVariable Long id) {
-        return Result.success(dialogueVersionService.detail(id));
-    }
-
-    /**
-     * 创建版本
-     *
-     * @param dto 创建参数
-     * @return 新版本ID
-     */
-    @PostMapping
-    public Result<Long> create(@RequestBody DialogueVersionDTO dto) {
-        return Result.success(dialogueVersionService.create(dto));
     }
 
     /**
@@ -79,50 +41,8 @@ public class DialogueVersionController {
      * @return 统一返回
      */
     @DeleteMapping("/{id}")
-    public Result<Void> delete(@PathVariable Long id) {
+    public Result<Void> delete(@PathVariable @NotNull(message = "版本ID不能为空") Long id) {
         dialogueVersionService.delete(id);
         return Result.success();
-    }
-
-    /**
-     * 查询全部文字版本选项（供下拉框使用）
-     *
-     * @param sourceType 来源类型：1-RC 2-RTV 3-Rabitter 4-剧情
-     * @param sourceId   来源主键
-     * @return 选项列表
-     */
-    @GetMapping("/text-options")
-    public Result<List<DialogueVersionOptionVO>> textOptions(
-            @RequestParam Integer sourceType,
-            @RequestParam Long sourceId) {
-        return Result.success(dialogueVersionService.listTextVersionOptions(sourceType, sourceId));
-    }
-
-    /**
-     * 查询全部图片版本选项（供下拉框使用）
-     *
-     * @param sourceType 来源类型：1-RC 2-RTV 3-Rabitter 4-剧情
-     * @param sourceId   来源主键
-     * @return 选项列表
-     */
-    @GetMapping("/img-options")
-    public Result<List<DialogueVersionOptionVO>> imgOptions(
-            @RequestParam Integer sourceType,
-            @RequestParam Long sourceId) {
-        return Result.success(dialogueVersionService.listImageVersionOptions(sourceType, sourceId));
-    }
-
-    /**
-     * 查询全部版本选项（供下拉框使用）
-     *
-     * @param sourceType 来源类型：1-RC 2-RTV 3-Rabitter 4-剧情
-     * @param sourceId   来源主键
-     * @return 选项列表
-     */
-    @GetMapping("/options")
-    public Result<List<DialogueVersionOptionVO>> options(
-            @RequestParam Integer sourceType,
-            @RequestParam Long sourceId) {
-        return Result.success(dialogueVersionService.listVersionOptions(sourceType, sourceId));
     }
 }

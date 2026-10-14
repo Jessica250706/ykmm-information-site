@@ -114,4 +114,13 @@ public interface DialogueLineMapper {
      * @return 影响行数
      */
     int deleteByIds(@Param("ids") List<Long> ids);
+
+    /**
+     * 根据版本ID列表查询全部句子主键
+     * <p>用于级联删除时，先查出这些版本下的所有句子主键</p>
+     *
+     * @param versionIds 版本ID列表（不能为空）
+     * @return 句子主键列表
+     */
+    List<Long> listIdsByVersionIds(@Param("versionIds") List<Long> versionIds);
 }

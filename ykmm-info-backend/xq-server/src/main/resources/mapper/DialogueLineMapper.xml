@@ -109,4 +109,13 @@
     </foreach>
   </delete>
 
+  <select id="listIdsByVersionIds" resultType="java.lang.Long">
+    SELECT id
+    FROM dialogue_line
+    WHERE version_id IN
+    <foreach collection="versionIds" item="vid" open="(" separator="," close=")">
+      #{vid}
+    </foreach>
+  </select>
+
 </mapper>

@@ -37,12 +37,6 @@ public class DialogueImageServiceImpl implements DialogueImageService {
     @Override
     @Transactional
     public void saveImages(Long versionId, List<DialogueImageDTO> images) {
-        if (versionId == null) {
-            throw new RuntimeException("版本ID不能为空");
-        }
-        if (images == null || images.isEmpty()) {
-            throw new RuntimeException("图片列表不能为空");
-        }
         DialogueVersion version = dialogueVersionMapper.getById(versionId);
         if (version == null) {
             throw new RuntimeException("对话版本不存在");
@@ -67,8 +61,7 @@ public class DialogueImageServiceImpl implements DialogueImageService {
             entityList.add(img);
         }
         dialogueImageMapper.insertBatch(entityList);
-        log.info("保存对话图片成功，versionId={}, count={}",
-                versionId, entityList.size());
+        log.info("保存对话图片成功，versionId={}, count={}", versionId, entityList.size());
     }
 
     /**
@@ -79,9 +72,6 @@ public class DialogueImageServiceImpl implements DialogueImageService {
     @Override
     @Transactional
     public void delete(Long imageId) {
-        if (imageId == null) {
-            throw new RuntimeException("图片ID不能为空");
-        }
         DialogueImage img = dialogueImageMapper.getById(imageId);
         if (img == null) {
             throw new RuntimeException("对话图片不存在");
@@ -99,16 +89,11 @@ public class DialogueImageServiceImpl implements DialogueImageService {
     @Override
     @Transactional
     public void sort(Long versionId, List<Long> imageIds) {
-        if (versionId == null) {
-            throw new RuntimeException("版本ID不能为空");
-        }
-        if (imageIds == null || imageIds.isEmpty()) {
-            throw new RuntimeException("图片ID列表不能为空");
-        }
         DialogueVersion version = dialogueVersionMapper.getById(versionId);
         if (version == null) {
             throw new RuntimeException("对话版本不存在");
         }
+
         for (int i = 0; i < imageIds.size(); i++) {
             Long imageId = imageIds.get(i);
             DialogueImage img = dialogueImageMapper.getById(imageId);

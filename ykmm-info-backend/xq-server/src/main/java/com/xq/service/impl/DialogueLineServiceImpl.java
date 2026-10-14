@@ -1,6 +1,8 @@
 package com.xq.service.impl;
 
 import com.xq.constant.DialogueConstant;
+import com.xq.constant.DialogueSegmentTypeConstant;
+import com.xq.context.BaseContext;
 import com.xq.dto.DialogueLineDTO;
 import com.xq.entity.*;
 import com.xq.enums.*;
@@ -26,8 +28,7 @@ public class DialogueLineServiceImpl implements DialogueLineService {
     /**
      * 表情包标签正则
      */
-    private static final Pattern STICKER_PATTERN =
-            Pattern.compile(DialogueConstant.STICKER_PATTERN);
+    private static final Pattern STICKER_PATTERN = Pattern.compile(DialogueConstant.STICKER_PATTERN);
 
     @Autowired
     private DialogueLineMapper dialogueLineMapper;
@@ -59,16 +60,6 @@ public class DialogueLineServiceImpl implements DialogueLineService {
     @Override
     @Transactional
     public void saveBatch(Long versionId, List<DialogueLineDTO> lines) {
-        if (versionId == null) {
-            throw new RuntimeException("版本ID不能为空");
-        }
-        if (lines == null || lines.isEmpty()) {
-            throw new RuntimeException("句子列表不能为空");
-        }
-        if (lines.size() > DialogueConstant.MAX_BATCH_SIZE) {
-            throw new RuntimeException("单次保存句子数量不能超过 "
-                    + DialogueConstant.MAX_BATCH_SIZE);
-        }
         DialogueVersion version = dialogueVersionMapper.getById(versionId);
         if (version == null) {
             throw new RuntimeException("对话版本不存在");
@@ -76,8 +67,11 @@ public class DialogueLineServiceImpl implements DialogueLineService {
         if (!DialogueFormatEnum.TEXT.getValue().equals(version.getFormat())) {
             throw new RuntimeException("该版本不是文字版本");
         }
+        if (!UserRoleEnum.current().isAdmin() && !Objects.equals(version.getCreatorId(), BaseContext.getCurrentId())) {
+            throw new RuntimeException("暂无权限进行保存操作");
+        }
 
-        // ★ RC 场景下：先查 card_rc 拿到发起人角色ID
+        // RC 场景下：先查 card_rc 拿到发起人角色ID
         Long initiatorRoleId = resolveInitiatorRoleId(version);
 
         // 计算起始 sort
@@ -135,33 +129,26 @@ public class DialogueLineServiceImpl implements DialogueLineService {
     @Override
     @Transactional
     public void update(Long lineId, DialogueLineDTO dto) {
-        /** 句子ID不能为空 */
-        if (lineId == null) {
-            throw new RuntimeException("句子ID不能为空");
-        }
-        /** 参数不能为空 */
-        if (dto == null) {
-            throw new RuntimeException("参数不能为空");
-        }
         DialogueLine exist = dialogueLineMapper.getById(lineId);
-        /** 句子必须存在 */
+        // 句子必须存在
         if (exist == null) {
             throw new RuntimeException("对话句子不存在");
         }
+
         DialogueVersion version = dialogueVersionMapper.getById(exist.getVersionId());
-        /** 版本必须存在 */
+        // 版本必须存在
         if (version == null) {
             throw new RuntimeException("对话版本不存在");
         }
         validateLineDTO(dto, version);
 
-        /** 更新句子 */
+        // 更新句子
         DialogueLine line = new DialogueLine();
         BeanUtils.copyProperties(dto, line);
         line.setId(lineId);
         dialogueLineMapper.update(line);
 
-        /** 重建片段 */
+        // 重建片段
         if (dto.getContent() != null) {
             dialogueSegmentMapper.deleteByLineId(lineId);
             List<DialogueSegment> segments = parseSegments(lineId, dto.getContent());
@@ -181,9 +168,6 @@ public class DialogueLineServiceImpl implements DialogueLineService {
     @Override
     @Transactional
     public void delete(Long lineId) {
-        if (lineId == null) {
-            throw new RuntimeException("句子ID不能为空");
-        }
         DialogueLine exist = dialogueLineMapper.getById(lineId);
         if (exist == null) {
             throw new RuntimeException("对话句子不存在");
@@ -202,16 +186,11 @@ public class DialogueLineServiceImpl implements DialogueLineService {
     @Override
     @Transactional
     public void sort(Long versionId, List<Long> lineIds) {
-        if (versionId == null) {
-            throw new RuntimeException("版本ID不能为空");
-        }
-        if (lineIds == null || lineIds.isEmpty()) {
-            throw new RuntimeException("句子ID列表不能为空");
-        }
         DialogueVersion version = dialogueVersionMapper.getById(versionId);
         if (version == null) {
             throw new RuntimeException("对话版本不存在");
         }
+
         for (int i = 0; i < lineIds.size(); i++) {
             Long lineId = lineIds.get(i);
             DialogueLine line = dialogueLineMapper.getById(lineId);
@@ -239,20 +218,20 @@ public class DialogueLineServiceImpl implements DialogueLineService {
             throw new RuntimeException("版本ID不能为空");
         }
 
-        /** 1. 查出该版本下所有句子ID */
+        // 1. 查出该版本下所有句子ID
         List<Long> lineIds = dialogueLineMapper.listIdsByVersionId(versionId);
         if (lineIds == null || lineIds.isEmpty()) {
             log.info("清空对话：版本 {} 下无句子，跳过", versionId);
             return;
         }
 
-        /** 2. 删除片段 */
+        // 2. 删除片段
         dialogueSegmentMapper.deleteByLineIds(lineIds);
 
-        /** 3. 删除引用这些句子的 RC 选项 */
+        // 3. 删除引用这些句子的 RC 选项
         rcOptionMapper.deleteByLineIds(lineIds);
 
-        /** 4. 删除句子本身 */
+        // 4. 删除句子本身
         dialogueLineMapper.deleteByVersionId(versionId);
 
         log.info("清空版本对话成功，versionId={}, lineCount={}", versionId, lineIds.size());
@@ -273,27 +252,19 @@ public class DialogueLineServiceImpl implements DialogueLineService {
     @Override
     @Transactional
     public void updateBatch(Long versionId, List<DialogueLineDTO> lines) {
-        /** 版本ID不能为空 */
-        if (versionId == null) {
-            throw new RuntimeException("版本ID不能为空");
-        }
-        /** 句子列表不能为空 */
-        if (lines == null || lines.isEmpty()) {
-            throw new RuntimeException("句子列表不能为空");
-        }
         DialogueVersion version = dialogueVersionMapper.getById(versionId);
-        /** 版本必须存在 */
+        // 版本必须存在
         if (version == null) {
             throw new RuntimeException("对话版本不存在");
         }
 
-        /** 收集本次要更新的 lineId，用于后续清 rc_option */
+        // 收集本次要更新的 lineId，用于后续清 rc_option
         List<Long> lineIds = lines.stream()
                 .map(DialogueLineDTO::getId)
                 .filter(Objects::nonNull)
                 .toList();
 
-        /** 校验所有行都属于该版本 */
+        // 校验所有行都属于该版本
         for (DialogueLineDTO dto : lines) {
             if (dto.getId() == null) {
                 throw new RuntimeException("更新时必须提供句子ID");
@@ -308,7 +279,7 @@ public class DialogueLineServiceImpl implements DialogueLineService {
             validateLineDTO(dto, version);
         }
 
-        /** 逐行更新 + 重建片段 */
+        // 逐行更新 + 重建片段
         for (DialogueLineDTO dto : lines) {
             DialogueLine line = new DialogueLine();
             BeanUtils.copyProperties(dto, line);
@@ -325,10 +296,10 @@ public class DialogueLineServiceImpl implements DialogueLineService {
             }
         }
 
-        /** RC 场景：先删涉及这些行的 rc_option，再按本次提交重新配对写入 */
+        // RC 场景：先删涉及这些行的 rc_option，再按本次提交重新配对写入
         if (Objects.equals(DialogueSourceTypeEnum.RC.getValue(), version.getSourceType()) && !lineIds.isEmpty()) {
             rcOptionMapper.deleteByLineIds(lineIds);
-            /** 复用 saveRcOptions 的配对逻辑（DTO + 已存在实体） */
+            // 复用 saveRcOptions 的配对逻辑（DTO + 已存在实体）
             List<DialogueLine> updatedEntities = new ArrayList<>();
             for (DialogueLineDTO dto : lines) {
                 DialogueLine l = new DialogueLine();
@@ -349,15 +320,10 @@ public class DialogueLineServiceImpl implements DialogueLineService {
     @Override
     @Transactional
     public void deleteBatch(List<Long> lineIds) {
-        /** 句子ID列表不能为空 */
-        if (lineIds == null || lineIds.isEmpty()) {
-            throw new RuntimeException("句子ID列表不能为空");
-        }
-
-        /** 先删 rc_option */
+        // 先删 rc_option
         rcOptionMapper.deleteByLineIds(lineIds);
 
-        /** 再删片段和句子 */
+        // 再删片段和句子
         dialogueSegmentMapper.deleteByLineIds(lineIds);
         dialogueLineMapper.deleteByIds(lineIds);
 
@@ -422,7 +388,7 @@ public class DialogueLineServiceImpl implements DialogueLineService {
                 if (!text.isEmpty()) {
                     DialogueSegment seg = new DialogueSegment();
                     seg.setLineId(lineId);
-                    seg.setSegmentType(DialogueSegmentTypeEnum.TEXT.getValue());
+                    seg.setSegmentType(DialogueSegmentTypeConstant.TEXT);
                     seg.setContent(text);
                     seg.setSort(sort++);
                     result.add(seg);
@@ -433,7 +399,7 @@ public class DialogueLineServiceImpl implements DialogueLineService {
             Sticker sticker = stickerMapper.getByLabel(label);
             DialogueSegment stickerSeg = new DialogueSegment();
             stickerSeg.setLineId(lineId);
-            stickerSeg.setSegmentType(DialogueSegmentTypeEnum.STICKER.getValue());
+            stickerSeg.setSegmentType(DialogueSegmentTypeConstant.STICKER);
             stickerSeg.setStickerId(sticker == null ? null : sticker.getId());
             stickerSeg.setContent(sticker == null ? "[" + label + "]" : null);
             stickerSeg.setSort(sort++);
@@ -447,7 +413,7 @@ public class DialogueLineServiceImpl implements DialogueLineService {
             if (!text.isEmpty()) {
                 DialogueSegment seg = new DialogueSegment();
                 seg.setLineId(lineId);
-                seg.setSegmentType(DialogueSegmentTypeEnum.TEXT.getValue());
+                seg.setSegmentType(DialogueSegmentTypeConstant.TEXT);
                 seg.setContent(text);
                 seg.setSort(sort);
                 result.add(seg);
@@ -523,7 +489,7 @@ public class DialogueLineServiceImpl implements DialogueLineService {
                                Long versionId,
                                List<DialogueLineDTO> dtoList,
                                List<DialogueLine> entities) {
-        /** 问句 / 回答分别收集：optionNumber -> lineId */
+        // 问句 / 回答分别收集：optionNumber -> lineId
         Map<Integer, Long> questionByOption = new HashMap<>();
         Map<Integer, Long> answerByOption = new HashMap<>();
 
@@ -543,7 +509,7 @@ public class DialogueLineServiceImpl implements DialogueLineService {
             }
         }
 
-        /** 配对成 rc_option */
+        // 配对成 rc_option
         List<RcOption> options = new ArrayList<>();
         for (Map.Entry<Integer, Long> e : questionByOption.entrySet()) {
             Integer n = e.getKey();

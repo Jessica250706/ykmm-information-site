@@ -59,4 +59,21 @@ public interface CardRabitterMapper {
      * @return 影响行数
      */
     int deleteByCardId(@Param("cardId") Long cardId);
+
+    /**
+     * 根据卡面ID查询全部 Rabitter 主键
+     * <p>用于级联删除卡面时，先查出下属所有 Rabitter 主键</p>
+     *
+     * @param cardId 卡面ID
+     * @return Rabitter 主键列表
+     */
+    List<Long> listIdsByCardId(@Param("cardId") Long cardId);
+
+    /**
+     * 根据主键列表批量删除
+     *
+     * @param ids 主键列表（不能为空）
+     * @return 影响行数
+     */
+    int deleteByIds(@Param("ids") List<Long> ids);
 }

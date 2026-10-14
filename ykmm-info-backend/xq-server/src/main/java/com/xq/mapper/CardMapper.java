@@ -12,16 +12,40 @@ import java.util.List;
  */
 @Mapper
 public interface CardMapper {
-    /** 分页查询 */
-    List<Card> pageQuery(@Param("query") CardPageQueryDTO query);
-    /** 根据 id 查询 */
+    /**
+     * 分页查询
+     *
+     * @param query    查询条件
+     * @param viewerId 访客用户ID：
+     *                 - 游客：null（此时 query.status = 1）
+     *                 - 用户：当前登录用户ID（此时 query.status 为 null）
+     *                 - 管理员：null（此时 query.status 由前端决定，用于后台筛选）
+     */
+    List<Card> pageQuery(@Param("query") CardPageQueryDTO query,
+                         @Param("viewerId") Long viewerId);
+
+    /**
+     * 根据 id 查询
+     */
     Card getById(@Param("id") Long id);
-    /** 新增 */
+
+    /**
+     * 新增
+     */
     int insert(Card card);
-    /** 更新 */
+
+    /**
+     * 更新
+     */
     int update(Card card);
-    /** 删除 */
+
+    /**
+     * 删除
+     */
     int deleteById(@Param("id") Long id);
-    /** 判断同名卡面是否存在 */
+
+    /**
+     * 判断同名卡面是否存在
+     */
     int countByName(@Param("name") String name, @Param("excludeId") Long excludeId);
 }

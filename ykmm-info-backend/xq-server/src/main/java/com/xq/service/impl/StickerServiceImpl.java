@@ -2,7 +2,6 @@ package com.xq.service.impl;
 
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
-import com.github.pagehelper.PageInfo;
 import com.xq.context.BaseContext;
 import com.xq.dto.StickerDTO;
 import com.xq.dto.StickerPageQueryDTO;
@@ -18,8 +17,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
-
-import java.util.List;
 
 /**
  * 表情包Service实现
@@ -84,9 +81,6 @@ public class StickerServiceImpl implements StickerService {
     @Override
     @Transactional
     public void update(StickerDTO stickerDTO) {
-        if (stickerDTO.getId() == null) {
-            throw new RuntimeException("表情包ID不能为空");
-        }
         validateSticker(stickerDTO);
 
         Sticker existing = stickerMapper.getEntityById(stickerDTO.getId());

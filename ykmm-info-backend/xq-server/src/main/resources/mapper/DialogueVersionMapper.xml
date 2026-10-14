@@ -10,13 +10,14 @@
     language,
     format,
     scope,
+    status,
     creator_id   AS creatorId,
     creator_role AS creatorRole,
-    status,
     reviewer_id  AS reviewerId,
     review_time  AS reviewTime,
     review_remark AS reviewRemark,
-    created_at   AS createdAt
+    created_at   AS createdAt,
+    updated_at     AS updatedAt
   </sql>
 
   <select id="pageQuery" resultType="com.xq.entity.DialogueVersion">
@@ -38,6 +39,16 @@
       </if>
       <if test="query.scope != null">
         AND scope = #{query.scope}
+      </if>
+
+      <!-- 游客：只查已发布；管理员：按前端 status 筛选（Service 不清空） -->
+      <if test="query.status != null and viewerId == null">
+        AND status = #{query.status}
+      </if>
+
+      <!-- 用户：已发布 OR 自己创建的 -->
+      <if test="viewerId != null">
+        AND (status = 1 OR creator_id = #{viewerId})
       </if>
     </where>
     ORDER BY id ASC
@@ -99,15 +110,46 @@
     SELECT
     <include refid="baseColumns"/>
     FROM dialogue_version
+    <where>
+      AND source_type = #{sourceType}
+      AND source_id IN
+      <foreach collection="sourceIds" item="sid" open="(" separator="," close=")">
+        #{sid}
+      </foreach>
+
+      <!-- ==================== 三身份过滤 ==================== -->
+
+      <!-- 游客：强制只看已发布（由 Service 设置 statusFilter = 1） -->
+      <if test="statusFilter != null and viewerId == null">
+        AND status = #{statusFilter}
+      </if>
+
+      <!-- 用户：已发布 OR 自己创建的（由 Service 设置 viewerId） -->
+      <if test="viewerId != null">
+        AND (status = 1 OR creator_id = #{viewerId})
+      </if>
+
+      <!-- 管理员：statusFilter 和 viewerId 都为 null，不加过滤 -->
+    </where>
+    ORDER BY source_id, id
+  </select>
+
+  <select id="listIdsBySource" resultType="java.lang.Long">
+    SELECT id
+    FROM dialogue_version
     WHERE source_type = #{sourceType}
     AND source_id IN
     <foreach collection="sourceIds" item="sid" open="(" separator="," close=")">
       #{sid}
     </foreach>
-    <if test="status != null">
-      AND status = #{status}
-    </if>
-    ORDER BY source_id, id
   </select>
+
+  <delete id="deleteByIds">
+    DELETE FROM dialogue_version
+    WHERE id IN
+    <foreach collection="ids" item="id" open="(" separator="," close=")">
+      #{id}
+    </foreach>
+  </delete>
 
 </mapper>

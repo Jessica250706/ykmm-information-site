@@ -17,10 +17,14 @@ public class WebMvcConfiguration implements WebMvcConfigurer {
         registry.addInterceptor(jwtTokenInterceptor)
                 .addPathPatterns("/**")
                 .excludePathPatterns(
+                        // 认证：登录、注册（游客可访问）
                         "/auth/login",
                         "/auth/register",
-                        "/common/dict/**",       // 字典类公开接口
-                        "/doc.html", "/webjars/**", "/v3/api-docs/**",  // Knife4j
+                        // Swagger / Knife4j
+                        "/doc.html",
+                        "/webjars/**",
+                        "/v3/api-docs/**",
+                        // 错误页
                         "/error");
     }
 }

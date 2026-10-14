@@ -4,6 +4,8 @@ import com.xq.dto.StoryAuditDTO;
 import com.xq.dto.StoryDTO;
 import com.xq.dto.StoryPageQueryDTO;
 import com.xq.result.PageResult;
+import com.xq.vo.StoryCategoryVO;
+import com.xq.vo.StoryDetailVO;
 import com.xq.vo.StoryVO;
 
 import java.util.List;
@@ -67,4 +69,20 @@ public interface StoryService {
      * @return 剧情列表
      */
     List<StoryVO> listByCategoryId(Long categoryId);
+
+    /**
+     * 查询分类树（仅返回已发布状态相关节点）
+     *
+     * @param categoryType 分类类型
+     * @return 分类树
+     */
+    List<StoryCategoryVO> categoryTree(Integer categoryType);
+
+    /**
+     * 查询剧情详情，含所有对话版本
+     *
+     * @param id 剧情主键
+     * @return 详情
+     */
+    StoryDetailVO storyDetail(Long id);
 }

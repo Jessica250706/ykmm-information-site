@@ -19,7 +19,7 @@ public interface DialogueVersionMapper {
      * @param query 查询条件
      * @return 版本列表
      */
-    List<DialogueVersion> pageQuery(@Param("query") DialogueVersionPageQueryDTO query);
+    List<DialogueVersion> pageQuery(@Param("query") DialogueVersionPageQueryDTO query, @Param("viewerId") Long viewerId);
 
     /**
      * 查询某来源下全部版本
@@ -84,14 +84,35 @@ public interface DialogueVersionMapper {
                                                 @Param("format") Integer format);
 
     /**
-     * 根据来源类型批量查询对话版本
+     * 根据来源类型 + 来源ID列表，批量查询对话版本
      *
-     * @param sourceType 来源类型
-     * @param sourceIds  来源ID列表
-     * @param status     审核状态过滤，null 表示不过滤
-     * @return 对话版本列表
+     * @param sourceType   来源类型
+     * @param sourceIds    来源ID列表
+     * @param statusFilter 状态过滤：null 不过滤；1 只查已发布
+     * @param viewerId     访客ID：null 不按创建者过滤；非 null 则查"已发布 OR 自己创建的"
+     * @return 版本列表
      */
     List<DialogueVersion> listBySourceIds(@Param("sourceType") Integer sourceType,
                                           @Param("sourceIds") List<Long> sourceIds,
-                                          @Param("status") Integer status);
+                                          @Param("statusFilter") Integer statusFilter,
+                                          @Param("viewerId") Long viewerId);
+
+    /**
+     * 根据来源类型 + 来源ID列表查询版本主键
+     * <p>用于级联删除卡面时，先查出下属所有版本主键</p>
+     *
+     * @param sourceType 来源类型：1-RC 2-RTV 3-Rabitter 4-剧情
+     * @param sourceIds  来源ID列表（不能为空）
+     * @return 版本主键列表
+     */
+    List<Long> listIdsBySource(@Param("sourceType") Integer sourceType,
+                               @Param("sourceIds") List<Long> sourceIds);
+
+    /**
+     * 根据主键列表批量删除
+     *
+     * @param ids 主键列表（不能为空）
+     * @return 影响行数
+     */
+    int deleteByIds(@Param("ids") List<Long> ids);
 }

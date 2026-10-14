@@ -1,5 +1,6 @@
 package com.xq.enums;
 
+import com.xq.constant.StatusConstant;
 import lombok.Getter;
 
 /**
@@ -11,17 +12,17 @@ public enum StatusEnum {
     /**
      * 已发布
      */
-    PUBLISHED(1, "已发布"),
+    PUBLISHED(StatusConstant.PUBLISHED, "已发布"),
 
     /**
      * 待审核
      */
-    PENDING(2, "待审核"),
+    PENDING(StatusConstant.PENDING, "待审核"),
 
     /**
      * 已拒绝
      */
-    REJECTED(3, "已拒绝");
+    REJECTED(StatusConstant.REJECTED, "已拒绝");
 
     private final Integer value;
     private final String label;

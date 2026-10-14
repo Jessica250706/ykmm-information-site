@@ -1,5 +1,6 @@
 package com.xq.enums;
 
+import com.xq.constant.DialogueSegmentTypeConstant;
 import lombok.Getter;
 
 /**
@@ -11,12 +12,12 @@ public enum DialogueSegmentTypeEnum {
     /**
      * 文本
      */
-    TEXT(1, "文本"),
+    TEXT(DialogueSegmentTypeConstant.TEXT, "文本"),
 
     /**
      * 表情包
      */
-    STICKER(2, "表情包");
+    STICKER(DialogueSegmentTypeConstant.STICKER, "表情包");
 
     private final Integer value;
     private final String label;

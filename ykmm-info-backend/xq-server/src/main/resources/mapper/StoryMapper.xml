@@ -33,9 +33,18 @@
       <if test="query.categoryType != null">
         AND c.category_type = #{query.categoryType}
       </if>
-      <if test="query.status != null">
+
+      <!-- 游客：只查已发布（Service 设置 status = 1） -->
+      <if test="query.status != null and viewerId == null">
         AND s.status = #{query.status}
       </if>
+
+      <!-- 用户：已发布 OR 自己创建的（Service 传 viewerId） -->
+      <if test="viewerId != null">
+        AND (s.status = 1 OR s.creator_id = #{viewerId})
+      </if>
+
+      <!-- 管理员：两个都 null，不加过滤；若前端传了 status，走游客分支 -->
     </where>
     ORDER BY c.category_type, s.category_id, s.sort, s.id
   </select>
