@@ -1,7 +1,9 @@
 package com.xq.service.impl;
 
+import com.xq.context.BaseContext;
 import com.xq.dto.CardRabitterDTO;
 import com.xq.entity.CardRabitter;
+import com.xq.exception.ForbiddenException;
 import com.xq.mapper.CardRabitterMapper;
 import com.xq.service.CardRabitterService;
 import com.xq.vo.CardRabitterVO;
@@ -32,14 +34,17 @@ public class CardRabitterServiceImpl implements CardRabitterService {
      */
     @Override
     public List<CardRabitterVO> listByCardId(Long cardId) {
-        /** 卡面ID不能为空 */
-        if (cardId == null) {
-            throw new RuntimeException("卡面ID不能为空");
-        }
         List<CardRabitter> list = cardRabitterMapper.listByCardId(cardId);
+
+        Long userId = BaseContext.getCurrentId();
+        Integer role = BaseContext.getCurrentRole();
+
         List<CardRabitterVO> voList = new ArrayList<>(list.size());
         for (CardRabitter rabitter : list) {
-            voList.add(toVO(rabitter));
+            CardRabitterVO vo = toVO(rabitter);
+            Boolean can = cardRabitterMapper.canOperate(rabitter.getId(), userId, role);
+            vo.setCanOperate(Boolean.TRUE.equals(can));
+            voList.add(vo);
         }
         return voList;
     }
@@ -52,12 +57,8 @@ public class CardRabitterServiceImpl implements CardRabitterService {
      */
     @Override
     public CardRabitterVO getById(Long id) {
-        /** Rabitter ID不能为空 */
-        if (id == null) {
-            throw new RuntimeException("Rabitter ID不能为空");
-        }
         CardRabitter rabitter = cardRabitterMapper.getById(id);
-        /** Rabitter 必须存在 */
+        // Rabitter 必须存在
         if (rabitter == null) {
             throw new RuntimeException("Rabitter 不存在");
         }
@@ -73,21 +74,9 @@ public class CardRabitterServiceImpl implements CardRabitterService {
     @Override
     @Transactional
     public Long create(CardRabitterDTO dto) {
-        /** 参数不能为空 */
-        if (dto == null) {
-            throw new RuntimeException("参数不能为空");
-        }
-        /** 卡面ID不能为空 */
-        if (dto.getCardId() == null) {
-            throw new RuntimeException("卡面ID不能为空");
-        }
-        /** 话数不能为空 */
-        if (dto.getEpisodeNo() == null) {
-            throw new RuntimeException("话数不能为空");
-        }
-
         CardRabitter rabitter = new CardRabitter();
         BeanUtils.copyProperties(dto, rabitter);
+        rabitter.setCreatorId(BaseContext.getCurrentId());
         cardRabitterMapper.insert(rabitter);
         log.info("新增卡面 Rabitter 成功，id={}", rabitter.getId());
         return rabitter.getId();
@@ -102,19 +91,7 @@ public class CardRabitterServiceImpl implements CardRabitterService {
     @Override
     @Transactional
     public void update(Long id, CardRabitterDTO dto) {
-        /** Rabitter ID不能为空 */
-        if (id == null) {
-            throw new RuntimeException("Rabitter ID不能为空");
-        }
-        /** 参数不能为空 */
-        if (dto == null) {
-            throw new RuntimeException("参数不能为空");
-        }
-        CardRabitter exist = cardRabitterMapper.getById(id);
-        /** Rabitter 必须存在 */
-        if (exist == null) {
-            throw new RuntimeException("Rabitter 不存在");
-        }
+        checkOperable(id);
         CardRabitter rabitter = new CardRabitter();
         BeanUtils.copyProperties(dto, rabitter);
         rabitter.setId(id);
@@ -130,15 +107,7 @@ public class CardRabitterServiceImpl implements CardRabitterService {
     @Override
     @Transactional
     public void delete(Long id) {
-        /** Rabitter ID不能为空 */
-        if (id == null) {
-            throw new RuntimeException("Rabitter ID不能为空");
-        }
-        CardRabitter exist = cardRabitterMapper.getById(id);
-        /** Rabitter 必须存在 */
-        if (exist == null) {
-            throw new RuntimeException("Rabitter 不存在");
-        }
+        checkOperable(id);
         cardRabitterMapper.deleteById(id);
         log.info("删除卡面 Rabitter 成功，id={}", id);
     }
@@ -151,7 +120,7 @@ public class CardRabitterServiceImpl implements CardRabitterService {
     @Override
     @Transactional
     public void deleteByCardId(Long cardId) {
-        /** 卡面ID不能为空 */
+        // 卡面ID不能为空
         if (cardId == null) {
             throw new RuntimeException("卡面ID不能为空");
         }
@@ -172,5 +141,26 @@ public class CardRabitterServiceImpl implements CardRabitterService {
         CardRabitterVO vo = new CardRabitterVO();
         BeanUtils.copyProperties(rabitter, vo);
         return vo;
+    }
+
+    /**
+     * 校验当前用户是否有权操作指定 Rabitter，并返回其实体
+     *
+     * @param id Rabitter 主键
+     * @throws RuntimeException   资源不存在
+     * @throws ForbiddenException 无权操作
+     */
+    private void checkOperable(Long id) {
+        if (id == null) {
+            throw new RuntimeException("Rabitter ID不能为空");
+        }
+        CardRabitter exist = cardRabitterMapper.getById(id);
+        if (exist == null) {
+            throw new RuntimeException("Rabitter 不存在");
+        }
+        Boolean can = cardRabitterMapper.canOperate(id, BaseContext.getCurrentId(), BaseContext.getCurrentRole());
+        if (!Boolean.TRUE.equals(can)) {
+            throw new ForbiddenException("无权操作该 Rabitter");
+        }
     }
 }

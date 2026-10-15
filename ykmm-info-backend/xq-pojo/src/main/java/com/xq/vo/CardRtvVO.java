@@ -23,6 +23,10 @@ public class CardRtvVO implements Serializable {
     private Integer episodeNo;
     /** 标题 */
     private String title;
+    /**
+     * 当前用户能否修改
+     */
+    private Boolean canOperate;
     /** 创建时间 */
     private String createdAt;
 }

@@ -1,5 +1,8 @@
 package com.xq.dto;
 
+import com.xq.validation.CreateGroup;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -16,11 +19,15 @@ import java.io.Serializable;
 @AllArgsConstructor
 public class CardRcDTO implements Serializable {
     /** 所属卡面ID */
+    @NotNull(groups = CreateGroup.class, message = "卡面ID不能为空")
     private Long cardId;
     /** RC发起人角色ID，该角色对话默认右侧（side=2） */
+    @NotNull(groups = CreateGroup.class, message = "RC 发起人不能为空")
     private Long roleId;
     /** 第几话 */
+    @NotNull(groups = CreateGroup.class, message = "话数不能为空")
     private Integer episodeNo;
     /** 标题 */
+    @Size(max = 255, message = "标题最多 255 个字符")
     private String title;
 }

@@ -10,28 +10,28 @@ export const listCardRtvByCardAPI = (cardId: number) => {
   return request.get<CardRtvVO[]>(`/pub/card-rtv/card/${cardId}`)
 }
 
-// ---------- 管理员 ----------
-
 /**
  * @description: 查询 RTV 详情
  */
 export const getCardRtvDetailAPI = (id: number) => {
-  return request.get<CardRtvVO>(`/admin/card-rtv/${id}`)
+  return request.get<CardRtvVO>(`/pub/card-rtv/${id}`)
 }
 
 /**
  * @description: 新增 RTV
  */
 export const createCardRtvAPI = (data: CardRtvDTO) => {
-  return request.post<number>('/admin/card-rtv', data)
+  return request.post<number>('/pub/card-rtv', data)
 }
 
 /**
  * @description: 编辑 RTV
  */
 export const updateCardRtvAPI = (id: number, data: CardRtvDTO) => {
-  return request.put(`/admin/card-rtv/${id}`, data)
+  return request.put(`/pub/card-rtv/${id}`, data)
 }
+
+// ---------- 管理员 ----------
 
 /**
  * @description: 删除 RTV

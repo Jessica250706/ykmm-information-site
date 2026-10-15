@@ -8,7 +8,9 @@
     card_id AS cardId,
     episode_no AS episodeNo,
     title,
-    created_at AS createdAt
+    creator_id AS creatorId,
+    created_at AS createdAt,
+    updated_at AS updatedAt
   </sql>
 
   <select id="listByCardId" resultType="com.xq.entity.CardRtv">
@@ -22,8 +24,8 @@
   </select>
 
   <insert id="insert" useGeneratedKeys="true" keyProperty="id">
-    INSERT INTO card_rtv (card_id, episode_no, title)
-    VALUES (#{cardId}, #{episodeNo}, #{title})
+    INSERT INTO card_rtv (card_id, episode_no, title, creator_id)
+    VALUES (#{cardId}, #{episodeNo}, #{title}, #{creatorId})
   </insert>
 
   <update id="update">
@@ -56,5 +58,15 @@
       #{id}
     </foreach>
   </delete>
+
+  <select id="canOperate" resultType="java.lang.Boolean">
+    SELECT CASE
+             WHEN #{role} = 1 THEN 1
+             WHEN #{userId} IS NOT NULL AND creator_id = #{userId} THEN 1
+             ELSE 0
+             END
+    FROM card_rtv
+    WHERE id = #{rtvId}
+  </select>
 
 </mapper>

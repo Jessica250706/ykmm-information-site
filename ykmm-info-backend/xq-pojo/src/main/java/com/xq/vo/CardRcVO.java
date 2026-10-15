@@ -40,6 +40,10 @@ public class CardRcVO implements Serializable {
      */
     private String title;
     /**
+     * 当前用户能否修改
+     */
+    private Boolean canOperate;
+    /**
      * 创建时间
      */
     private String createdAt;

@@ -1,8 +1,10 @@
 package com.xq.service.impl;
 
+import com.xq.context.BaseContext;
 import com.xq.dto.CardRcDTO;
 import com.xq.entity.CardRc;
 import com.xq.enums.DialogueSideEnum;
+import com.xq.exception.ForbiddenException;
 import com.xq.mapper.CardRcMapper;
 import com.xq.service.CardRcService;
 import com.xq.vo.CardRcVO;
@@ -29,10 +31,16 @@ public class CardRcServiceImpl implements CardRcService {
      */
     @Override
     public List<CardRcVO> listByCardId(Long cardId) {
-        if (cardId == null) {
-            throw new RuntimeException("卡面ID不能为空");
+        List<CardRcVO> voList = cardRcMapper.listVOByCardId(cardId);
+
+        Long userId = BaseContext.getCurrentId();
+        Integer role = BaseContext.getCurrentRole();
+
+        for (CardRcVO rc : voList) {
+            Boolean can = cardRcMapper.canOperate(rc.getId(), userId, role);
+            rc.setCanOperate(Boolean.TRUE.equals(can));
         }
-        return cardRcMapper.listVOByCardId(cardId);
+        return voList;
     }
 
     /**
@@ -40,9 +48,6 @@ public class CardRcServiceImpl implements CardRcService {
      */
     @Override
     public CardRcVO getById(Long id) {
-        if (id == null) {
-            throw new RuntimeException("RC ID不能为空");
-        }
         CardRcVO vo = cardRcMapper.getVOById(id);
         if (vo == null) {
             throw new RuntimeException("RC 不存在");
@@ -56,21 +61,9 @@ public class CardRcServiceImpl implements CardRcService {
     @Override
     @Transactional
     public Long create(CardRcDTO dto) {
-        if (dto == null) {
-            throw new RuntimeException("参数不能为空");
-        }
-        if (dto.getCardId() == null) {
-            throw new RuntimeException("卡面ID不能为空");
-        }
-        if (dto.getRoleId() == null) {
-            throw new RuntimeException("RC 发起人不能为空");
-        }
-        if (dto.getEpisodeNo() == null) {
-            throw new RuntimeException("话数不能为空");
-        }
-
         CardRc rc = new CardRc();
         BeanUtils.copyProperties(dto, rc);
+        rc.setCreatorId(BaseContext.getCurrentId());
         cardRcMapper.insert(rc);
         log.info("新增卡面 RC 成功，id={}", rc.getId());
         return rc.getId();
@@ -82,16 +75,7 @@ public class CardRcServiceImpl implements CardRcService {
     @Override
     @Transactional
     public void update(Long id, CardRcDTO dto) {
-        if (id == null) {
-            throw new RuntimeException("RC ID不能为空");
-        }
-        if (dto == null) {
-            throw new RuntimeException("参数不能为空");
-        }
-        CardRc exist = cardRcMapper.getById(id);
-        if (exist == null) {
-            throw new RuntimeException("RC 不存在");
-        }
+        checkOperable(id);
         CardRc rc = new CardRc();
         BeanUtils.copyProperties(dto, rc);
         rc.setId(id);
@@ -105,13 +89,7 @@ public class CardRcServiceImpl implements CardRcService {
     @Override
     @Transactional
     public void delete(Long id) {
-        if (id == null) {
-            throw new RuntimeException("RC ID不能为空");
-        }
-        CardRc exist = cardRcMapper.getById(id);
-        if (exist == null) {
-            throw new RuntimeException("RC 不存在");
-        }
+        checkOperable(id);
         cardRcMapper.deleteById(id);
         log.info("删除卡面 RC 成功，id={}", id);
     }
@@ -139,5 +117,26 @@ public class CardRcServiceImpl implements CardRcService {
         return rc.getRoleId() != null && rc.getRoleId().equals(speakerId)
                 ? DialogueSideEnum.RIGHT.getValue()
                 : DialogueSideEnum.LEFT.getValue();
+    }
+
+    /**
+     * 校验当前用户是否有权操作指定 RC，并返回其实体
+     *
+     * @param id RC 主键
+     * @throws RuntimeException 资源不存在
+     * @throws ForbiddenException 无权操作
+     */
+    private void checkOperable(Long id) {
+        if (id == null) {
+            throw new RuntimeException("RC ID不能为空");
+        }
+        CardRc exist = cardRcMapper.getById(id);
+        if (exist == null) {
+            throw new RuntimeException("RC 不存在");
+        }
+        Boolean can = cardRcMapper.canOperate(id, BaseContext.getCurrentId(), BaseContext.getCurrentRole());
+        if (!Boolean.TRUE.equals(can)) {
+            throw new ForbiddenException("无权操作该 RC");
+        }
     }
 }

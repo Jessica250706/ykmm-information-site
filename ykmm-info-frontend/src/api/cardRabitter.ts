@@ -10,28 +10,28 @@ export const listCardRabitterByCardAPI = (cardId: number) => {
   return request.get<CardRabitterVO[]>(`/pub/card-rabitter/card/${cardId}`)
 }
 
-// ---------- 管理员 ----------
-
 /**
  * @description: 查询 Rabitter 详情
  */
 export const getCardRabitterDetailAPI = (id: number) => {
-  return request.get<CardRabitterVO>(`/admin/card-rabitter/${id}`)
+  return request.get<CardRabitterVO>(`/pub/card-rabitter/${id}`)
 }
 
 /**
  * @description: 新增 Rabitter
  */
 export const createCardRabitterAPI = (data: CardRabitterDTO) => {
-  return request.post<number>('/admin/card-rabitter', data)
+  return request.post<number>('/pub/card-rabitter', data)
 }
 
 /**
  * @description: 编辑 Rabitter
  */
 export const updateCardRabitterAPI = (id: number, data: CardRabitterDTO) => {
-  return request.put(`/admin/card-rabitter/${id}`, data)
+  return request.put(`/pub/card-rabitter/${id}`, data)
 }
+
+// ---------- 管理员 ----------
 
 /**
  * @description: 删除 Rabitter

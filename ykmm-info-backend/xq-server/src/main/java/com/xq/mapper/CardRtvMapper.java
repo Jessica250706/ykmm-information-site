@@ -57,4 +57,11 @@ public interface CardRtvMapper {
      * @return 影响行数
      */
     int deleteByIds(@Param("ids") List<Long> ids);
+
+    /**
+     * 判断指定用户能否操作该 RTV
+     */
+    Boolean canOperate(@Param("rtvId") Long rtvId,
+                       @Param("userId") Long userId,
+                       @Param("role") Integer role);
 }

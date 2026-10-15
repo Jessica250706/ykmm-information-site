@@ -9,7 +9,9 @@
     role_id AS roleId,
     episode_no AS episodeNo,
     title,
-    created_at AS createdAt
+    creator_id AS creatorId,
+    created_at AS createdAt,
+    updated_at AS updatedAt
   </sql>
 
   <select id="listVOByCardId" resultType="com.xq.vo.CardRcVO">
@@ -46,8 +48,8 @@
   </select>
 
   <insert id="insert" useGeneratedKeys="true" keyProperty="id">
-    INSERT INTO card_rc (card_id, role_id, episode_no, title)
-    VALUES (#{cardId}, #{roleId}, #{episodeNo}, #{title})
+    INSERT INTO card_rc (card_id, role_id, episode_no, title, creator_id)
+    VALUES (#{cardId}, #{roleId}, #{episodeNo}, #{title}, #{creatorId})
   </insert>
 
   <update id="update">
@@ -85,5 +87,15 @@
       #{id}
     </foreach>
   </delete>
+
+  <select id="canOperate" resultType="java.lang.Boolean">
+    SELECT CASE
+             WHEN #{role} = 1 THEN 1
+             WHEN #{userId} IS NOT NULL AND creator_id = #{userId} THEN 1
+             ELSE 0
+             END
+    FROM card_rc
+    WHERE id = #{rcId}
+  </select>
 
 </mapper>

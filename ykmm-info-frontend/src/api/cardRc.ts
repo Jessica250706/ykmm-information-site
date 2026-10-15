@@ -10,28 +10,28 @@ export const listCardRcByCardAPI = (cardId: number) => {
   return request.get<CardRcVO[]>(`/pub/card-rc/card/${cardId}`)
 }
 
-// ---------- 管理员 ----------
-
 /**
  * @description: 查询 RC 详情
  */
 export const getCardRcDetailAPI = (id: number) => {
-  return request.get<CardRcVO>(`/admin/card-rc/${id}`)
+  return request.get<CardRcVO>(`/pub/card-rc/${id}`)
 }
 
 /**
  * @description: 新增 RC
  */
 export const createCardRcAPI = (data: CardRcDTO) => {
-  return request.post<number>('/admin/card-rc', data)
+  return request.post<number>('/pub/card-rc', data)
 }
 
 /**
  * @description: 编辑 RC
  */
 export const updateCardRcAPI = (id: number, data: CardRcDTO) => {
-  return request.put(`/admin/card-rc/${id}`, data)
+  return request.put(`/pub/card-rc/${id}`, data)
 }
+
+// ---------- 管理员 ----------
 
 /**
  * @description: 删除 RC

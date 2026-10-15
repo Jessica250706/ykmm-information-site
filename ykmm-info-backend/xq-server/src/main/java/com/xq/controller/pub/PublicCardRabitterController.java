@@ -1,10 +1,17 @@
 package com.xq.controller.pub;
 
+import com.xq.dto.CardRabitterDTO;
 import com.xq.result.Result;
 import com.xq.service.CardRabitterService;
+import com.xq.validation.CreateGroup;
+import com.xq.validation.UpdateGroup;
 import com.xq.vo.CardRabitterVO;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -15,6 +22,7 @@ import java.util.List;
 @RestController("PublicCardRabitterController")
 @RequestMapping("/pub/card-rabitter")
 @Slf4j
+@Validated
 public class PublicCardRabitterController {
 
     @Autowired
@@ -27,7 +35,38 @@ public class PublicCardRabitterController {
      * @return Rabitter 列表
      */
     @GetMapping("/card/{cardId}")
-    public Result<List<CardRabitterVO>> listByCardId(@PathVariable Long cardId) {
+    public Result<List<CardRabitterVO>> listByCardId(@PathVariable @NotNull(message = "卡面ID不能为空") Long cardId) {
         return Result.success(cardRabitterService.listByCardId(cardId));
+    }
+
+    /**
+     * 查询详情
+     *
+     * @param id 主键
+     * @return Rabitter 详情
+     */
+    @GetMapping("/{id}")
+    public Result<CardRabitterVO> detail(@PathVariable @NotNull(message = "Rabitter ID不能为空") Long id) {
+        return Result.success(cardRabitterService.getById(id));
+    }
+
+    /**
+     * 新增
+     */
+    @PostMapping
+    public Result<Long> create(@RequestBody @Validated(CreateGroup.class) CardRabitterDTO dto) {
+        return Result.success(cardRabitterService.create(dto));
+    }
+
+    /**
+     * 编辑
+     */
+    @PutMapping("/{id}")
+    public Result<Void> update(
+            @PathVariable @Positive(message = "Rabitter ID不能为空") Long id,
+            @RequestBody @Validated(UpdateGroup.class) CardRabitterDTO dto
+    ) {
+        cardRabitterService.update(id, dto);
+        return Result.success();
     }
 }

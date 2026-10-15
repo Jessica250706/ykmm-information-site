@@ -22,6 +22,10 @@ export interface CardRabitterVO {
    * 标题
    */
   title?: string
+  /**
+   * 当前用户能否修改
+   */
+  canOperate?: boolean
   [property: string]: any
 }
 

@@ -45,7 +45,15 @@ public class CardRc implements Serializable {
     private String title;
 
     /**
+     * 创建者用户ID
+     */
+    private Long creatorId;
+
+    /**
      * 创建时间
      */
     private LocalDateTime createdAt;
+
+    /** 更新时间 */
+    private LocalDateTime updatedAt;
 }

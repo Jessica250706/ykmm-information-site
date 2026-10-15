@@ -76,4 +76,20 @@ public interface CardRabitterMapper {
      * @return 影响行数
      */
     int deleteByIds(@Param("ids") List<Long> ids);
+
+    /**
+     * 判断指定用户能否操作该 Rabitter
+     * <p>
+     * - 游客（userId / role 为 null）返回 false
+     * - 管理员（role = 1）返回 true
+     * - 普通用户：creator_id == userId 返回 true，否则 false
+     *
+     * @param rabitterId Rabitter 主键
+     * @param userId     当前登录用户ID，游客传 null
+     * @param role       当前用户角色，游客传 null
+     * @return 能否操作
+     */
+    Boolean canOperate(@Param("rabitterId") Long rabitterId,
+                       @Param("userId") Long userId,
+                       @Param("role") Integer role);
 }

@@ -27,7 +27,10 @@
           </div>
         </div>
 
-        <div class="flex items-center gap-1 opacity-0 transition group-hover:opacity-100">
+        <div
+          v-if="ep.canOperate"
+          class="flex items-center gap-1 opacity-0 transition group-hover:opacity-100"
+        >
           <el-button
             :icon="Edit"
             size="small"

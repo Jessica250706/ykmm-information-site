@@ -1,7 +1,10 @@
 package com.xq.service.impl;
 
+import com.xq.context.BaseContext;
 import com.xq.dto.CardRtvDTO;
+import com.xq.entity.CardRc;
 import com.xq.entity.CardRtv;
+import com.xq.exception.ForbiddenException;
 import com.xq.mapper.CardRtvMapper;
 import com.xq.service.CardRtvService;
 import com.xq.vo.CardRtvVO;
@@ -32,14 +35,19 @@ public class CardRtvServiceImpl implements CardRtvService {
      */
     @Override
     public List<CardRtvVO> listByCardId(Long cardId) {
-        if (cardId == null) {
-            throw new RuntimeException("卡面ID不能为空");
-        }
         List<CardRtv> list = cardRtvMapper.listByCardId(cardId);
+
+        Long userId = BaseContext.getCurrentId();
+        Integer role = BaseContext.getCurrentRole();
+
         List<CardRtvVO> voList = new ArrayList<>(list.size());
         for (CardRtv rtv : list) {
-            voList.add(toVO(rtv));
+            CardRtvVO vo = toVO(rtv);
+            Boolean can = cardRtvMapper.canOperate(rtv.getId(), userId, role);
+            vo.setCanOperate(Boolean.TRUE.equals(can));
+            voList.add(vo);
         }
+
         return voList;
     }
 
@@ -51,9 +59,6 @@ public class CardRtvServiceImpl implements CardRtvService {
      */
     @Override
     public CardRtvVO getById(Long id) {
-        if (id == null) {
-            throw new RuntimeException("RTV ID不能为空");
-        }
         CardRtv rtv = cardRtvMapper.getById(id);
         if (rtv == null) {
             throw new RuntimeException("RTV 不存在");
@@ -70,18 +75,9 @@ public class CardRtvServiceImpl implements CardRtvService {
     @Override
     @Transactional
     public Long create(CardRtvDTO dto) {
-        if (dto == null) {
-            throw new RuntimeException("参数不能为空");
-        }
-        if (dto.getCardId() == null) {
-            throw new RuntimeException("卡面ID不能为空");
-        }
-        if (dto.getEpisodeNo() == null) {
-            throw new RuntimeException("话数不能为空");
-        }
-
         CardRtv rtv = new CardRtv();
         BeanUtils.copyProperties(dto, rtv);
+        rtv.setCreatorId(BaseContext.getCurrentId());
         cardRtvMapper.insert(rtv);
         log.info("新增卡面 RTV 成功，id={}", rtv.getId());
         return rtv.getId();
@@ -96,16 +92,7 @@ public class CardRtvServiceImpl implements CardRtvService {
     @Override
     @Transactional
     public void update(Long id, CardRtvDTO dto) {
-        if (id == null) {
-            throw new RuntimeException("RTV ID不能为空");
-        }
-        if (dto == null) {
-            throw new RuntimeException("参数不能为空");
-        }
-        CardRtv exist = cardRtvMapper.getById(id);
-        if (exist == null) {
-            throw new RuntimeException("RTV 不存在");
-        }
+        checkOperable(id);
         CardRtv rtv = new CardRtv();
         BeanUtils.copyProperties(dto, rtv);
         rtv.setId(id);
@@ -121,13 +108,7 @@ public class CardRtvServiceImpl implements CardRtvService {
     @Override
     @Transactional
     public void delete(Long id) {
-        if (id == null) {
-            throw new RuntimeException("RTV ID不能为空");
-        }
-        CardRtv exist = cardRtvMapper.getById(id);
-        if (exist == null) {
-            throw new RuntimeException("RTV 不存在");
-        }
+        checkOperable(id);
         cardRtvMapper.deleteById(id);
         log.info("删除卡面 RTV 成功，id={}", id);
     }
@@ -145,5 +126,26 @@ public class CardRtvServiceImpl implements CardRtvService {
         CardRtvVO vo = new CardRtvVO();
         BeanUtils.copyProperties(rtv, vo);
         return vo;
+    }
+
+    /**
+     * 校验当前用户是否有权操作指定 RTV，并返回其实体
+     *
+     * @param id RTV 主键
+     * @throws RuntimeException 资源不存在
+     * @throws ForbiddenException 无权操作
+     */
+    private void checkOperable(Long id) {
+        if (id == null) {
+            throw new RuntimeException("RTV ID不能为空");
+        }
+        CardRtv exist = cardRtvMapper.getById(id);
+        if (exist == null) {
+            throw new RuntimeException("RTV 不存在");
+        }
+        Boolean can = cardRtvMapper.canOperate(id, BaseContext.getCurrentId(), BaseContext.getCurrentRole());
+        if (!Boolean.TRUE.equals(can)) {
+            throw new ForbiddenException("无权操作该 RTV");
+        }
     }
 }
