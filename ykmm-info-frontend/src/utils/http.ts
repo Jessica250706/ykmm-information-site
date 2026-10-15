@@ -40,7 +40,7 @@ interface HttpInstance {
 
 /* ================== 错误提示去重 ================== */
 const recentMsgTime = new Map<string, number>()
-const MSG_DEDUP_WINDOW = 2000 // 相同内容 2 秒内只弹一次
+const MSG_DEDUP_WINDOW = 2000
 
 function showErrorOnce(msg: string) {
   if (!msg) return
@@ -51,20 +51,42 @@ function showErrorOnce(msg: string) {
   ElMessage.error(msg)
 }
 
-/* ================== 未登录处理去重 ================== */
+/* ================== 401 处理 ================== */
+
+/**
+ * 这些前缀下的接口在 401 时不强制登录
+ * - /auth：登录、注册、刷新、me 等
+ * - /pub ：游客接口，本就不该 401
+ */
+const SILENT_401_PREFIXES = ['/auth', '/pub']
+
+function isSilent401Url(url?: string): boolean {
+  if (!url) return false
+  return SILENT_401_PREFIXES.some((p) => url.startsWith(p))
+}
+
 let isHandlingUnauthorized = false
 
-function handleUnauthorized(msg = '未登录或登录已过期') {
+function handleUnauthorized(url: string | undefined, msg: string) {
+  const userStore = useUserStore()
+  const currentRoute = router.currentRoute.value
+  const onPublicPage = !currentRoute.meta.requiresAuth
+
+  // 静默情况：/auth、/pub 接口，或当前在公开页面
+  if (isSilent401Url(url) || onPublicPage) {
+    userStore.clearUserInfo()
+    console.warn('[http] 静默 401：', url, msg)
+    return
+  }
+
+  // 以下为「已登录 + 访问需要认证的页面」时 token 失效
   if (isHandlingUnauthorized) return
   isHandlingUnauthorized = true
 
   ElMessage.error(msg)
-
-  const userStore = useUserStore()
   userStore.clearUserInfo()
 
   router.replace({ name: CommonRouteName.LOGIN }).finally(() => {
-    // 给一个短暂冷却，防止跳转瞬间还没落地的请求又触发
     setTimeout(() => {
       isHandlingUnauthorized = false
     }, 1500)
@@ -101,9 +123,8 @@ httpInstance.interceptors.response.use(
     const body = res.data as ApiResponse
 
     if (body.code !== 200) {
-      // 业务层面返回 401
       if (body.code === 401) {
-        handleUnauthorized(body.msg)
+        handleUnauthorized(res.config.url, body.msg || '未登录')
       } else {
         showErrorOnce(body.msg || '请求失败')
       }
@@ -115,9 +136,10 @@ httpInstance.interceptors.response.use(
   (e) => {
     const status = e?.response?.status
     const msg = e?.response?.data?.msg ?? e?.message ?? '请求失败'
+    const url = e?.config?.url as string | undefined
 
     if (status === 401) {
-      handleUnauthorized(msg)
+      handleUnauthorized(url, msg)
     } else {
       showErrorOnce(msg)
     }
