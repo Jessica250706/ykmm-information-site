@@ -11,9 +11,12 @@ import { componentPlugin } from '@/components/index.ts' // 引入全局组件插
 import { useTheme } from '@/composables/useTheme'
 import { lazyPlugin } from '@/directives/lazy.ts' // 引入懒加载指令插件，并注册
 import router from '@/router'
-import { useAgencyStore } from '@/stores/agencyStore'
-import { useIdolGroupStore } from '@/stores/idolGroupStore'
-import { useStoryCategoryTypeStore } from '@/stores/storyCategoryTypeStore'
+import {
+  useAgencyStore,
+  useIdolGroupStore,
+  usePersonStore,
+  useStoryCategoryTypeStore,
+} from '@/stores'
 import App from './App.vue'
 import '@/styles/style.css'
 
@@ -27,9 +30,11 @@ app.use(pinia)
 const agencyStore = useAgencyStore()
 const idolGroupStore = useIdolGroupStore()
 const storyCategoryTypeStore = useStoryCategoryTypeStore()
+const personStore = usePersonStore()
 Promise.all([
   agencyStore.loadAll(true),
   idolGroupStore.loadAll(true),
+  personStore.loadAll(true),
   storyCategoryTypeStore.loadAll(true),
 ]).catch((e) => {
   console.error('初始化基础数据失败', e)

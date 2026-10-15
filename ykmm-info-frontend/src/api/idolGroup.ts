@@ -1,12 +1,16 @@
 import type { IdolGroupDTO, IdolGroupVO } from '@/types/idolGroup'
 import request from '@/utils/http'
 
+// ---------- 游客 ----------
+
 /**
  * @description: 查询全部偶像团体
  */
 export const listIdolGroupsAPI = () => {
-  return request.get<IdolGroupVO[]>('/admin/idol-group')
+  return request.get<IdolGroupVO[]>('/pub/idol-group')
 }
+
+// ---------- 管理员 ----------
 
 /**
  * @description: 查询偶像团体详情

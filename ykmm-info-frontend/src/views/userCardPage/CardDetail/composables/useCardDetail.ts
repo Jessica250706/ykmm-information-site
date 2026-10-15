@@ -1,9 +1,9 @@
-import { computed, ref } from 'vue'
-import { getCardDetailAPI } from '@/api/card'
+import { computed, onMounted, ref } from 'vue'
+import { canCreateAPI, getCardDetailAPI } from '@/api/card'
 import { SOURCE_TYPE } from '@/constants'
 import type { CardVO } from '@/types/card'
 
-export function useCardDetail() {
+export function useCardDetail(cardId: number) {
   const loading = ref(false)
   const card = ref<CardVO | null>(null)
 
@@ -16,6 +16,8 @@ export function useCardDetail() {
   const isRc = computed(() => attachedType.value === SOURCE_TYPE.RC)
   const isRtv = computed(() => attachedType.value === SOURCE_TYPE.RTV)
   const isRabitter = computed(() => attachedType.value === SOURCE_TYPE.RABITTER)
+
+  const isCreate = ref<boolean>(false)
 
   async function load(id: number) {
     if (!id) return
@@ -30,6 +32,15 @@ export function useCardDetail() {
     }
   }
 
+  async function canCreate() {
+    const res = await canCreateAPI(cardId)
+    isCreate.value = res.data
+  }
+
+  onMounted(() => {
+    canCreate()
+  })
+
   return {
     loading,
     card,
@@ -38,6 +49,7 @@ export function useCardDetail() {
     isRc,
     isRtv,
     isRabitter,
+    isCreate,
     load,
   }
 }

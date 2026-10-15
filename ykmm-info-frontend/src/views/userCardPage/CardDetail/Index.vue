@@ -3,6 +3,7 @@
     <CardDetailHeader
       :attached-type="attachedType"
       :card="card"
+      :is-create="isCreate"
       :is-list="isList"
       @add-episode="handleAddEpisode"
       @back="handleBack"
@@ -105,7 +106,8 @@ const RTV_MODE = SOURCE_TYPE_SMALL_LABEL[SOURCE_TYPE.RTV]
 const RABITTER_MODE = SOURCE_TYPE_SMALL_LABEL[SOURCE_TYPE.RABITTER]
 
 /* -------- 卡面 -------- */
-const { loading, card, attachedType, imageUrls, isRc, isRtv, isRabitter, load } = useCardDetail()
+const { loading, card, attachedType, imageUrls, isRc, isRtv, isRabitter, isCreate, load } =
+  useCardDetail(cardId.value)
 
 /* -------- 话数管理 -------- */
 const {

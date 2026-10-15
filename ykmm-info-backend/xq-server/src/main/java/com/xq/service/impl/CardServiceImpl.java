@@ -4,6 +4,7 @@ import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.xq.constant.DialogueSourceTypeConstant;
 import com.xq.constant.StatusConstant;
+import com.xq.constant.UserRoleConstant;
 import com.xq.context.BaseContext;
 import com.xq.context.RoleContext;
 import com.xq.dto.CardDTO;
@@ -352,6 +353,31 @@ public class CardServiceImpl implements CardService {
         cardPersonRelMapper.deleteByCardId(id);
 
         log.info("删除卡面成功，id={}, 操作人={}, 角色={}", id, BaseContext.getCurrentId(), UserRoleEnum.current());
+    }
+
+    @Override
+    public boolean canCreate(Long cardId) {
+        if (cardId == null) return false;
+
+        Long userId = BaseContext.getCurrentId();
+        Integer role = BaseContext.getCurrentRole();
+
+        // 1. 游客：不行
+        if (userId == null || role == null) {
+            return false;
+        }
+
+        // 2. 管理员：可以
+        if (UserRoleConstant.ADMIN == role) {
+            return true;
+        }
+
+        // 3. 普通用户：card.creator_id 必须等于当前用户
+        Card card = cardMapper.getById(cardId);
+        if (card == null) {
+            return false;
+        }
+        return userId.equals(card.getCreatorId());
     }
 
     /* ---------------- 私有方法 ---------------- */

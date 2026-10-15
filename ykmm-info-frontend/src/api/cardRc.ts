@@ -1,12 +1,16 @@
 import type { CardRcDTO, CardRcVO } from '@/types/cardRc'
 import request from '@/utils/http'
 
+// ---------- 游客 ----------
+
 /**
  * @description: 查询卡面下的 RC 列表
  */
 export const listCardRcByCardAPI = (cardId: number) => {
-  return request.get<CardRcVO[]>(`/admin/card-rc/card/${cardId}`)
+  return request.get<CardRcVO[]>(`/pub/card-rc/card/${cardId}`)
 }
+
+// ---------- 管理员 ----------
 
 /**
  * @description: 查询 RC 详情

@@ -76,8 +76,8 @@
   <select id="getById" resultType="com.xq.entity.Card">
     SELECT
     <include refid="baseColumns"/>
-    FROM card
-    WHERE id = #{id}
+    FROM card c
+    WHERE c.id = #{id}
   </select>
 
   <select id="countByName" resultType="int">

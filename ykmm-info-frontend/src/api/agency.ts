@@ -1,14 +1,16 @@
 import type { AgencyDTO, AgencyVO } from '@/types/agency'
 import request from '@/utils/http'
 
-// ---------- 管理员 ----------
+// ---------- 游客 ----------
 
 /**
  * @description: 查询全部经纪公司
  */
 export const listAgencyAPI = () => {
-  return request.get<AgencyVO[]>('/admin/agency')
+  return request.get<AgencyVO[]>('/pub/agency')
 }
+
+// ---------- 管理员 ----------
 
 /**
  * @description: 查询经纪公司详情

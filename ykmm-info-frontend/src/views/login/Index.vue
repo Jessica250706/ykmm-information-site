@@ -54,6 +54,13 @@
             立即注册
           </el-link>
         </div>
+
+        <!-- 新增：游客访问入口 -->
+        <el-divider class="my-5!">
+          <span class="text-xs text-slate-400">或</span>
+        </el-divider>
+
+        <el-button class="w-full" size="large" @click="goGuest">游客访问</el-button>
       </el-form>
     </el-card>
   </div>
@@ -115,8 +122,9 @@ async function handleSubmit() {
 
     ElMessage.success('登录成功')
 
+    // 优先回跳到 redirect，但若是登录页自身则忽略
     const redirect = route.query.redirect as string | undefined
-    if (redirect) {
+    if (redirect && redirect !== route.fullPath) {
       await router.replace(redirect)
     } else {
       await router.replace({
@@ -132,6 +140,17 @@ async function handleSubmit() {
 
 function goRegister() {
   router.replace({ name: CommonRouteName.REGISTER })
+}
+
+/** 游客访问：不携带 token，直接进入公开页面 */
+function goGuest() {
+  // 如果 URL 上有 redirect 且是公开页，就跳那里；否则回卡面列表
+  const redirect = route.query.redirect as string | undefined
+  if (redirect && redirect !== route.fullPath) {
+    router.replace(redirect)
+    return
+  }
+  router.replace({ name: UserRouteName.CARD_LIST })
 }
 
 // 优先用 URL 里带过来的邮箱（从注册页跳回来）

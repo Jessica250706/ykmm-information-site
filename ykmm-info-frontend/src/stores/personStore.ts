@@ -21,7 +21,6 @@ export const usePersonStore = defineStore(
     const loadAll = async (force = false) => {
       if (loaded.value && !force) return persons.value
 
-      // 一次性拉取足够多的数据（后端上限内）
       const res = await listPersonOptionsAPI()
       persons.value = res.data ?? []
       loaded.value = true

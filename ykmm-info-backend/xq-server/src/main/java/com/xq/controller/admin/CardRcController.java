@@ -8,8 +8,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-
 /**
  * 卡面 RC 管理
  */
@@ -20,12 +18,6 @@ public class CardRcController {
 
     @Autowired
     private CardRcService cardRcService;
-
-    /** 查询卡面下的 RC 列表 */
-    @GetMapping("/card/{cardId}")
-    public Result<List<CardRcVO>> listByCardId(@PathVariable Long cardId) {
-        return Result.success(cardRcService.listByCardId(cardId));
-    }
 
     /** 查询详情 */
     @GetMapping("/{id}")

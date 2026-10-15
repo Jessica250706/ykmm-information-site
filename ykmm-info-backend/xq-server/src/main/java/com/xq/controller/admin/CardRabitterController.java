@@ -8,8 +8,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-
 /**
  * 卡面 Rabitter 管理
  */
@@ -20,17 +18,6 @@ public class CardRabitterController {
 
     @Autowired
     private CardRabitterService cardRabitterService;
-
-    /**
-     * 查询卡面下的 Rabitter 列表
-     *
-     * @param cardId 卡面ID
-     * @return Rabitter 列表
-     */
-    @GetMapping("/card/{cardId}")
-    public Result<List<CardRabitterVO>> listByCardId(@PathVariable Long cardId) {
-        return Result.success(cardRabitterService.listByCardId(cardId));
-    }
 
     /**
      * 查询详情

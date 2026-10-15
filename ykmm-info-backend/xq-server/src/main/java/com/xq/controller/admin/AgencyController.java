@@ -8,8 +8,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-
 /**
  * 经纪公司管理
  */
@@ -20,16 +18,6 @@ public class AgencyController {
 
     @Autowired
     private AgencyService agencyService;
-
-    /**
-     * 查询全部经纪公司
-     *
-     * @return 经纪公司列表
-     */
-    @GetMapping
-    public Result<List<AgencyVO>> listAll() {
-        return Result.success(agencyService.listAll());
-    }
 
     /**
      * 查询经纪公司详情

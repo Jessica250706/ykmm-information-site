@@ -1,12 +1,16 @@
 import type { CardRabitterDTO, CardRabitterVO } from '@/types/cardRabitter'
 import request from '@/utils/http'
 
+// ---------- 游客 ----------
+
 /**
  * @description: 查询卡面下的 Rabitter 列表
  */
 export const listCardRabitterByCardAPI = (cardId: number) => {
-  return request.get<CardRabitterVO[]>(`/admin/card-rabitter/card/${cardId}`)
+  return request.get<CardRabitterVO[]>(`/pub/card-rabitter/card/${cardId}`)
 }
+
+// ---------- 管理员 ----------
 
 /**
  * @description: 查询 Rabitter 详情

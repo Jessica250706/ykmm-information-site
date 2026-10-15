@@ -34,14 +34,6 @@ public class PersonController {
     }
 
     /**
-     * 查询所有人物
-     */
-    @GetMapping("/options")
-    public Result<List<PersonOptionVO>> options() {
-        return Result.success(personService.listOptions());
-    }
-
-    /**
      * 查询人物详情
      */
     @GetMapping("/{id}")

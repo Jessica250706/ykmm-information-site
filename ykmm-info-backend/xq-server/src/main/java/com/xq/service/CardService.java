@@ -58,4 +58,12 @@ public interface CardService {
      * @param id 主键
      */
     void delete(Long id);
+
+    /**
+     * 判断当前登录用户能否为指定卡面新增 RC、RTV、Rabitter
+     *
+     * @param cardId 卡面ID
+     * @return true 表示可以新增
+     */
+    boolean canCreate(Long cardId);
 }

@@ -31,6 +31,13 @@ export const getCardEpisodeDialogueAPI = (params: CardEpisodeDialogueDTO) => {
   return request.get<CardEpisodeVO>(`/pub/card/episode/dialogue`, { params })
 }
 
+/**
+ * @description: 判断当前用户能否新增 RC、RTV、Rabitter
+ */
+export const canCreateAPI = (cardId: number) => {
+  return request.get<boolean>(`/pub/card/can-create/${cardId}`)
+}
+
 // ---------- 用户 ----------
 
 /**

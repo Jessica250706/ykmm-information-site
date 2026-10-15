@@ -1,12 +1,16 @@
 import type { StoryCategoryTypeDTO, StoryCategoryTypeVO } from '@/types/storyCategoryType'
 import request from '@/utils/http'
 
+// ---------- 游客 ----------
+
 /**
  * @description: 查询全部
  */
 export const listStoryCategoryTypeAPI = () => {
-  return request.get<StoryCategoryTypeVO[]>('/admin/story-category-type/list')
+  return request.get<StoryCategoryTypeVO[]>('/pub/story-category-type/list')
 }
+
+// ---------- 管理员 ----------
 
 /**
  * @description: 查询详情

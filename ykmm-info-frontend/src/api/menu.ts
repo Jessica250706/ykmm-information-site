@@ -2,12 +2,16 @@ import { type MenuTypeValue } from '@/constants'
 import type { MenuDTO, MenuVO } from '@/types/menu'
 import request from '@/utils/http'
 
+// ---------- 游客 ----------
+
 /**
  * @description: 菜单树
  */
 export const getMenuTreeAPI = (menuType?: MenuTypeValue) => {
-  return request.get<MenuVO[]>('/admin/menu', { params: { menuType } })
+  return request.get<MenuVO[]>('/pub/menu', { params: { menuType } })
 }
+
+// ---------- 管理员 ----------
 
 /**
  * @description: 新增菜单

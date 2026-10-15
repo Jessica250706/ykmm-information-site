@@ -22,17 +22,6 @@ public class CardRtvController {
     private CardRtvService cardRtvService;
 
     /**
-     * 查询卡面下的 RTV 列表
-     *
-     * @param cardId 卡面ID
-     * @return RTV 列表
-     */
-    @GetMapping("/card/{cardId}")
-    public Result<List<CardRtvVO>> listByCardId(@PathVariable Long cardId) {
-        return Result.success(cardRtvService.listByCardId(cardId));
-    }
-
-    /**
      * 查询详情
      *
      * @param id 主键

@@ -1,12 +1,16 @@
 import type { CardRtvDTO, CardRtvVO } from '@/types/cardRtv'
 import request from '@/utils/http'
 
+// ---------- 游客 ----------
+
 /**
  * @description: 查询卡面下的 RTV 列表
  */
 export const listCardRtvByCardAPI = (cardId: number) => {
-  return request.get<CardRtvVO[]>(`/admin/card-rtv/card/${cardId}`)
+  return request.get<CardRtvVO[]>(`/pub/card-rtv/card/${cardId}`)
 }
+
+// ---------- 管理员 ----------
 
 /**
  * @description: 查询 RTV 详情

@@ -61,4 +61,15 @@ public class PublicCardController {
     public Result<CardEpisodeVO> episodeDialogue(@Valid DialogueSourceQueryDTO query) {
         return Result.success(cardService.getEpisodeDialogue(query.getSourceType(), query.getSourceId()));
     }
+
+    /**
+     * 判断当前用户能否新增 RC、RTV、Rabitter
+     *
+     * @param cardId 卡面ID
+     * @return true 表示可以新增
+     */
+    @GetMapping("/can-create/{cardId}")
+    public Result<Boolean> canCreate(@PathVariable Long cardId) {
+        return Result.success(cardService.canCreate(cardId));
+    }
 }

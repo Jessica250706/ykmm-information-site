@@ -2,25 +2,29 @@ import type { CardSeriesDTO, CardSeriesPageQueryDTO, CardSeriesVO } from '@/type
 import type { PageResult } from '@/types/common'
 import request from '@/utils/http'
 
-/**
- * @description: 分页查询卡面系列
- */
-export const pageCardSeriesAPI = (params: CardSeriesPageQueryDTO) => {
-  return request.get<PageResult<CardSeriesVO>>('/admin/card-series', { params })
-}
+// ---------- 游客 ----------
 
 /**
  * @description: 查询全部卡面系列（下拉用）
  */
 export const listCardSeriesOptionsAPI = () => {
-  return request.get<CardSeriesVO[]>('/admin/card-series/options')
+  return request.get<CardSeriesVO[]>('/pub/card-series/options')
 }
 
 /**
  * @description: 按名称搜索卡面系列（下拉远程搜索用）
  */
 export const searchCardSeriesAPI = (keyword?: string) => {
-  return request.get<CardSeriesVO[]>('/admin/card-series/search', { params: { keyword } })
+  return request.get<CardSeriesVO[]>('/pub/card-series/search', { params: { keyword } })
+}
+
+// ---------- 管理员 ----------
+
+/**
+ * @description: 分页查询卡面系列
+ */
+export const pageCardSeriesAPI = (params: CardSeriesPageQueryDTO) => {
+  return request.get<PageResult<CardSeriesVO>>('/admin/card-series', { params })
 }
 
 /**

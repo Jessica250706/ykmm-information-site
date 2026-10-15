@@ -2,18 +2,22 @@ import type { PageResult } from '@/types/common'
 import type { PersonDTO, PersonOptionVO, PersonPageQueryDTO, PersonVO } from '@/types/person'
 import request from '@/utils/http'
 
-/**
- * @description: 分页查询人物
- */
-export const listPersonAPI = (params: PersonPageQueryDTO) => {
-  return request.get<PageResult<PersonVO>>('/admin/person', { params })
-}
+// ---------- 游客 ----------
 
 /**
  * @description: 查询所有人物
  */
 export const listPersonOptionsAPI = () => {
-  return request.get<PersonOptionVO[]>('/admin/person/options')
+  return request.get<PersonOptionVO[]>('/pub/person/options')
+}
+
+// ---------- 管理员 ----------
+
+/**
+ * @description: 分页查询人物
+ */
+export const listPersonAPI = (params: PersonPageQueryDTO) => {
+  return request.get<PageResult<PersonVO>>('/admin/person', { params })
 }
 
 /**
