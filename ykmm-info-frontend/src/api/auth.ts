@@ -4,9 +4,17 @@ import type {
   MapString,
   PasswordRequest,
   RegisterRequest,
+  SendRegisterCodeRequest,
 } from '@/types/auth'
 import type { UserInfo } from '@/types/user'
 import request from '@/utils/http'
+
+/**
+ * @description: 发送注册邮箱验证码
+ */
+export const sendRegisterCodeAPI = (data: SendRegisterCodeRequest) => {
+  return request.post('/auth/register/code', data)
+}
 
 /**
  * @description: 用户注册

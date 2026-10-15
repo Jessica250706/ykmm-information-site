@@ -9,7 +9,13 @@ export interface RegisterRequest {
   email?: string
   nickname?: string
   password?: string
+  /** 邮箱验证码 */
+  code: string
   [property: string]: any
+}
+
+export interface SendRegisterCodeRequest {
+  email: string
 }
 
 /**

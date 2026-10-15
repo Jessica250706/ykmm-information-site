@@ -20,6 +20,7 @@ public class WebMvcConfiguration implements WebMvcConfigurer {
                         // 认证：登录、注册（游客可访问）
                         "/auth/login",
                         "/auth/register",
+                        "/auth/register/code",
                         // Swagger / Knife4j
                         "/doc.html",
                         "/webjars/**",

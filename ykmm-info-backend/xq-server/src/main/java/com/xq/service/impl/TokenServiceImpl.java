@@ -1,6 +1,7 @@
 package com.xq.service.impl;
 
 import com.xq.constant.JwtClaimsConstant;
+import com.xq.constant.UserRoleConstant;
 import com.xq.properties.JwtProperties;
 import com.xq.service.TokenService;
 import com.xq.utils.JwtUtil;
@@ -20,7 +21,7 @@ public class TokenServiceImpl implements TokenService {
     public String createToken(Long userId, Integer role) {
         Map<String, Object> claims = new HashMap<>();
         claims.put(JwtClaimsConstant.USER_ID, userId);
-        claims.put(JwtClaimsConstant.ROLE, role);
+        claims.put(JwtClaimsConstant.ROLE, role == null ? UserRoleConstant.USER : role);
         return JwtUtil.createJWT(
                 jwtProperties.getSecretKey(),
                 jwtProperties.getTtl(),

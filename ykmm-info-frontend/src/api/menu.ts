@@ -6,26 +6,26 @@ import request from '@/utils/http'
  * @description: 菜单树
  */
 export const getMenuTreeAPI = (menuType?: MenuTypeValue) => {
-  return request.get<MenuVO[]>('/admin/menus', { params: { menuType } })
+  return request.get<MenuVO[]>('/admin/menu', { params: { menuType } })
 }
 
 /**
  * @description: 新增菜单
  */
 export const createMenuAPI = (data: MenuDTO) => {
-  return request.post('/admin/menus', data)
+  return request.post('/admin/menu', data)
 }
 
 /**
  * @description: 编辑菜单
  */
 export const updateMenuAPI = (id: number, data: MenuDTO) => {
-  return request.put(`/admin/menus/${id}`, data)
+  return request.put(`/admin/menu/${id}`, data)
 }
 
 /**
  * @description: 删除菜单
  */
 export const deleteMenuAPI = (id: number) => {
-  return request.delete(`/admin/menus/${id}`)
+  return request.delete(`/admin/menu/${id}`)
 }

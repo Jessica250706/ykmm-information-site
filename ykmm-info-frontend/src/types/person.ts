@@ -38,7 +38,7 @@ export interface PersonVO {
   /**
    * 所属公司（经纪人）
    */
-  agencies?: AgencyVO[]
+  agency?: AgencyVO[]
   /**
    * 头像
    */

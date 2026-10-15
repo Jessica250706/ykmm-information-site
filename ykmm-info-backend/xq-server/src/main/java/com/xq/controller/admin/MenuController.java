@@ -14,7 +14,7 @@ import java.util.List;
  * 目录管理
  */
 @RestController("AdminMenuController")
-@RequestMapping("/admin/menus")
+@RequestMapping("/admin/menu")
 @Slf4j
 public class MenuController {
 

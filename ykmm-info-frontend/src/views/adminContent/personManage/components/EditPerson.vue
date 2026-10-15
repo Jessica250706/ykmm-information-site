@@ -130,12 +130,7 @@
             filterable
             multiple
           >
-            <el-option
-              v-for="a in agencyStore.agencies"
-              :key="a.id"
-              :label="a.name"
-              :value="a.id!"
-            />
+            <el-option v-for="a in agencyStore.agency" :key="a.id" :label="a.name" :value="a.id!" />
           </el-select>
         </el-form-item>
 
@@ -258,7 +253,7 @@ async function loadDetail() {
 
   // 关联 ID
   form.groupIds = (data.groups ?? []).map((g) => g.id!).filter((id) => id != null)
-  form.agencyIds = (data.agencies ?? []).map((a) => a.id!).filter((id) => id != null)
+  form.agencyIds = (data.agency ?? []).map((a) => a.id!).filter((id) => id != null)
 }
 
 /* -------- 提交 -------- */

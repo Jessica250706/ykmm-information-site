@@ -14,7 +14,7 @@ import java.util.List;
  * 经纪公司管理
  */
 @RestController("AdminAgencyController")
-@RequestMapping("/admin/agencies")
+@RequestMapping("/admin/agency")
 @Slf4j
 public class AgencyController {
 

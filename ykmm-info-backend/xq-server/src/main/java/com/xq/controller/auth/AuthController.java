@@ -5,6 +5,7 @@ import com.xq.context.BaseContext;
 import com.xq.dto.LoginRequest;
 import com.xq.dto.PasswordRequest;
 import com.xq.dto.RegisterRequest;
+import com.xq.dto.SendRegisterCodeRequest;
 import com.xq.entity.SysUser;
 import com.xq.result.Result;
 import com.xq.service.AuthService;
@@ -18,9 +19,6 @@ import org.springframework.web.bind.annotation.*;
 import java.util.HashMap;
 import java.util.Map;
 
-/**
- * 认证模块
- */
 @RestController("AuthController")
 @RequestMapping("/auth")
 @Slf4j
@@ -33,29 +31,37 @@ public class AuthController {
     private TokenService tokenService;
 
     /**
-     * 用户注册
-     *
-     * @param req 注册请求参数，包含邮箱、密码和昵称
-     * @return 登录响应，包含 token 和用户信息
+     * 发送注册邮箱验证码
+     */
+    @PostMapping("/register/code")
+    public Result<?> sendRegisterCode(@RequestBody SendRegisterCodeRequest req) {
+        log.info("发送注册验证码：{}", req.getEmail());
+        authService.sendRegisterCode(req.getEmail());
+        return Result.success();
+    }
+
+    /**
+     * 用户注册，必须带邮箱验证码
      */
     @PostMapping("/register")
     public Result<LoginResponse> register(@RequestBody RegisterRequest req) {
         log.info("用户注册：{}", req.getEmail());
-        SysUser user = authService.register(req.getEmail(), req.getPassword(), req.getNickname());
+
+        SysUser user = authService.register(
+                req.getEmail(),
+                req.getPassword(),
+                req.getNickname(),
+                req.getCode()
+        );
+
         String token = tokenService.createToken(user.getId(), user.getRole());
-        // TODO: 用户注册成功后，向对应邮箱发送邮件
+
         return Result.success(LoginResponse.builder()
                 .token(token)
                 .user(UserInfo.from(user))
                 .build());
     }
 
-    /**
-     * 用户登录
-     *
-     * @param req 登录请求参数，包含邮箱和密码
-     * @return 登录响应，包含 token 和用户信息
-     */
     @PostMapping("/login")
     public Result<LoginResponse> login(@RequestBody LoginRequest req) {
         log.info("用户登录：{}", req.getEmail());
@@ -67,11 +73,6 @@ public class AuthController {
                 .build());
     }
 
-    /**
-     * 用户登出
-     *
-     * @return 操作结果
-     */
     @PostMapping("/logout")
     public Result<?> logout() {
         Long userId = BaseContext.getCurrentId();
@@ -80,11 +81,6 @@ public class AuthController {
         return Result.success();
     }
 
-    /**
-     * 刷新 token
-     *
-     * @return 包含新 token 的 Map
-     */
     @PostMapping("/refresh")
     public Result<Map<String, String>> refresh() {
         Long userId = BaseContext.getCurrentId();
@@ -99,11 +95,6 @@ public class AuthController {
         return Result.success(data);
     }
 
-    /**
-     * 获取当前登录用户信息
-     *
-     * @return 用户信息
-     */
     @GetMapping("/me")
     public Result<UserInfo> me() {
         Long userId = BaseContext.getCurrentId();
@@ -112,12 +103,6 @@ public class AuthController {
         return Result.success(UserInfo.from(user));
     }
 
-    /**
-     * 修改密码
-     *
-     * @param req 密码请求参数，包含旧密码和新密码
-     * @return 操作结果
-     */
     @PutMapping("/password")
     public Result<?> changePassword(@RequestBody PasswordRequest req) {
         Long userId = BaseContext.getCurrentId();

@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.*;
  * 对话版本管理
  */
 @RestController("AdminDialogueVersionController")
-@RequestMapping("/admin/dialogue-versions")
+@RequestMapping("/admin/dialogue-version")
 @Slf4j
 @Validated
 public class DialogueVersionController {

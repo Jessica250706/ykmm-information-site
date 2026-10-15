@@ -31,7 +31,7 @@
           clearable
           filterable
         >
-          <el-option v-for="a in agencyStore.agencies" :key="a.id" :label="a.name" :value="a.id!" />
+          <el-option v-for="a in agencyStore.agency" :key="a.id" :label="a.name" :value="a.id!" />
         </el-select>
       </el-form-item>
 
@@ -99,7 +99,7 @@
             </template>
             <template v-else>
               <el-tag
-                v-for="a in row.agencies ?? []"
+                v-for="a in row.agency ?? []"
                 :key="a.id"
                 effect="plain"
                 size="small"
@@ -107,7 +107,7 @@
               >
                 {{ a.name }}
               </el-tag>
-              <span v-if="!row.agencies?.length" class="text-slate-300">-</span>
+              <span v-if="!row.agency?.length" class="text-slate-300">-</span>
             </template>
           </div>
         </template>

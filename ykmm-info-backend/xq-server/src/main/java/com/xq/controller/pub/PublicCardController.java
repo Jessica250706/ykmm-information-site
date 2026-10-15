@@ -12,7 +12,10 @@ import jakarta.validation.constraints.NotNull;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 /**
  * 用户端 - 卡面浏览
@@ -44,7 +47,7 @@ public class PublicCardController {
      * @return 卡面详情
      */
     @GetMapping("/{id}")
-    public Result<CardVO> detail(@PathVariable @NotNull(message = "卡面ID不能为空")  Long id) {
+    public Result<CardVO> detail(@PathVariable @NotNull(message = "卡面ID不能为空") Long id) {
         return Result.success(cardService.getById(id));
     }
 
@@ -56,7 +59,6 @@ public class PublicCardController {
      */
     @GetMapping("/episode/dialogue")
     public Result<CardEpisodeVO> episodeDialogue(@Valid DialogueSourceQueryDTO query) {
-
         return Result.success(cardService.getEpisodeDialogue(query.getSourceType(), query.getSourceId()));
     }
 }

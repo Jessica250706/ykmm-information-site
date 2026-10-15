@@ -6,11 +6,6 @@ package com.xq.constant;
 public class UserRoleConstant {
 
     /**
-     * 游客：未登录
-     */
-    public static final int GUEST = 0;
-
-    /**
      * 管理员
      */
     public static final int ADMIN = 1;
@@ -19,4 +14,9 @@ public class UserRoleConstant {
      * 普通用户
      */
     public static final int USER = 2;
+
+    /**
+     * 游客：未登录
+     */
+    public static final int GUEST = 3;
 }

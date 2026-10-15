@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.*;
  * 用户管理
  */
 @RestController("AdminUserController")
-@RequestMapping("/admin/users")
+@RequestMapping("/admin/user")
 @Slf4j
 public class UserController {
 

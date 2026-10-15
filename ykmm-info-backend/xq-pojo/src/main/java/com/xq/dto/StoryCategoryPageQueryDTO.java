@@ -1,6 +1,7 @@
 package com.xq.dto;
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 import java.io.Serializable;
 
@@ -8,6 +9,7 @@ import java.io.Serializable;
  * 剧情分类分页查询条件
  */
 @Data
+@EqualsAndHashCode(callSuper = true)
 public class StoryCategoryPageQueryDTO extends PageQueryDTO implements Serializable {
 
     /**

@@ -8,12 +8,12 @@ import request from '@/utils/http'
 export const parseDialogueTxtAPI = (versionId: number, file: File) => {
   const formData = new FormData()
   formData.append('file', file)
-  return request.post<DialogueTxtParseVO>(`/admin/dialogue-txt/parse/${versionId}`, formData)
+  return request.post<DialogueTxtParseVO>(`/user/dialogue-txt/parse/${versionId}`, formData)
 }
 
 /**
  * @description: 确认导入解析结果
  */
 export const importDialogueTxtAPI = (versionId: number, data: DialogueTxtImportDTO) => {
-  return request.post(`/admin/dialogue-txt/import/${versionId}`, data)
+  return request.post(`/user/dialogue-txt/import/${versionId}`, data)
 }

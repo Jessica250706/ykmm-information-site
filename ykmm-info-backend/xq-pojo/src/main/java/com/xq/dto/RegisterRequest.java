@@ -22,4 +22,9 @@ public class RegisterRequest {
      * 昵称
      */
     private String nickname;
+
+    /**
+     * 邮箱验证码
+     */
+    private String code;
 }

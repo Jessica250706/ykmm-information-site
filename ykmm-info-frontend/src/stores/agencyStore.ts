@@ -6,13 +6,13 @@ import type { AgencyVO } from '@/types/agency'
 export const useAgencyStore = defineStore(
   'agency',
   () => {
-    const agencies = ref<AgencyVO[]>([])
+    const agency = ref<AgencyVO[]>([])
     const loaded = ref(false)
 
     /** id -> AgencyVO 映射，方便按 id 取名字 */
     const agencyMap = computed(() => {
       const map = new Map<number, AgencyVO>()
-      agencies.value.forEach((item) => {
+      agency.value.forEach((item) => {
         if (item.id != null) map.set(item.id, item)
       })
       return map
@@ -20,16 +20,16 @@ export const useAgencyStore = defineStore(
 
     /** 加载全部经纪公司 */
     const loadAll = async (force = false) => {
-      if (loaded.value && !force) return agencies.value
+      if (loaded.value && !force) return agency.value
       const res = await listAgencyAPI()
-      agencies.value = res.data ?? []
+      agency.value = res.data ?? []
       loaded.value = true
-      return agencies.value
+      return agency.value
     }
 
     /** 清空（登出时可用） */
     const clear = () => {
-      agencies.value = []
+      agency.value = []
       loaded.value = false
     }
 
@@ -40,7 +40,7 @@ export const useAgencyStore = defineStore(
     }
 
     return {
-      agencies,
+      agency,
       loaded,
       agencyMap,
       loadAll,

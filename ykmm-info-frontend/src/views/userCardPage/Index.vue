@@ -159,7 +159,7 @@
 import { computed, onMounted, reactive, ref, watch } from 'vue'
 import { FullScreen, Grid, Menu } from '@element-plus/icons-vue'
 import { useRouter } from 'vue-router'
-import { pageUserCardAPI } from '@/api/card'
+import { pageCardAPI } from '@/api/card'
 import { listCardSeriesOptionsAPI } from '@/api/cardSeries'
 import {
   CARD_ATTRIBUTE_OPTIONS,
@@ -231,7 +231,7 @@ const seriesOptions = ref<CardSeriesVO[]>([])
 async function loadList() {
   loading.value = true
   try {
-    const res = await pageUserCardAPI({
+    const res = await pageCardAPI({
       pageNum: pageNum.value,
       pageSize: pageSize.value,
       keyword: keyword.value.trim() || undefined,
@@ -260,7 +260,7 @@ async function load() {
   pageNum.value++
 
   try {
-    const res = await pageUserCardAPI({
+    const res = await pageCardAPI({
       pageNum: pageNum.value,
       pageSize: pageSize.value,
       keyword: keyword.value.trim() || undefined,

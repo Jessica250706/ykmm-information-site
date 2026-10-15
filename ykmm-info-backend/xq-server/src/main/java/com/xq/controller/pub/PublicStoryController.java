@@ -26,7 +26,7 @@ public class PublicStoryController {
     private StoryService storyService;
 
     /**
-     * 查询剧情分类树（游客可访问）
+     * 查询剧情分类树
      */
     @GetMapping("/category/tree")
     public Result<List<StoryCategoryVO>> categoryTree(@RequestParam(required = false) @Valid Integer categoryType) {

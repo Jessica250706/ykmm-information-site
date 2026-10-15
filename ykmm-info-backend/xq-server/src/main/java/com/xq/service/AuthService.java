@@ -4,7 +4,15 @@ import com.xq.entity.SysUser;
 
 public interface AuthService {
 
-    SysUser register(String email, String password, String nickname);
+    /**
+     * 发送注册邮箱验证码
+     */
+    void sendRegisterCode(String email);
+
+    /**
+     * 注册，必须带邮箱验证码
+     */
+    SysUser register(String email, String password, String nickname, String code);
 
     SysUser login(String email, String password);
 

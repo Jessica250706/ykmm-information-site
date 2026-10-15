@@ -14,7 +14,7 @@ import java.util.List;
  * 偶像团体管理
  */
 @RestController("AdminIdolGroupController")
-@RequestMapping("/admin/idol-groups")
+@RequestMapping("/admin/idol-group")
 @Slf4j
 public class IdolGroupController {
 

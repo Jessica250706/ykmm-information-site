@@ -1,37 +1,39 @@
 import type { AgencyDTO, AgencyVO } from '@/types/agency'
 import request from '@/utils/http'
 
+// ---------- 管理员 ----------
+
 /**
  * @description: 查询全部经纪公司
  */
 export const listAgencyAPI = () => {
-  return request.get<AgencyVO[]>('/admin/agencies')
+  return request.get<AgencyVO[]>('/admin/agency')
 }
 
 /**
  * @description: 查询经纪公司详情
  */
 export const getAgencyDetailAPI = (id: number) => {
-  return request.get<AgencyVO>(`/admin/agencies/${id}`)
+  return request.get<AgencyVO>(`/admin/agency/${id}`)
 }
 
 /**
  * @description: 新增经纪公司
  */
 export const createAgencyAPI = (data: AgencyDTO) => {
-  return request.post('/admin/agencies', data)
+  return request.post('/admin/agency', data)
 }
 
 /**
  * @description: 编辑经纪公司
  */
 export const updateAgencyAPI = (id: number, data: AgencyDTO) => {
-  return request.put(`/admin/agencies/${id}`, data)
+  return request.put(`/admin/agency/${id}`, data)
 }
 
 /**
  * @description: 删除经纪公司
  */
 export const deleteAgencyAPI = (id: number) => {
-  return request.delete(`/admin/agencies/${id}`)
+  return request.delete(`/admin/agency/${id}`)
 }

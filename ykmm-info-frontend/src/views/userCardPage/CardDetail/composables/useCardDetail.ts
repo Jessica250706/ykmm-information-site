@@ -1,5 +1,5 @@
 import { computed, ref } from 'vue'
-import { getUserCardDetailAPI } from '@/api/card'
+import { getCardDetailAPI } from '@/api/card'
 import { SOURCE_TYPE } from '@/constants'
 import type { CardVO } from '@/types/card'
 
@@ -21,7 +21,7 @@ export function useCardDetail() {
     if (!id) return
     loading.value = true
     try {
-      const res = await getUserCardDetailAPI(id)
+      const res = await getCardDetailAPI(id)
       card.value = res.data ?? null
     } catch {
       card.value = null

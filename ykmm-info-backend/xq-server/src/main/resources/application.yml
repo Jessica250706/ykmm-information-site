@@ -27,6 +27,19 @@ spring:
     multipart:
       max-file-size: 10MB       # 单个文件最大
       max-request-size: 50MB    # 整个请求最大（多文件时用得上）
+  mail:
+    host: smtp.qq.com
+    port: 587
+    username: ${xq.mail.username}
+    password: ${xq.mail.password}
+    default-encoding: UTF-8
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+            required: true
 
 mybatis:
   #mapper配置文件

@@ -1,7 +1,7 @@
 import { ref } from 'vue'
 import { ElMessage } from 'element-plus'
 import { listDialogueVersionOptionsAPI } from '@/api/dialogueVersion'
-import { getUserStoryDetailAPI, pageUserStoryAPI } from '@/api/story'
+import { getStoryDetailAPI, listStoryAPI } from '@/api/story'
 import { SOURCE_TYPE, STATUS } from '@/constants'
 import type { DialogueVersionOptionVO } from '@/types/dialogueVersion'
 import type { StoryDetailVO, StoryVO } from '@/types/story'
@@ -22,7 +22,7 @@ export function useStoryDetail() {
   async function fetchStoryDetail(id: number): Promise<StoryDetailVO | null> {
     loadingContent.value = true
     try {
-      const res = await getUserStoryDetailAPI(id)
+      const res = await getStoryDetailAPI(id)
       storyDetail.value = res.data ?? null
       return storyDetail.value
     } catch {
@@ -36,7 +36,7 @@ export function useStoryDetail() {
   async function fetchStories(categoryId: number) {
     loadingStories.value = true
     try {
-      const res = await pageUserStoryAPI({
+      const res = await listStoryAPI({
         categoryId,
         status: STATUS.PUBLISHED,
         pageNum: 1,

@@ -41,13 +41,4 @@ public class UserStoryController {
         storyService.update(id, dto);
         return Result.success();
     }
-
-    /**
-     * 删除剧情
-     */
-    @DeleteMapping("/{id}")
-    public Result<Void> delete(@PathVariable @NotNull(message = "剧情ID不能为空") Long id) {
-        storyService.delete(id);
-        return Result.success();
-    }
 }
