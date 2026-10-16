@@ -43,13 +43,27 @@
               前往管理端 →
             </el-button>
 
+            <!-- 已登录：用户态 -->
             <RouterLink
+              v-if="isLogin"
               :class="isActive('/profile') ? 'theme-pill-active' : 'hover:bg-slate-100'"
               class="flex items-center gap-2 rounded-full py-1 pl-1 pr-3 transition"
               to="/profile"
             >
-              <el-avatar :size="28" class="bg-slate-200! text-xs!">我</el-avatar>
-              <span class="text-sm">个人中心</span>
+              <el-avatar :size="28" :src="userInfo?.avatar" class="bg-slate-200! text-xs!">
+                {{ avatarText }}
+              </el-avatar>
+              <span class="text-sm">{{ displayName }}</span>
+            </RouterLink>
+
+            <!-- 未登录：游客态 -->
+            <RouterLink
+              v-else
+              :to="{ path: '/login', query: { redirect: route.fullPath } }"
+              class="flex items-center gap-2 rounded-full py-1 pl-1 pr-3 transition hover:bg-slate-100"
+            >
+              <el-avatar :size="28" class="bg-slate-200! text-xs!">游</el-avatar>
+              <span class="text-sm">登录 / 注册</span>
             </RouterLink>
 
             <ChangeColor />
@@ -59,7 +73,7 @@
 
       <!-- 内容区 -->
       <el-main class="p-0!">
-        <div class="userLayout mx-auto w-full max-w-6xl px-4 py-6 overflow-hidden">
+        <div class="userLayout mx-auto w-full max-w-6xl overflow-hidden px-4 py-6">
           <RouterView v-slot="{ Component }">
             <Transition mode="out-in" name="fade">
               <component :is="Component" />
@@ -81,9 +95,20 @@ import ChangeColor from './components/ChangeColor.vue'
 const route = useRoute()
 const router = useRouter()
 const menuStore = useMenuStore()
-const { isAdmin } = useUserStore()
+const { isAdmin, isLogin, userInfo } = useUserStore()
 
 const isActive = (path: string) => route.path === path || route.path.startsWith(`${path}/`)
+
+/** 用户态展示名：昵称 > 邮箱 > 兜底 */
+const displayName = computed(
+  () => userInfo?.value?.nickname || userInfo?.value?.email || '个人中心',
+)
+
+/** 无头像时的文字占位：取展示名首字符 */
+const avatarText = computed(() => {
+  const name = userInfo?.value?.nickname || userInfo?.value?.email || ''
+  return name ? name.charAt(0).toUpperCase() : '我'
+})
 
 /** 把 isActive 逻辑适配给 el-menu 的 default-active */
 const activeMenu = computed(() => {
