@@ -1,5 +1,8 @@
 <template>
-  <div class="card-dialogue-editor flex h-full gap-4 overflow-hidden">
+  <div
+    :class="{ 'justify-center': !showEditPanel }"
+    class="card-dialogue-editor flex h-full gap-4 overflow-hidden"
+  >
     <!-- 左侧：话数列表 -->
     <CardEpisodeList
       v-show="showLeft"
@@ -7,6 +10,7 @@
       :current-id="currentEpisodeId"
       :episodes="episodes"
       :source-label="sourceLabel"
+      class="shrink-0 overflow-hidden"
       @back="handleBack"
       @select="handleSelectEpisode"
     />
@@ -16,10 +20,7 @@
       v-model:current-version-id="currentVersionId"
       :card-detail="episodeDetail"
       :card-name="cardName"
-      :class="[
-        'h-full flex-1 min-w-0 overflow-hidden max-w-1/2',
-        { 'mx-auto': !showLeft && (!isLogin || !showRight) },
-      ]"
+      :class="showEditPanel ? 'flex-1 max-w-1/2' : 'flex-1 max-w-3xl'"
       :color="color"
       :current-category="null"
       :editing-line-id="editingLineId"
@@ -34,6 +35,7 @@
       :type-label="sourceLabel"
       :version-options="versionOptions"
       :version-select-items="versionSelectItems"
+      class="h-full min-w-0 overflow-hidden"
       @go-back="handleBack"
       @go-category="() => {}"
       @go-story="() => {}"
@@ -45,7 +47,7 @@
 
     <!-- 右侧：编辑区（仅登录用户可见） -->
     <BrowseRight
-      v-if="isLogin && showRight"
+      v-if="showEditPanel"
       v-model:editing-mode="editingMode"
       :all-lines="currentVersion?.lines ?? []"
       :current-option-version="currentOptionVersion"
@@ -111,6 +113,7 @@ const route = useRoute()
 const router = useRouter()
 
 const { isLogin } = useUserStore()
+const showEditPanel = computed(() => isLogin && showRight.value)
 
 /** 左侧话数列表是否展开 */
 const showLeft = ref(true)

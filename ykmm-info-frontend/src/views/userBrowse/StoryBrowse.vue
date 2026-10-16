@@ -1,5 +1,8 @@
 <template>
-  <div class="story-browse flex h-full gap-4 overflow-hidden">
+  <div
+    :class="{ 'justify-center': !showEditPanel }"
+    class="story-browse flex h-full gap-4 overflow-hidden"
+  >
     <!-- 左侧：分类树 -->
     <BrowseLeft
       v-show="showLeft"
@@ -16,10 +19,7 @@
     <!-- 中间：内容 -->
     <BrowseCenter
       v-model:current-version-id="currentVersionId"
-      :class="[
-        'h-full flex-1 min-w-0 overflow-hidden max-w-1/2',
-        { 'mx-auto': !showLeft && (!isLogin || !showRight) },
-      ]"
+      :class="showEditPanel ? 'flex-1 max-w-1/2' : 'flex-1 max-w-3xl'"
       :color="
         storyCategoryTypeStore.getTypeColor(
           currentCategory ? currentCategory?.categoryType : storyDetail?.categoryType,
@@ -39,6 +39,7 @@
       :type-label="typeLabel"
       :version-options="versionOptions"
       :version-select-items="versionSelectItems"
+      class="h-full min-w-0 overflow-hidden"
       @go-back="handleGoBack"
       @go-category="(id: number) => goCategory(type, id)"
       @go-story="(id: number) => goStory(type, id)"
@@ -50,7 +51,7 @@
 
     <!-- 右侧：编辑区（仅登录用户可见） -->
     <BrowseRight
-      v-if="isLogin && showRight"
+      v-if="showEditPanel"
       v-model:editing-mode="editingMode"
       :all-lines="currentVersion?.lines ?? []"
       :current-option-version="currentOptionVersion"
@@ -92,6 +93,7 @@ import { useVersionSelection } from './composables/useVersionSelection.ts'
 
 const storyCategoryTypeStore = useStoryCategoryTypeStore()
 const { isLogin } = useUserStore()
+const showEditPanel = computed(() => isLogin && showRight.value)
 
 /* -------- 路由 -------- */
 const { type, kind, nodeId, typeLabel } = useBrowseRoute()
