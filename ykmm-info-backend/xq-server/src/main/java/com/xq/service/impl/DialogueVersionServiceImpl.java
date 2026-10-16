@@ -13,10 +13,7 @@ import com.xq.entity.DialogueVersion;
 import com.xq.enums.*;
 import com.xq.exception.ForbiddenException;
 import com.xq.exception.UnauthorizedException;
-import com.xq.mapper.DialogueImageMapper;
-import com.xq.mapper.DialogueLineMapper;
-import com.xq.mapper.DialogueSegmentMapper;
-import com.xq.mapper.DialogueVersionMapper;
+import com.xq.mapper.*;
 import com.xq.result.PageResult;
 import com.xq.service.DialogueVersionContributorService;
 import com.xq.service.DialogueVersionService;
@@ -49,6 +46,8 @@ public class DialogueVersionServiceImpl implements DialogueVersionService {
     private DialogueImageMapper dialogueImageMapper;
     @Autowired
     private DialogueVersionContributorService dialogueVersionContributorService;
+    @Autowired
+    private DialogueVersionContributorMapper dialogueVersionContributorMapper;
 
     /**
      * 分页查询（三身份过滤）
@@ -237,6 +236,12 @@ public class DialogueVersionServiceImpl implements DialogueVersionService {
 
     /**
      * 构建版本选项列表
+     * <p>
+     * 返回的每个 option 会带上 canOperate 字段：
+     * - 管理员：已存在的版本一律 true
+     * - 游客：一律 false
+     * - 用户：creator_id 是自己，或在 contributor 表中角色为「内容作者 / 协作者」
+     * 版本不存在时 canOperate 恒为 false（代表"没有可修改的内容"）
      */
     private List<DialogueVersionOptionVO> buildVersionOptions(
             Integer sourceType, Long sourceId, Set<DialogueFormatEnum> formats) {
@@ -269,6 +274,9 @@ public class DialogueVersionServiceImpl implements DialogueVersionService {
             }
         }
 
+        // 预计算：当前用户可编辑的版本ID集合
+        Set<Long> editableVersionIds = resolveEditableVersionIds(existed);
+
         // 枚举所有组合
         List<DialogueVersionOptionVO> result = new ArrayList<>();
         for (DialogueLanguageEnum lang : DialogueLanguageEnum.values()) {
@@ -290,6 +298,8 @@ public class DialogueVersionServiceImpl implements DialogueVersionService {
                             keyOf(lang.getValue(), format.getValue(), scope.getValue()));
                     vo.setVersionId(versionId);
                     vo.setExists(versionId != null);
+                    // 版本不存在时无内容可改，恒为 false
+                    vo.setCanOperate(versionId != null && editableVersionIds.contains(versionId));
 
                     result.add(vo);
                 }
@@ -301,6 +311,72 @@ public class DialogueVersionServiceImpl implements DialogueVersionService {
     /* ============================================================
      * 私有方法
      * ============================================================ */
+
+    /**
+     * 计算当前用户对「已存在版本」集合中每个版本的编辑权限。
+     * <p>
+     * 规则：
+     * <ul>
+     *   <li>游客：空集合（一律不可编辑）</li>
+     *   <li>管理员：所有已存在版本都可编辑</li>
+     *   <li>普通用户：满足以下任一条件即可编辑
+     *     <ol>
+     *       <li>creator_id = 自己（自己上传的）</li>
+     *       <li>在 dialogue_version_contributor 中，且 contributor_role ∈ {1 内容作者, 3 协作者}</li>
+     *     </ol>
+     *     —— 管理员"代传"（role=2）不授予用户编辑权，与业务约定一致。
+     *   </li>
+     * </ul>
+     *
+     * @param existed 已存在的版本列表（可为 null）
+     * @return 当前用户可编辑的版本ID集合（不会为 null）
+     */
+    private Set<Long> resolveEditableVersionIds(List<DialogueVersion> existed) {
+        if (existed == null || existed.isEmpty()) {
+            return Collections.emptySet();
+        }
+
+        // 游客：一律不可编辑
+        if (RoleContext.isGuest()) {
+            return Collections.emptySet();
+        }
+
+        // 管理员：全部版本均可编辑
+        if (RoleContext.isAdmin()) {
+            return existed.stream()
+                    .map(DialogueVersion::getId)
+                    .collect(Collectors.toSet());
+        }
+
+        // 普通用户
+        Long userId = BaseContext.getCurrentId();
+        if (userId == null) {
+            return Collections.emptySet();
+        }
+
+        Set<Long> result = new HashSet<>();
+
+        // 1. 自己创建的版本
+        for (DialogueVersion v : existed) {
+            if (Objects.equals(v.getCreatorId(), userId)) {
+                result.add(v.getId());
+            }
+        }
+
+        // 2. 在 contributor 表中且角色为「内容作者 / 协作者」的版本（批量查询，避免 N+1）
+        List<Long> versionIds = existed.stream()
+                .map(DialogueVersion::getId)
+                .collect(Collectors.toList());
+        if (!versionIds.isEmpty()) {
+            List<Long> contributorVersionIds =
+                    dialogueVersionContributorMapper.listEditableVersionIdsByUser(versionIds, userId);
+            if (contributorVersionIds != null) {
+                result.addAll(contributorVersionIds);
+            }
+        }
+
+        return result;
+    }
 
     /**
      * 实体 → 基础 VO

@@ -10,7 +10,7 @@
         {{ showLeft ? '收起目录' : '展开目录' }}
       </el-button>
 
-      <el-button v-if="isLogin" size="small" text @click="emit('toggleRight')">
+      <el-button v-if="canEdit" size="small" text @click="emit('toggleRight')">
         {{ showRight ? '收起编辑区' : '展开编辑区' }}
         <span class="ml-1">{{ showRight ? '▶' : '◀' }}</span>
       </el-button>
@@ -76,7 +76,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { SOURCE_TYPE, type SourceTypeValue } from '@/constants'
-import { useUserStore } from '@/stores'
 import type { CardEpisodeVO } from '@/types/card'
 import type { DialogueLineVO } from '@/types/dialogueLine'
 import type { DialogueVersionOptionVO } from '@/types/dialogueVersion'
@@ -123,6 +122,8 @@ const props = defineProps<{
   showLeft?: boolean
   /** 右侧编辑区是否展开 */
   showRight?: boolean
+  /** 当前用户对选中版本是否有编辑权限 */
+  canEdit?: boolean
 }>()
 
 const emit = defineEmits<{
@@ -159,6 +160,4 @@ const selectedVersionKeyComputed = computed({
 const hasAnyData = computed(
   () => !!(props.storyDetail || props.cardDetail || props.currentCategory),
 )
-
-const { isLogin } = useUserStore()
 </script>

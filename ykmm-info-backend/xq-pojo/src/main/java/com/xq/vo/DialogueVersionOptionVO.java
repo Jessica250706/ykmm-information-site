@@ -49,4 +49,8 @@ public class DialogueVersionOptionVO {
      * 完整展示文案，如「中文 · 文字 · 全部」
      */
     private String label;
+    /**
+     * 当前用户能否修改
+     */
+    private Boolean canOperate;
 }

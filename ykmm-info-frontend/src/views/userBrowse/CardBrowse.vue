@@ -18,6 +18,7 @@
     <!-- 中间：对话内容 -->
     <BrowseCenter
       v-model:current-version-id="currentVersionId"
+      :can-edit="canEditCurrent"
       :card-detail="episodeDetail"
       :card-name="cardName"
       :class="showEditPanel ? 'flex-1 max-w-1/2' : 'flex-1 max-w-3xl'"
@@ -113,7 +114,14 @@ const route = useRoute()
 const router = useRouter()
 
 const { isLogin } = useUserStore()
-const showEditPanel = computed(() => isLogin && showRight.value)
+/** 当前选中版本是否可编辑（逻辑同上） */
+const canEditCurrent = computed(() => {
+  const opt = currentOptionVersion.value
+  if (!opt) return false
+  return opt.exists ? opt.canOperate === true : isLogin
+})
+/** 右侧编辑区是否渲染 */
+const showEditPanel = computed(() => showRight.value && canEditCurrent.value)
 
 /** 左侧话数列表是否展开 */
 const showLeft = ref(true)

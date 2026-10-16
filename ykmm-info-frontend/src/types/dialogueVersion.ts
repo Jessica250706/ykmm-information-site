@@ -154,5 +154,9 @@ export interface DialogueVersionOptionVO {
    * 版本ID，当前来源下不存在时为 null
    */
   versionId?: number
+  /**
+   * 当前用户能否修改
+   */
+  canOperate?: boolean
   [property: string]: any
 }

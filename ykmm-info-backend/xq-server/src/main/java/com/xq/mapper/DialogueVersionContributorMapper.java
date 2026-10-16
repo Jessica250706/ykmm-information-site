@@ -144,4 +144,18 @@ public interface DialogueVersionContributorMapper {
      * @return 影响行数
      */
     int deleteByVersionIds(@Param("versionIds") List<Long> versionIds);
+
+    /**
+     * 查询当前用户在指定版本中拥有编辑权限（内容作者 role=1 / 协作者 role=3）的版本ID集合
+     *
+     * <p>用于批量判断用户对一组版本的编辑权，避免 N+1 查询。
+     * <p>注意：这里只按 contributor 表判定，不包含「creator_id 匹配」的情况，
+     * 后者由 Service 层另行叠加。
+     *
+     * @param versionIds 待判定的版本ID集合
+     * @param userId     当前用户ID
+     * @return 该用户拥有编辑权限的版本ID列表
+     */
+    List<Long> listEditableVersionIdsByUser(@Param("versionIds") List<Long> versionIds,
+                                            @Param("userId") Long userId);
 }

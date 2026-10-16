@@ -54,18 +54,19 @@
 <script setup lang="ts">
 import { Delete, Edit } from '@element-plus/icons-vue'
 import { SOURCE_TYPE, SOURCE_TYPE_SMALL_LABEL, type SourceTypeSmallLabelValue } from '@/constants'
+import type { CardRabitterVO } from '@/types/cardRabitter'
 import type { CardRcVO } from '@/types/cardRc'
 import type { CardRtvVO } from '@/types/cardRtv'
 import { getSourceTypeLabel } from '@/utils'
 
 defineProps<{
   mode: SourceTypeSmallLabelValue
-  list: (CardRcVO | CardRtvVO)[]
+  list: (CardRcVO | CardRtvVO | CardRabitterVO)[]
 }>()
 
 const emit = defineEmits<{
   view: [id: number]
-  edit: [ep: CardRcVO | CardRtvVO]
-  delete: [ep: CardRcVO | CardRtvVO]
+  edit: [ep: CardRcVO | CardRtvVO | CardRabitterVO]
+  delete: [ep: CardRcVO | CardRtvVO | CardRabitterVO]
 }>()
 </script>

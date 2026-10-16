@@ -19,6 +19,7 @@
     <!-- 中间：内容 -->
     <BrowseCenter
       v-model:current-version-id="currentVersionId"
+      :can-edit="canEditCurrent"
       :class="showEditPanel ? 'flex-1 max-w-1/2' : 'flex-1 max-w-3xl'"
       :color="
         storyCategoryTypeStore.getTypeColor(
@@ -92,8 +93,24 @@ import { useStoryDetail } from './composables/useStoryDetail.ts'
 import { useVersionSelection } from './composables/useVersionSelection.ts'
 
 const storyCategoryTypeStore = useStoryCategoryTypeStore()
+
 const { isLogin } = useUserStore()
-const showEditPanel = computed(() => isLogin && showRight.value)
+/**
+ * 当前选中版本是否可编辑：
+ * - 版本已存在：完全以后端返回的 canOperate 为准
+ *     · 管理员 → true
+ *     · 自己创建的 / 作为内容作者或协作者的 → true
+ *     · 其他用户的版本 → false
+ * - 版本不存在：登录用户视为「可创建」，游客不可
+ *     （后端此时 canOperate 恒为 false，只能由前端补这一层）
+ */
+const canEditCurrent = computed(() => {
+  const opt = currentOptionVersion.value
+  if (!opt) return false
+  return opt.exists ? opt.canOperate === true : isLogin
+})
+/** 右侧编辑区是否渲染：用户手动展开 && 当前版本可编辑 */
+const showEditPanel = computed(() => showRight.value && canEditCurrent.value)
 
 /* -------- 路由 -------- */
 const { type, kind, nodeId, typeLabel } = useBrowseRoute()

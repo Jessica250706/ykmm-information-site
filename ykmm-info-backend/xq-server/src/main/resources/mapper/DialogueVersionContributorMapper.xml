@@ -190,4 +190,15 @@
     </foreach>
   </delete>
 
+  <select id="listEditableVersionIdsByUser" resultType="java.lang.Long">
+    SELECT DISTINCT version_id
+    FROM dialogue_version_contributor
+    WHERE user_id = #{userId}
+    AND contributor_role IN (1, 3)
+    AND version_id IN
+    <foreach collection="versionIds" item="vid" open="(" separator="," close=")">
+      #{vid}
+    </foreach>
+  </select>
+
 </mapper>
