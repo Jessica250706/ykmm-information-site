@@ -18,7 +18,7 @@
       v-model:current-version-id="currentVersionId"
       :class="[
         'h-full flex-1 min-w-0 overflow-hidden max-w-1/2',
-        { 'mx-auto': !showLeft && !showRight },
+        { 'mx-auto': !showLeft && (!isLogin || !showRight) },
       ]"
       :color="
         storyCategoryTypeStore.getTypeColor(
@@ -48,9 +48,9 @@
       @update:selected-version-key="handleSelectedVersionKeyChange"
     />
 
-    <!-- 右侧：编辑区 -->
+    <!-- 右侧：编辑区（仅登录用户可见） -->
     <BrowseRight
-      v-show="showRight"
+      v-if="isLogin && showRight"
       v-model:editing-mode="editingMode"
       :all-lines="currentVersion?.lines ?? []"
       :current-option-version="currentOptionVersion"
@@ -76,7 +76,7 @@ import { computed, ref, watch } from 'vue'
 import { ElMessage } from 'element-plus'
 import { createDialogueVersionAPI } from '@/api/dialogueVersion'
 import { BROWSE_KIND, SOURCE_TYPE } from '@/constants'
-import { useStoryCategoryTypeStore } from '@/stores'
+import { useStoryCategoryTypeStore, useUserStore } from '@/stores'
 import type { DialogueLineVO } from '@/types/dialogueLine'
 import type { DialogueVersionOptionVO } from '@/types/dialogueVersion'
 import type { StoryCategoryVO } from '@/types/storyCategory'
@@ -91,6 +91,7 @@ import { useStoryDetail } from './composables/useStoryDetail.ts'
 import { useVersionSelection } from './composables/useVersionSelection.ts'
 
 const storyCategoryTypeStore = useStoryCategoryTypeStore()
+const { isLogin } = useUserStore()
 
 /* -------- 路由 -------- */
 const { type, kind, nodeId, typeLabel } = useBrowseRoute()

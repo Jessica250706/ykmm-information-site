@@ -3,19 +3,20 @@
     body-class="flex-1 min-h-0 flex flex-col p-5"
     class="min-w-0 flex-1 flex flex-col overflow-hidden bg-slate-50"
   >
-    <!-- 顶部：左右栏开关（保持不变） -->
+    <!-- 顶部：左右栏开关 -->
     <div class="mb-3 flex shrink-0 items-center justify-between border-b pb-2">
       <el-button size="small" text @click="emit('toggleLeft')">
         <span class="mr-1">{{ showLeft ? '◀' : '▶' }}</span>
         {{ showLeft ? '收起目录' : '展开目录' }}
       </el-button>
-      <el-button size="small" text @click="emit('toggleRight')">
+
+      <el-button v-if="isLogin" size="small" text @click="emit('toggleRight')">
         {{ showRight ? '收起编辑区' : '展开编辑区' }}
         <span class="ml-1">{{ showRight ? '▶' : '◀' }}</span>
       </el-button>
     </div>
 
-    <!-- ★ 关键改动：只在「从未加载过任何数据」时显示 skeleton -->
+    <!-- 只在「从未加载过任何数据」时显示 skeleton -->
     <el-skeleton v-if="loadingContent && !hasAnyData" :rows="6" animated />
 
     <template v-else>
@@ -75,6 +76,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { SOURCE_TYPE, type SourceTypeValue } from '@/constants'
+import { useUserStore } from '@/stores'
 import type { CardEpisodeVO } from '@/types/card'
 import type { DialogueLineVO } from '@/types/dialogueLine'
 import type { DialogueVersionOptionVO } from '@/types/dialogueVersion'
@@ -157,4 +159,6 @@ const selectedVersionKeyComputed = computed({
 const hasAnyData = computed(
   () => !!(props.storyDetail || props.cardDetail || props.currentCategory),
 )
+
+const { isLogin } = useUserStore()
 </script>

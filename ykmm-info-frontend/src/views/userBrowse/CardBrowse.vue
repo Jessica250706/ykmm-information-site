@@ -18,7 +18,7 @@
       :card-name="cardName"
       :class="[
         'h-full flex-1 min-w-0 overflow-hidden max-w-1/2',
-        { 'mx-auto': !showLeft && !showRight },
+        { 'mx-auto': !showLeft && (!isLogin || !showRight) },
       ]"
       :color="color"
       :current-category="null"
@@ -43,9 +43,9 @@
       @update:selected-version-key="handleSelectedVersionKeyChange"
     />
 
-    <!-- 右侧：编辑区 -->
+    <!-- 右侧：编辑区（仅登录用户可见） -->
     <BrowseRight
-      v-show="showRight"
+      v-if="isLogin && showRight"
       v-model:editing-mode="editingMode"
       :all-lines="currentVersion?.lines ?? []"
       :current-option-version="currentOptionVersion"
@@ -74,6 +74,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { getCardDetailAPI } from '@/api/card'
 import { createDialogueVersionAPI } from '@/api/dialogueVersion'
 import { type SourceTypeValue } from '@/constants'
+import { useUserStore } from '@/stores'
 import type { CardVO } from '@/types/card'
 import type { DialogueLineVO } from '@/types/dialogueLine'
 import type { DialogueVersionOptionVO } from '@/types/dialogueVersion'
@@ -108,6 +109,8 @@ const emit = defineEmits<{
 
 const route = useRoute()
 const router = useRouter()
+
+const { isLogin } = useUserStore()
 
 /** 左侧话数列表是否展开 */
 const showLeft = ref(true)
