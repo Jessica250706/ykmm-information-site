@@ -277,12 +277,21 @@ public class DialogueVersionServiceImpl implements DialogueVersionService {
         // 预计算：当前用户可编辑的版本ID集合
         Set<Long> editableVersionIds = resolveEditableVersionIds(existed);
 
+        // 是否游客：游客只返回已存在的版本，不展示"可创建"的空选项
+        boolean guest = RoleContext.isGuest();
+
         // 枚举所有组合
         List<DialogueVersionOptionVO> result = new ArrayList<>();
         for (DialogueLanguageEnum lang : DialogueLanguageEnum.values()) {
             for (DialogueScopeEnum scope : DialogueScopeEnum.values()) {
                 for (DialogueFormatEnum format : DialogueFormatEnum.values()) {
                     if (!formats.contains(format)) continue;
+
+                    Long versionId = existedMap.get(
+                            keyOf(lang.getValue(), format.getValue(), scope.getValue()));
+
+                    // 游客：跳过不存在的组合，只返回真实已有的版本
+                    if (guest && versionId == null) continue;
 
                     DialogueVersionOptionVO vo = new DialogueVersionOptionVO();
                     vo.setLanguage(lang.getValue());
@@ -294,8 +303,6 @@ public class DialogueVersionServiceImpl implements DialogueVersionService {
                     vo.setLabel(lang.getLabel() + " · " + format.getLabel()
                             + " · " + scope.getLabel());
 
-                    Long versionId = existedMap.get(
-                            keyOf(lang.getValue(), format.getValue(), scope.getValue()));
                     vo.setVersionId(versionId);
                     vo.setExists(versionId != null);
                     // 版本不存在时无内容可改，恒为 false
