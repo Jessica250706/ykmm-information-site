@@ -18,6 +18,17 @@ export const searchCardSeriesAPI = (keyword?: string) => {
   return request.get<CardSeriesVO[]>('/pub/card-series/search', { params: { keyword } })
 }
 
+// ---------- 用户 ----------
+
+/**
+ * @description: 按名称查询或创建卡面系列（下拉"输入不存在则新增"场景）
+ */
+export const findOrCreateCardSeriesAPI = (name: string) => {
+  return request.post<number>('/user/card-series/find-or-create', null, {
+    params: { name },
+  })
+}
+
 // ---------- 管理员 ----------
 
 /**
@@ -53,13 +64,4 @@ export const updateCardSeriesAPI = (id: number, data: CardSeriesDTO) => {
  */
 export const deleteCardSeriesAPI = (id: number) => {
   return request.delete(`/admin/card-series/${id}`)
-}
-
-/**
- * @description: 按名称查询或创建卡面系列（下拉"输入不存在则新增"场景）
- */
-export const findOrCreateCardSeriesAPI = (name: string) => {
-  return request.post<number>('/admin/card-series/find-or-create', null, {
-    params: { name },
-  })
 }

@@ -314,7 +314,10 @@ function handleFilterChange() {
 }
 
 function handleCreate() {
-  router.push({ name: UserRouteName.CARD_CREATE })
+  router.push({
+    name: UserRouteName.CARD_CREATE,
+    query: { redirect: '/card' },
+  })
 }
 
 function handleDetail(row: CardVO) {

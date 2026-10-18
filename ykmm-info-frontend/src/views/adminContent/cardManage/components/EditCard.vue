@@ -294,6 +294,11 @@ async function handleSubmit() {
 }
 
 function handleBack() {
+  const redirect = route.query.redirect
+  if (typeof redirect === 'string' && redirect) {
+    router.push(redirect)
+    return
+  }
   router.push({ name: AdminRouteName.CARD_MANAGE })
 }
 

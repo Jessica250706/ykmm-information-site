@@ -55,17 +55,6 @@ public class CardSeriesController {
     }
 
     /**
-     * 按名称查询或创建（下拉"输入不存在则新增"场景）
-     *
-     * @param name 系列名
-     * @return 系列ID
-     */
-    @PostMapping("/find-or-create")
-    public Result<Long> findOrCreate(@RequestParam String name) {
-        return Result.success(cardSeriesService.findOrCreateByName(name));
-    }
-
-    /**
      * 编辑
      *
      * @param id  主键
