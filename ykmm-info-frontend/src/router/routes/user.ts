@@ -14,6 +14,12 @@ export const userRoutes: RouteRecordRaw = {
       meta: { title: '卡面' },
     },
     {
+      path: 'card/create',
+      name: UserRouteName.CARD_CREATE,
+      component: () => import('@/views/adminContent/cardManage/components/EditCard.vue'),
+      meta: { title: '新增卡面', requiresAuth: true },
+    },
+    {
       path: 'card/:id',
       name: UserRouteName.CARD_DETAIL,
       component: () => import('@/views/userCardPage/CardDetail/Index.vue'),

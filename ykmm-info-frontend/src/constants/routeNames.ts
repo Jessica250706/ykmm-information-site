@@ -21,6 +21,8 @@ export const UserRouteName = {
   CARD_LIST: 'UserCardList',
   /** 卡面详情 */
   CARD_DETAIL: 'UserCardDetail',
+  /** 卡面新增 */
+  CARD_CREATE: 'UserCardCreate',
   /** RC 对话浏览 */
   CARD_RC_BROWSE: 'UserCardRcBrowse',
   /** RTV 对话浏览 */

@@ -17,13 +17,19 @@
           </el-radio-button>
         </el-radio-group>
       </div>
-      <input
+      <el-input
         v-model="keyword"
-        class="w-56 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm outline-none transition focus:border-(--el-color-primary) focus:ring-2 focus:ring-(--el-color-primary-light-8)"
-        placeholder="搜索卡面 / 系列"
-        type="search"
+        :prefix-icon="Search"
+        placeholder="搜索卡面"
+        style="width: 256px"
+        clearable
+        @clear="handleSearch"
         @keyup.enter="handleSearch"
       />
+      <el-button v-if="isLogin" type="primary" plain @click="handleCreate">
+        <el-icon class="mr-1"><Plus /></el-icon>
+        新增卡面
+      </el-button>
     </div>
 
     <!-- 筛选行 -->
@@ -157,7 +163,7 @@
 
 <script setup lang="ts">
 import { computed, onMounted, reactive, ref, watch } from 'vue'
-import { FullScreen, Grid, Menu } from '@element-plus/icons-vue'
+import { FullScreen, Grid, Menu, Plus, Search } from '@element-plus/icons-vue'
 import { useRouter } from 'vue-router'
 import { pageCardAPI } from '@/api/card'
 import { listCardSeriesOptionsAPI } from '@/api/cardSeries'
@@ -169,7 +175,7 @@ import {
   cardMaxRarityLabel,
   UserRouteName,
 } from '@/constants'
-import { usePersonStore } from '@/stores/personStore'
+import { usePersonStore, useUserStore } from '@/stores'
 import type { CardVO } from '@/types/card'
 import type { CardSeriesVO } from '@/types/cardSeries'
 import { getAttributeTagStyle, getCoverImage } from '@/utils'
@@ -190,6 +196,7 @@ const filter = reactive<{
 })
 
 const personStore = usePersonStore()
+const { isLogin } = useUserStore()
 
 /* -------- 卡片大小 -------- */
 type CardSize = 'small' | 'normal' | 'big'
@@ -304,6 +311,10 @@ function handleSearch() {
 
 function handleFilterChange() {
   resetAndLoad()
+}
+
+function handleCreate() {
+  router.push({ name: UserRouteName.CARD_CREATE })
 }
 
 function handleDetail(row: CardVO) {
