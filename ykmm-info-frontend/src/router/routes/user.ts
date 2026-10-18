@@ -20,6 +20,12 @@ export const userRoutes: RouteRecordRaw = {
       meta: { title: '新增卡面', requiresAuth: true },
     },
     {
+      path: 'card/edit/:id',
+      name: UserRouteName.CARD_EDIT,
+      component: () => import('@/views/adminContent/cardManage/components/EditCard.vue'),
+      meta: { title: '编辑卡面', requiresAuth: true },
+    },
+    {
       path: 'card/:id',
       name: UserRouteName.CARD_DETAIL,
       component: () => import('@/views/userCardPage/CardDetail/Index.vue'),

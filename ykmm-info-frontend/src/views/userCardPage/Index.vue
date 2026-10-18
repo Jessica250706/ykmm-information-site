@@ -111,7 +111,7 @@
           class="group cursor-pointer overflow-hidden rounded-xl bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
           @click="handleDetail(item)"
         >
-          <div class="aspect-3/4 overflow-hidden bg-slate-100">
+          <div class="aspect-3/4 overflow-hidden bg-slate-100 relative">
             <img
               v-if="getCoverImage(item)"
               :alt="item.name"
@@ -119,6 +119,16 @@
               class="h-full w-full object-cover transition duration-300 group-hover:scale-105"
             />
             <div v-else class="h-full w-full bg-linear-to-br from-slate-200 to-slate-300" />
+            <!-- 待审核角标 -->
+            <el-tag
+              v-if="item.status === STATUS.PENDING"
+              :type="STATUS_TAG_TYPE[STATUS.PENDING]"
+              class="absolute right-2 top-2"
+              effect="dark"
+              size="small"
+            >
+              {{ STATUS_LABEL[STATUS.PENDING] }}
+            </el-tag>
           </div>
           <div class="p-3">
             <div class="flex items-center justify-between gap-1 truncate">
@@ -173,6 +183,9 @@ import {
   CARD_MAX_RARITY_OPTIONS,
   cardAttributeLabel,
   cardMaxRarityLabel,
+  STATUS,
+  STATUS_LABEL,
+  STATUS_TAG_TYPE,
   UserRouteName,
 } from '@/constants'
 import { usePersonStore, useUserStore } from '@/stores'

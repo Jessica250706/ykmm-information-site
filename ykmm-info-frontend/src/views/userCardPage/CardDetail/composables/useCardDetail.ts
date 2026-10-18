@@ -17,7 +17,7 @@ export function useCardDetail(cardId: number) {
   const isRtv = computed(() => attachedType.value === SOURCE_TYPE.RTV)
   const isRabitter = computed(() => attachedType.value === SOURCE_TYPE.RABITTER)
 
-  const isCreate = ref<boolean>(false)
+  const canOperate = ref<boolean>(false)
 
   async function load(id: number) {
     if (!id) return
@@ -34,7 +34,7 @@ export function useCardDetail(cardId: number) {
 
   async function canCreate() {
     const res = await canCreateAPI(cardId)
-    isCreate.value = res.data
+    canOperate.value = res.data
   }
 
   onMounted(() => {
@@ -49,7 +49,7 @@ export function useCardDetail(cardId: number) {
     isRc,
     isRtv,
     isRabitter,
-    isCreate,
+    canOperate,
     load,
   }
 }

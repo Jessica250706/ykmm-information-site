@@ -2,11 +2,12 @@
   <section v-loading="loading" class="card-detail flex h-full min-h-0 flex-col">
     <CardDetailHeader
       :attached-type="attachedType"
+      :can-operate="canOperate"
       :card="card"
-      :is-create="isCreate"
       :is-list="isList"
       @add-episode="handleAddEpisode"
       @back="handleBack"
+      @edit="handleEditCard"
       @goto="handleGoto"
     />
 
@@ -106,7 +107,7 @@ const RTV_MODE = SOURCE_TYPE_SMALL_LABEL[SOURCE_TYPE.RTV]
 const RABITTER_MODE = SOURCE_TYPE_SMALL_LABEL[SOURCE_TYPE.RABITTER]
 
 /* -------- 卡面 -------- */
-const { loading, card, attachedType, imageUrls, isRc, isRtv, isRabitter, isCreate, load } =
+const { loading, card, attachedType, imageUrls, isRc, isRtv, isRabitter, canOperate, load } =
   useCardDetail(cardId.value)
 
 /* -------- 话数管理 -------- */
@@ -224,6 +225,15 @@ function handleGoto() {
   router.push({
     name: chooseOption(),
     query: { sourceType: chooseType(), cardId: String(cardId.value) },
+  })
+}
+
+/** 跳转编辑页，编辑完成后返回当前详情页 */
+function handleEditCard() {
+  router.push({
+    name: UserRouteName.CARD_EDIT,
+    params: { id: String(cardId.value) },
+    query: { redirect: `/card/${cardId.value}` },
   })
 }
 

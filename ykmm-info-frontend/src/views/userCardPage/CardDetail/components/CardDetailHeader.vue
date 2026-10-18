@@ -9,13 +9,18 @@
     </div>
 
     <div class="flex items-center gap-2">
-      <div v-if="isCreate">
+      <div v-if="canOperate" class="flex gap-1">
+        <el-button type="primary" plain @click="emit('edit')">
+          <el-icon class="mr-1"><Edit /></el-icon>
+          编辑卡面
+        </el-button>
+
         <el-button
           v-if="attachedType === SOURCE_TYPE.RC"
           type="primary"
           @click="emit('addEpisode', SOURCE_TYPE_SMALL_LABEL[SOURCE_TYPE.RC])"
         >
-          <el-icon><Plus /></el-icon>
+          <el-icon class="mr-1"><Plus /></el-icon>
           新增 RC
         </el-button>
 
@@ -24,7 +29,7 @@
           type="primary"
           @click="emit('addEpisode', SOURCE_TYPE_SMALL_LABEL[SOURCE_TYPE.RTV])"
         >
-          <el-icon><Plus /></el-icon>
+          <el-icon class="mr-1"><Plus /></el-icon>
           新增 RTV
         </el-button>
 
@@ -33,7 +38,7 @@
           type="primary"
           @click="emit('addEpisode', SOURCE_TYPE_SMALL_LABEL[SOURCE_TYPE.RABITTER])"
         >
-          <el-icon><Plus /></el-icon>
+          <el-icon class="mr-1"><Plus /></el-icon>
           新增 Rabitter
         </el-button>
       </div>
@@ -60,12 +65,14 @@ defineProps<{
   card: CardVO | null
   attachedType: number
   isList: boolean
-  isCreate: boolean
+  /** 当前用户能否编辑此卡面（管理员或创建者） */
+  canOperate: boolean
 }>()
 
 const emit = defineEmits<{
   back: []
   goto: []
   addEpisode: [mode: SourceTypeSmallLabelValue]
+  edit: []
 }>()
 </script>
