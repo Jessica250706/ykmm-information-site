@@ -1,21 +1,39 @@
 <template>
   <div class="flex h-full min-h-0 flex-col">
     <div class="mb-3 flex shrink-0 items-center gap-3">
-      <el-select
-        v-model="statusFilter"
-        placeholder="全部状态"
-        style="width: 320px"
-        clearable
-        @change="reload"
-      >
-        <el-option
-          v-for="opt in STATUS_OPTIONS"
-          :key="opt.value"
-          :label="opt.label"
-          :value="opt.value"
-        />
-      </el-select>
-      <span class="text-sm text-slate-500">共 {{ total }} 个</span>
+      <div class="mb-3 flex shrink-0 flex-wrap items-center gap-3">
+        <el-select
+          v-model="sourceTypeFilter"
+          placeholder="全部来源"
+          style="width: 240px"
+          clearable
+          @change="reload"
+        >
+          <el-option
+            v-for="opt in SOURCE_TYPE_FILTER_OPTIONS"
+            :key="opt.value"
+            :label="opt.label"
+            :value="opt.value"
+          />
+        </el-select>
+
+        <el-select
+          v-model="statusFilter"
+          placeholder="全部状态"
+          style="width: 240px"
+          clearable
+          @change="reload"
+        >
+          <el-option
+            v-for="opt in STATUS_OPTIONS"
+            :key="opt.value"
+            :label="opt.label"
+            :value="opt.value"
+          />
+        </el-select>
+
+        <span class="text-sm text-slate-500">共 {{ total }} 个</span>
+      </div>
     </div>
 
     <div v-loading="loading" class="min-h-0 flex-1 overflow-y-auto">
@@ -113,7 +131,15 @@ import { onMounted, ref } from 'vue'
 import { ElMessage } from 'element-plus'
 import { useRouter } from 'vue-router'
 import { pageMyVersionsAPI } from '@/api/dialogueVersion'
-import { SOURCE_TYPE, STATUS, STATUS_OPTIONS, statusLabel, UserRouteName } from '@/constants'
+import {
+  SOURCE_TYPE,
+  SOURCE_TYPE_FILTER_OPTIONS,
+  sourceTypeBrowseRouteName,
+  STATUS,
+  STATUS_OPTIONS,
+  statusLabel,
+  UserRouteName,
+} from '@/constants'
 import type { DialogueVersionVO } from '@/types/dialogueVersion'
 import { getStatusTagType } from '@/utils'
 
@@ -125,6 +151,7 @@ const total = ref(0)
 const pageNum = ref(1)
 const pageSize = ref(20)
 const statusFilter = ref<number | undefined>()
+const sourceTypeFilter = ref<number | undefined>()
 
 async function load() {
   loading.value = true
@@ -133,6 +160,7 @@ async function load() {
       pageNum: pageNum.value,
       pageSize: pageSize.value,
       status: statusFilter.value,
+      sourceType: sourceTypeFilter.value,
     })
     list.value = res.data.records ?? []
     total.value = res.data.total ?? 0
@@ -176,12 +204,12 @@ async function handleOpen(v: DialogueVersionVO) {
     ElMessage.warning('该话数所属卡面信息缺失')
     return
   }
-  const routeName =
-    src.sourceType === SOURCE_TYPE.RC
-      ? UserRouteName.CARD_RC_BROWSE
-      : src.sourceType === SOURCE_TYPE.RTV
-        ? UserRouteName.CARD_RTV_BROWSE
-        : UserRouteName.CARD_RABITTER_BROWSE
+
+  const routeName = sourceTypeBrowseRouteName(src.sourceType)
+  if (!routeName) {
+    ElMessage.warning('未知的来源类型，无法跳转')
+    return
+  }
 
   await router.push({
     name: routeName,

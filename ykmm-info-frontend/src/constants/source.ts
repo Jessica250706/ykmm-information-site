@@ -1,4 +1,4 @@
-import { type TagType } from './index'
+import { type TagType, UserRouteName } from './index'
 
 /**
  * 来源类型
@@ -62,6 +62,30 @@ export function isSourceType(v: unknown): v is SourceTypeValue {
     v === SOURCE_TYPE.NONE ||
     v === SOURCE_TYPE.RABITTER
   )
+}
+
+/**
+ * 来源类型筛选下拉（排除 NONE，因为版本不会有"无来源"）
+ */
+export const SOURCE_TYPE_FILTER_OPTIONS = [
+  { value: SOURCE_TYPE.RC, label: SOURCE_TYPE_LABEL[SOURCE_TYPE.RC] },
+  { value: SOURCE_TYPE.RTV, label: SOURCE_TYPE_LABEL[SOURCE_TYPE.RTV] },
+  { value: SOURCE_TYPE.RABITTER, label: SOURCE_TYPE_LABEL[SOURCE_TYPE.RABITTER] },
+  { value: SOURCE_TYPE.STORY, label: SOURCE_TYPE_LABEL[SOURCE_TYPE.STORY] },
+] as const
+
+export function sourceTypeBrowseRouteName(v?: number | null): string | undefined {
+  if (v == null) return undefined
+  switch (v) {
+    case SOURCE_TYPE.RC:
+      return UserRouteName.CARD_RC_BROWSE
+    case SOURCE_TYPE.RTV:
+      return UserRouteName.CARD_RTV_BROWSE
+    case SOURCE_TYPE.RABITTER:
+      return UserRouteName.CARD_RABITTER_BROWSE
+    default:
+      return undefined
+  }
 }
 
 export function cardAttachedStoryTypeLabel(v?: number | null): string {

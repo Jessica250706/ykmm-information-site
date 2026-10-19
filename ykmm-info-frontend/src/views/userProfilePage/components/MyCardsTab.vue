@@ -5,7 +5,7 @@
       <el-select
         v-model="statusFilter"
         placeholder="全部状态"
-        style="width: 320px"
+        style="width: 240px"
         clearable
         @change="reload"
       >
