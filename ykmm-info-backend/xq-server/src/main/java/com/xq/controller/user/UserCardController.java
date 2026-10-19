@@ -11,7 +11,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 /**
- * 用户端 - 卡面（写操作，仅自己）
+ * 用户端 - 卡面管理
  * <p>
  * 说明：
  * - 新增：status 由 Service 设为"待审核"，creatorId 取 BaseContext

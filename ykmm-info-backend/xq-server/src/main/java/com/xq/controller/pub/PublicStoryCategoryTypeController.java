@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 /**
- * 剧情分类类型管理
+ * 公共 - 剧情分类类型管理
  */
 @RestController("PublicStoryCategoryTypeController")
 @RequestMapping("/pub/story-category-type")

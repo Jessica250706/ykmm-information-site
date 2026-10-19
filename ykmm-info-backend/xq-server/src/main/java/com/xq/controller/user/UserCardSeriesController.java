@@ -7,7 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 /**
- * 卡面系列管理
+ * 用户端 - 卡面系列管理
  */
 @RestController("UserCardSeriesController")
 @RequestMapping("/user/card-series")

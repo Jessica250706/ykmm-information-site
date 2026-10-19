@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
- * 用户端 - 卡面浏览
+ * 公共 - 卡面浏览
  */
 @RestController("PubCardController")
 @RequestMapping("/pub/card")

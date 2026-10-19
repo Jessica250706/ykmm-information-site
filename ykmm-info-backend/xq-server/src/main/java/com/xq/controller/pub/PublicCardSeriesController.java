@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 /**
- * 卡面系列管理
+ * 公共 - 卡面系列管理
  */
 @RestController("PubCardSeriesController")
 @RequestMapping("/pub/card-series")

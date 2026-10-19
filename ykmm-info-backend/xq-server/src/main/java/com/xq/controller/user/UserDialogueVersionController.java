@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 /**
- * 用户端 - 对话版本（写操作）
+ * 用户端 - 对话版本
  * <p>
  * - 新增：贡献者信息 + creatorId 从 BaseContext 获取
  * - 删除：仅创建者可删（管理员例外）

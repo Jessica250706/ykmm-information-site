@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 /**
- * 经纪公司管理
+ * 公共 - 经纪公司管理
  */
 @RestController("PublicAgencyController")
 @RequestMapping("/pub/agency")

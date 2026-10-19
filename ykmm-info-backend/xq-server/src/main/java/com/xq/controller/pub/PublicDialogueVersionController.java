@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 /**
- * 用户端 - 对话版本选项（游客可访问）
+ * 公共 - 对话版本选项
  * <p>
  * 仅返回"已发布内容对应"的版本组合；具体对话内容由 PubCardController /
  * PubStoryController 拿详情时返回，并已经过滤掉未发布的行。

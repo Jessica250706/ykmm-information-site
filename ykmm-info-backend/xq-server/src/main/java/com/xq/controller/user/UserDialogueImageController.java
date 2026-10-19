@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 /**
- * 对话图片管理
+ * 用户端 - 对话图片管理
  */
 @RestController("UserDialogueImageController")
 @RequestMapping("/user/dialogue-image")

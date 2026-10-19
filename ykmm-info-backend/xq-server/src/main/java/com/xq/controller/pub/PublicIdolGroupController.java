@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 /**
- * 偶像团体管理
+ * 公共 - 偶像团体管理
  */
 @RestController("PublicIdolGroupController")
 @RequestMapping("/pub/idol-group")

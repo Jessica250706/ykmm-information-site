@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 /**
- * 表情包分组Controller
+ * 用户端 - 表情包分组Controller
  */
 @RestController("UserStickerGroupController")
 @RequestMapping("/user/sticker-group")

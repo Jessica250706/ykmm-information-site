@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 /**
- * 用户端 - 剧情浏览（三身份共用，Service 内部按身份过滤）
+ * 公共 - 剧情浏览
  */
 @RestController("PubStoryController")
 @RequestMapping("/pub/story")

@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 /**
- * 人物管理
+ * 公共 - 人物管理
  */
 @RestController("PublicPersonController")
 @RequestMapping("/pub/person")

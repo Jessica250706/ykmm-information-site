@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 /**
- * 卡面 RTV 管理
+ * 公共 - 卡面 RTV 管理
  */
 @RestController("PublicCardRtvController")
 @RequestMapping("/pub/card-rtv")

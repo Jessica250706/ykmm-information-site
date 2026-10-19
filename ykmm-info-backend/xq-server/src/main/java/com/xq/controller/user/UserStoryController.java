@@ -12,7 +12,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 /**
- * 用户端 - 剧情（写操作，仅自己）
+ * 用户端 - 剧情
  */
 @RestController("UserStoryController")
 @RequestMapping("/user/story")

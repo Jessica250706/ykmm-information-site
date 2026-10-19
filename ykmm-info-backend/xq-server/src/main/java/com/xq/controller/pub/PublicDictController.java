@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 /**
- * 用户端 - 字典（游客可访问）
+ * 公共 - 字典
  */
 @RestController("PubDictController")
 @RequestMapping("/pub/dict")

@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 /**
- * 目录管理
+ * 公共 - 目录管理
  */
 @RestController("PublicMenuController")
 @RequestMapping("/pub/menu")
