@@ -33,7 +33,8 @@ public class DialogueVersionController {
      * @return 分页结果
      */
     @GetMapping
-    public Result<PageResult<DialogueVersionVO>> page(@NotNull(message = "查询条件不能为空") DialogueVersionPageQueryDTO query) {
+    public Result<PageResult<DialogueVersionVO>> page(
+            @NotNull(message = "查询条件不能为空") DialogueVersionPageQueryDTO query) {
         return Result.success(dialogueVersionService.pageQuery(query));
     }
 

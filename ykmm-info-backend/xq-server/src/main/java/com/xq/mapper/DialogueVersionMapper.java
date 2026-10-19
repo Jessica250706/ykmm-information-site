@@ -115,4 +115,10 @@ public interface DialogueVersionMapper {
      * @return 影响行数
      */
     int deleteByIds(@Param("ids") List<Long> ids);
+
+    /**
+     * 分页查询指定用户创建的版本（含所有状态）
+     */
+    List<DialogueVersion> pageQueryByCreator(@Param("query") DialogueVersionPageQueryDTO query,
+                                             @Param("creatorId") Long creatorId);
 }

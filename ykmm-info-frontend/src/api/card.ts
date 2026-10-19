@@ -26,7 +26,7 @@ export const getCardDetailAPI = (id: number) => {
 }
 
 /**
- * @description: 查询某一话的对话
+ * @description: 查询卡面某一话的对话详情（RC / RTV / Rabitter 通用）
  */
 export const getCardEpisodeDialogueAPI = (params: CardEpisodeDialogueDTO) => {
   return request.get<CardEpisodeVO>(`/pub/card/episode/dialogue`, { params })
@@ -53,6 +53,13 @@ export const createCardAPI = (data: CardDTO) => {
  */
 export const updateCardAPI = (id: number, data: CardDTO) => {
   return request.put(`/user/card/${id}`, data)
+}
+
+/**
+ * @description: 分页查询我创建的卡面
+ */
+export function pageMyCardsAPI(params: CardPageQueryDTO) {
+  return request.get<PageResult<CardVO>>('/user/card/my', { params })
 }
 
 // ---------- 管理员 ----------

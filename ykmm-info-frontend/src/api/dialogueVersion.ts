@@ -60,6 +60,13 @@ export const createDialogueVersionAPI = (data: DialogueVersionDTO) => {
   return request.post<number>('/user/dialogue-version', data)
 }
 
+/**
+ * @description: 分页查询我上传的版本
+ */
+export function pageMyVersionsAPI(params: DialogueVersionPageQueryDTO) {
+  return request.get<PageResult<DialogueVersionVO>>('/user/dialogue-version/my', { params })
+}
+
 // ---------- 管理员 ----------
 
 /**

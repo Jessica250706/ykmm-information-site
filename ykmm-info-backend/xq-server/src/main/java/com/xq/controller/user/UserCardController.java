@@ -1,10 +1,13 @@
 package com.xq.controller.user;
 
 import com.xq.dto.CardDTO;
+import com.xq.dto.CardPageQueryDTO;
+import com.xq.result.PageResult;
 import com.xq.result.Result;
 import com.xq.service.CardService;
 import com.xq.validation.CreateGroup;
 import com.xq.validation.UpdateGroup;
+import com.xq.vo.CardVO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
@@ -48,5 +51,13 @@ public class UserCardController {
     public Result<Void> update(@PathVariable Long id, @RequestBody @Validated(UpdateGroup.class) CardDTO dto) {
         cardService.update(id, dto);
         return Result.success();
+    }
+
+    /**
+     * 分页查询我创建的卡面（含待审核 / 已发布 / 已拒绝）
+     */
+    @GetMapping("/my")
+    public Result<PageResult<CardVO>> pageMyCards(@Validated CardPageQueryDTO query) {
+        return Result.success(cardService.pageMyCards(query));
     }
 }

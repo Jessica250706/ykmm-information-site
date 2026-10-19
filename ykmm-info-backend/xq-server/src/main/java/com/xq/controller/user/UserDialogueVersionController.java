@@ -2,9 +2,12 @@ package com.xq.controller.user;
 
 import com.xq.dto.DialogueSourceQueryDTO;
 import com.xq.dto.DialogueVersionDTO;
+import com.xq.dto.DialogueVersionPageQueryDTO;
+import com.xq.result.PageResult;
 import com.xq.result.Result;
 import com.xq.service.DialogueVersionService;
 import com.xq.vo.DialogueVersionVO;
+import jakarta.validation.constraints.NotNull;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
@@ -14,9 +17,6 @@ import java.util.List;
 
 /**
  * 用户端 - 对话版本
- * <p>
- * - 新增：贡献者信息 + creatorId 从 BaseContext 获取
- * - 删除：仅创建者可删（管理员例外）
  */
 @RestController("UserDialogueVersionController")
 @RequestMapping("/user/dialogue-version")
@@ -44,5 +44,14 @@ public class UserDialogueVersionController {
     @PostMapping
     public Result<Long> create(@RequestBody @Validated DialogueVersionDTO dto) {
         return Result.success(dialogueVersionService.create(dto));
+    }
+
+    /**
+     * 分页查询我上传的版本（含待审核 / 已发布 / 已拒绝）
+     */
+    @GetMapping("/my")
+    public Result<PageResult<DialogueVersionVO>> pageMyVersions(
+            @NotNull(message = "查询条件不能为空") DialogueVersionPageQueryDTO query) {
+        return Result.success(dialogueVersionService.pageMyVersions(query));
     }
 }

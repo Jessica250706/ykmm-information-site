@@ -152,4 +152,20 @@
     </foreach>
   </delete>
 
+  <!-- 我的版本：按 creator_id 查询，跨来源，按 id 倒序 -->
+  <select id="pageQueryByCreator" resultType="com.xq.entity.DialogueVersion">
+    SELECT
+    <include refid="baseColumns"/>
+    FROM dialogue_version
+    <where>
+      AND creator_id = #{creatorId}
+      <if test="query.sourceType != null">AND source_type = #{query.sourceType}</if>
+      <if test="query.language != null">AND language = #{query.language}</if>
+      <if test="query.format != null">AND format = #{query.format}</if>
+      <if test="query.scope != null">AND scope = #{query.scope}</if>
+      <if test="query.status != null">AND status = #{query.status}</if>
+    </where>
+    ORDER BY id DESC
+  </select>
+
 </mapper>

@@ -7,7 +7,6 @@ import com.xq.enums.DialogueLanguageEnum;
 import com.xq.enums.DialogueScopeEnum;
 import com.xq.validation.EnumValue;
 import com.xq.validation.InIntValues;
-import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 

@@ -99,4 +99,9 @@ public interface CardService {
      * @param dto 审核参数（通过 / 拒绝 + 备注）
      */
     void review(Long id, CardReviewDTO dto);
+
+    /**
+     * 分页查询当前用户创建的卡面
+     */
+    PageResult<CardVO> pageMyCards(CardPageQueryDTO query);
 }

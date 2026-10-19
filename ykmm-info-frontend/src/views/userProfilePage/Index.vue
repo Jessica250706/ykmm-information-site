@@ -1,44 +1,35 @@
 <template>
-  <section class="space-y-5">
-    <h1 class="text-xl font-semibold">个人中心</h1>
+  <section class="flex h-full min-h-0 flex-col gap-4">
+    <ProfileHeader />
 
-    <div class="flex items-center gap-4 rounded-2xl bg-white p-5 shadow-sm">
-      <span class="grid h-14 w-14 place-items-center rounded-full bg-slate-200 text-lg">我</span>
-      <div class="flex-1">
-        <p class="font-medium">测试用户</p>
-        <p class="mt-0.5 text-sm text-slate-500">当前身份：{{ isAdmin ? '管理员' : '普通用户' }}</p>
-      </div>
-      <RouterLink
-        v-if="isAdmin"
-        class="rounded-lg border border-slate-200 px-3 py-1.5 text-sm text-slate-600 transition hover:border-indigo-300 hover:text-indigo-600"
-        to="/admin"
-      >
-        进入管理端
-      </RouterLink>
-    </div>
-
-    <button
-      class="rounded-lg bg-slate-900 px-4 py-2 text-sm text-white transition hover:bg-slate-800"
-      type="button"
-      @click="handleLogout"
-    >
-      退出登录
-    </button>
+    <el-tabs v-model="activeTab" class="min-h-0 flex-1 flex flex-col">
+      <el-tab-pane class="h-full" label="我的卡面" name="cards">
+        <MyCardsTab v-if="activeTab === 'cards'" class="h-full" />
+      </el-tab-pane>
+      <el-tab-pane class="h-full" label="我的版本" name="versions">
+        <MyVersionsTab v-if="activeTab === 'versions'" class="h-full" />
+      </el-tab-pane>
+    </el-tabs>
   </section>
 </template>
 
 <script setup lang="ts">
-import { useRouter } from 'vue-router'
-import { CommonRouteName } from '@/constants'
-import { useUserStore } from '@/stores/userStore'
+import { ref } from 'vue'
+import MyCardsTab from './components/MyCardsTab.vue'
+import MyVersionsTab from './components/MyVersionsTab.vue'
+import ProfileHeader from './components/ProfileHeader.vue'
 
-const router = useRouter()
-const { isAdmin, logout } = useUserStore()
-
-function handleLogout() {
-  logout()
-  router.replace({ name: CommonRouteName.LOGIN })
-}
+const activeTab = ref<'cards' | 'versions'>('cards')
 </script>
 
-<style lang="scss" scoped></style>
+<style scoped>
+/* 让 tab 内容区能占满高度并滚动 */
+:deep(.el-tabs__content) {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+:deep(.el-tab-pane) {
+  height: 100%;
+}
+</style>

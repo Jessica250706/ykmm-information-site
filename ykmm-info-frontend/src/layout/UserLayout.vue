@@ -43,18 +43,35 @@
               前往管理端 →
             </el-button>
 
-            <!-- 已登录：用户态 -->
-            <RouterLink
+            <!-- 已登录：用户态下拉 -->
+            <el-dropdown
               v-if="isLogin"
-              :class="isActive('/profile') ? 'theme-pill-active' : 'hover:bg-slate-100'"
-              class="flex items-center gap-2 rounded-full py-1 pl-1 pr-3 transition"
-              to="/profile"
+              placement="bottom-end"
+              trigger="click"
+              @command="handleUserCommand"
             >
-              <el-avatar :size="28" :src="userInfo?.avatar" class="bg-slate-200! text-xs!">
-                {{ avatarText }}
-              </el-avatar>
-              <span class="text-sm">{{ displayName }}</span>
-            </RouterLink>
+              <div
+                :class="isActive('/profile') ? 'theme-pill-active' : 'hover:bg-slate-100'"
+                class="flex cursor-pointer items-center gap-2 rounded-full py-1 pl-1 pr-3 transition"
+              >
+                <el-avatar :size="28" :src="userInfo?.avatar" class="bg-slate-200! text-xs!">
+                  {{ avatarText }}
+                </el-avatar>
+                <span class="text-sm">{{ displayName }}</span>
+              </div>
+              <template #dropdown>
+                <el-dropdown-menu>
+                  <el-dropdown-item command="profile">
+                    <el-icon><User /></el-icon>
+                    个人中心
+                  </el-dropdown-item>
+                  <el-dropdown-item command="logout" divided>
+                    <el-icon><SwitchButton /></el-icon>
+                    退出登录
+                  </el-dropdown-item>
+                </el-dropdown-menu>
+              </template>
+            </el-dropdown>
 
             <!-- 未登录：游客态 -->
             <RouterLink
@@ -87,15 +104,16 @@
 
 <script setup lang="ts">
 import { computed, onMounted } from 'vue'
+import { ElMessageBox } from 'element-plus'
 import { RouterLink, RouterView, useRoute, useRouter } from 'vue-router'
-import { AdminRouteName } from '@/constants'
+import { AdminRouteName, CommonRouteName } from '@/constants'
 import { useMenuStore, useUserStore } from '@/stores'
 import ChangeColor from './components/ChangeColor.vue'
 
 const route = useRoute()
 const router = useRouter()
 const menuStore = useMenuStore()
-const { isAdmin, isLogin, userInfo } = useUserStore()
+const { isAdmin, isLogin, userInfo, logout } = useUserStore()
 
 const isActive = (path: string) => route.path === path || route.path.startsWith(`${path}/`)
 
@@ -118,6 +136,27 @@ const activeMenu = computed(() => {
   })
   return matchedNav?.path ?? ''
 })
+
+/** 下拉菜单命令分发 */
+async function handleUserCommand(cmd: string) {
+  if (cmd === 'profile') {
+    await router.push('/profile')
+    return
+  }
+  if (cmd === 'logout') {
+    try {
+      await ElMessageBox.confirm('确定要退出登录吗？', '提示', {
+        type: 'warning',
+        confirmButtonText: '退出',
+        cancelButtonText: '取消',
+      })
+    } catch {
+      return
+    }
+    logout()
+    await router.replace({ name: CommonRouteName.LOGIN })
+  }
+}
 
 onMounted(() => {
   if (!menuStore.userMenu.length) {

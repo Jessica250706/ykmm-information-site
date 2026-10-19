@@ -136,4 +136,30 @@
     WHERE id = #{id}
   </update>
 
+  <!-- 我的卡面：按 creator_id 查询（含所有状态），按创建时间倒序 -->
+  <select id="pageQueryByCreator" resultType="com.xq.entity.Card">
+    SELECT
+    <include refid="baseColumns"/>
+    FROM card c
+    <where>
+      AND c.creator_id = #{creatorId}
+      <if test="query.keyword != null and query.keyword != ''">
+        AND c.name LIKE CONCAT('%', #{query.keyword}, '%')
+      </if>
+      <if test="query.seriesId != null">
+        AND c.series_id = #{query.seriesId}
+      </if>
+      <if test="query.maxRarity != null">
+        AND c.max_rarity = #{query.maxRarity}
+      </if>
+      <if test="query.attribute != null">
+        AND c.attribute = #{query.attribute}
+      </if>
+      <if test="query.status != null">
+        AND c.status = #{query.status}
+      </if>
+    </where>
+    ORDER BY c.created_at DESC, c.id DESC
+  </select>
+
 </mapper>

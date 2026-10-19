@@ -482,6 +482,24 @@ public class CardServiceImpl implements CardService {
                 id, targetStatus, BaseContext.getCurrentId(), update.getReviewRemark());
     }
 
+    /**
+     * 分页查询当前用户创建的卡面
+     */
+    @Override
+    public PageResult<CardVO> pageMyCards(CardPageQueryDTO query) {
+        Long userId = BaseContext.getCurrentId();
+        if (userId == null) {
+            throw new UnauthorizedException("请先登录");
+        }
+
+        PageHelper.startPage(query.getPageNum(), query.getPageSize());
+        List<Card> list = cardMapper.pageQueryByCreator(query, userId);
+        PageInfo<Card> page = new PageInfo<>(list);
+
+        List<CardVO> voList = assembleCardVOs(page.getList());
+        return new PageResult<>(page.getTotal(), voList);
+    }
+
     /* ---------------- 私有方法 ---------------- */
 
     /**
@@ -555,6 +573,47 @@ public class CardServiceImpl implements CardService {
             vo.setPersons(cardPersonRelMapper.listPersonsByCardId(card.getId()));
         }
         return vo;
+    }
+
+    /**
+     * 把 Card 实体列表组装成完整 VO（含图片、人物），供多个分页方法复用
+     */
+    private List<CardVO> assembleCardVOs(List<Card> list) {
+        if (list == null || list.isEmpty()) {
+            return Collections.emptyList();
+        }
+        List<Long> cardIds = list.stream()
+                .map(Card::getId)
+                .filter(Objects::nonNull)
+                .toList();
+
+        Map<Long, List<CardImage>> imageMap = cardIds.isEmpty()
+                ? Collections.emptyMap()
+                : cardImageMapper.listByCardIds(cardIds).stream()
+                .collect(Collectors.groupingBy(CardImage::getCardId));
+
+        Map<Long, List<CardPersonVO>> personMap = cardIds.isEmpty()
+                ? Collections.emptyMap()
+                : cardPersonRelMapper.listPersonsByCardIds(cardIds).stream()
+                .collect(Collectors.groupingBy(CardPersonVO::getCardId));
+
+        List<CardVO> voList = new ArrayList<>(list.size());
+        for (Card card : list) {
+            CardVO vo = toVO(card, false);
+
+            List<CardImage> imageList = imageMap.getOrDefault(card.getId(), Collections.emptyList());
+            List<CardImageVO> imgVOs = new ArrayList<>(imageList.size());
+            for (CardImage img : imageList) {
+                CardImageVO ivo = new CardImageVO();
+                BeanUtils.copyProperties(img, ivo);
+                ivo.setImageTypeLabel(CardImageTypeEnum.getLabel(img.getImageType()));
+                imgVOs.add(ivo);
+            }
+            vo.setImages(imgVOs);
+            vo.setPersons(new ArrayList<>(personMap.getOrDefault(card.getId(), Collections.emptyList())));
+            voList.add(vo);
+        }
+        return voList;
     }
 
     /**

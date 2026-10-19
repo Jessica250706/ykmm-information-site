@@ -342,6 +342,26 @@ public class DialogueVersionServiceImpl implements DialogueVersionService {
         return result;
     }
 
+    /**
+     * 分页查询当前用户创建的版本
+     */
+    @Override
+    public PageResult<DialogueVersionVO> pageMyVersions(DialogueVersionPageQueryDTO query) {
+        Long userId = BaseContext.getCurrentId();
+        if (userId == null) {
+            throw new UnauthorizedException("请先登录");
+        }
+
+        PageHelper.startPage(query.getPageNum(), query.getPageSize());
+        List<DialogueVersion> list = dialogueVersionMapper.pageQueryByCreator(query, userId);
+        PageInfo<DialogueVersion> page = new PageInfo<>(list);
+
+        List<DialogueVersionVO> voList = page.getList().stream()
+                .map(this::toBasicVO)
+                .collect(Collectors.toList());
+        return new PageResult<>(page.getTotal(), voList);
+    }
+
     /* ============================================================
      * 私有方法
      * ============================================================ */

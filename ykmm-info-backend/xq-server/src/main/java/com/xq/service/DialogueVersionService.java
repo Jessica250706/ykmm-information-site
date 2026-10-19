@@ -79,4 +79,9 @@ public interface DialogueVersionService {
      * @return 选项列表
      */
     List<DialogueVersionOptionVO> listVersionOptions(Integer sourceType, Long sourceId);
+
+    /**
+     * 分页查询当前用户创建的版本
+     */
+    PageResult<DialogueVersionVO> pageMyVersions(DialogueVersionPageQueryDTO query);
 }

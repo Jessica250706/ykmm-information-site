@@ -55,4 +55,13 @@ public interface CardMapper {
      * @param id 卡面ID
      */
     void markPending(@Param("id") Long id);
+
+    /**
+     * 分页查询指定用户创建的卡面（含所有状态）
+     *
+     * @param query     查询条件（keyword/seriesId/maxRarity/attribute/status 等）
+     * @param creatorId 创建者用户ID
+     */
+    List<Card> pageQueryByCreator(@Param("query") CardPageQueryDTO query,
+                                  @Param("creatorId") Long creatorId);
 }
