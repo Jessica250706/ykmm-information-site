@@ -1,5 +1,7 @@
 package com.xq.controller.admin;
 
+import com.xq.annotation.RequireRole;
+import com.xq.constant.UserRoleConstant;
 import com.xq.dto.StoryCategoryDTO;
 import com.xq.dto.StoryCategoryPageQueryDTO;
 import com.xq.result.PageResult;
@@ -17,6 +19,7 @@ import java.util.List;
  */
 @RestController("AdminStoryCategoryController")
 @RequestMapping("/admin/story-category")
+@RequireRole(UserRoleConstant.ADMIN)
 @Slf4j
 public class StoryCategoryController {
 

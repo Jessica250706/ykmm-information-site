@@ -114,21 +114,32 @@ public class JwtTokenInterceptor implements HandlerInterceptor {
     }
 
     private void checkPermission(String path, HandlerMethod handlerMethod, Integer role) {
+        // 1. 路径硬约束：/admin/** 必须是管理员（优先级最高，任何 @RequireRole 都绕不过去）
+        if (isAdminPath(path) && !UserRoleEnum.ADMIN.getValue().equals(role)) {
+            throw new ForbiddenException("无权限访问");
+        }
+
+        // 2. 注解约束：方法或类上的 @RequireRole
         RequireRole annotation = handlerMethod.getMethodAnnotation(RequireRole.class);
         if (annotation == null) {
             annotation = handlerMethod.getBeanType().getAnnotation(RequireRole.class);
         }
         if (annotation != null) {
             for (int allowed : annotation.value()) {
-                if (role != null && allowed == role) return;
+                if (role != null && allowed == role) {
+                    return;
+                }
             }
             throw new ForbiddenException("无权限访问");
         }
+    }
 
-        // 路径兜底
-        if (path.startsWith("/admin") && !UserRoleEnum.ADMIN.getValue().equals(role)) {
-            throw new ForbiddenException("无权限访问");
-        }
+    /**
+     * 判断是否为管理端路径。
+     * 用 "/admin" 或 "/admin/xxx" 精确匹配，避免误伤 /administrator 等。
+     */
+    private boolean isAdminPath(String path) {
+        return "/admin".equals(path) || path.startsWith("/admin/");
     }
 
     /** 前缀匹配：/pub 能匹配 /pub 和 /pub/xxx，不会误伤 /public */

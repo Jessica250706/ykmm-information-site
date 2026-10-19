@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.*;
  */
 @RestController("AdminUserController")
 @RequestMapping("/admin/user")
+@RequireRole(UserRoleConstant.ADMIN)
 @Slf4j
 public class UserController {
 

@@ -15,7 +15,7 @@ import java.util.List;
 import java.util.UUID;
 
 /**
- * 通用 - 文件上传（需登录）
+ * 通用 - 文件上传
  */
 @RestController("CommonUploadController")
 @RequestMapping("/common")

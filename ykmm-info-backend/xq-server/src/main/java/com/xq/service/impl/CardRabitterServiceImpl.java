@@ -6,6 +6,7 @@ import com.xq.entity.CardRabitter;
 import com.xq.exception.ForbiddenException;
 import com.xq.mapper.CardRabitterMapper;
 import com.xq.service.CardRabitterService;
+import com.xq.service.CardService;
 import com.xq.vo.CardRabitterVO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
@@ -25,6 +26,8 @@ public class CardRabitterServiceImpl implements CardRabitterService {
 
     @Autowired
     private CardRabitterMapper cardRabitterMapper;
+    @Autowired
+    private CardService cardService;
 
     /**
      * 查询卡面下的 Rabitter 列表
@@ -74,10 +77,15 @@ public class CardRabitterServiceImpl implements CardRabitterService {
     @Override
     @Transactional
     public Long create(CardRabitterDTO dto) {
+        cardService.assertWritable(dto.getCardId());
+
         CardRabitter rabitter = new CardRabitter();
         BeanUtils.copyProperties(dto, rabitter);
         rabitter.setCreatorId(BaseContext.getCurrentId());
         cardRabitterMapper.insert(rabitter);
+
+        cardService.markPendingIfNeeded(dto.getCardId());
+
         log.info("新增卡面 Rabitter 成功，id={}", rabitter.getId());
         return rabitter.getId();
     }
@@ -91,11 +99,18 @@ public class CardRabitterServiceImpl implements CardRabitterService {
     @Override
     @Transactional
     public void update(Long id, CardRabitterDTO dto) {
-        checkOperable(id);
+        CardRabitter exist  = checkOperable(id);
+        cardService.assertWritable(exist.getCardId());
+
         CardRabitter rabitter = new CardRabitter();
         BeanUtils.copyProperties(dto, rabitter);
         rabitter.setId(id);
+        rabitter.setCardId(exist.getCardId());
+
         cardRabitterMapper.update(rabitter);
+
+        cardService.markPendingIfNeeded(exist.getCardId());
+
         log.info("编辑卡面 Rabitter 成功，id={}", id);
     }
 
@@ -150,7 +165,7 @@ public class CardRabitterServiceImpl implements CardRabitterService {
      * @throws RuntimeException   资源不存在
      * @throws ForbiddenException 无权操作
      */
-    private void checkOperable(Long id) {
+    private CardRabitter checkOperable(Long id) {
         if (id == null) {
             throw new RuntimeException("Rabitter ID不能为空");
         }
@@ -162,5 +177,6 @@ public class CardRabitterServiceImpl implements CardRabitterService {
         if (!Boolean.TRUE.equals(can)) {
             throw new ForbiddenException("无权操作该 Rabitter");
         }
+        return exist;
     }
 }

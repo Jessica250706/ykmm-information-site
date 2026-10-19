@@ -1,5 +1,7 @@
 package com.xq.controller.admin;
 
+import com.xq.annotation.RequireRole;
+import com.xq.constant.UserRoleConstant;
 import com.xq.dto.DialogueVersionContributorDTO;
 import com.xq.dto.DialogueVersionContributorPageQueryDTO;
 import com.xq.result.PageResult;
@@ -18,6 +20,7 @@ import java.util.List;
  */
 @RestController("AdminDialogueVersionContributorController")
 @RequestMapping("/admin/dialogue-version-contributor")
+@RequireRole(UserRoleConstant.ADMIN)
 @Slf4j
 public class DialogueVersionContributorController {
 

@@ -126,4 +126,14 @@
     WHERE id = #{id}
   </delete>
 
+  <!-- 置为待审核 + 清空审核字段 -->
+  <update id="markPending">
+    UPDATE card
+    SET status        = 2,
+        reviewer_id   = NULL,
+        review_time   = NULL,
+        review_remark = NULL
+    WHERE id = #{id}
+  </update>
+
 </mapper>

@@ -1,5 +1,7 @@
 package com.xq.controller.admin;
 
+import com.xq.annotation.RequireRole;
+import com.xq.constant.UserRoleConstant;
 import com.xq.dto.RoleDTO;
 import com.xq.dto.RolePageQueryDTO;
 import com.xq.result.PageResult;
@@ -15,6 +17,7 @@ import org.springframework.web.bind.annotation.*;
  */
 @RestController("AdminRoleController")
 @RequestMapping("/admin/role")
+@RequireRole(UserRoleConstant.ADMIN)
 @Slf4j
 public class RoleController {
 

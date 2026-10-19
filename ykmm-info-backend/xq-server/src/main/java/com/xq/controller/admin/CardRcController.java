@@ -1,5 +1,7 @@
 package com.xq.controller.admin;
 
+import com.xq.annotation.RequireRole;
+import com.xq.constant.UserRoleConstant;
 import com.xq.result.Result;
 import com.xq.service.CardRcService;
 import jakarta.validation.constraints.NotNull;
@@ -12,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
  */
 @RestController("AdminCardRcController")
 @RequestMapping("/admin/card-rc")
+@RequireRole(UserRoleConstant.ADMIN)
 @Slf4j
 public class CardRcController {
 

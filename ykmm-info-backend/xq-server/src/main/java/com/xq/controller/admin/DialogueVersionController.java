@@ -1,5 +1,7 @@
 package com.xq.controller.admin;
 
+import com.xq.annotation.RequireRole;
+import com.xq.constant.UserRoleConstant;
 import com.xq.dto.DialogueVersionPageQueryDTO;
 import com.xq.result.PageResult;
 import com.xq.result.Result;
@@ -16,6 +18,7 @@ import org.springframework.web.bind.annotation.*;
  */
 @RestController("AdminDialogueVersionController")
 @RequestMapping("/admin/dialogue-version")
+@RequireRole(UserRoleConstant.ADMIN)
 @Slf4j
 @Validated
 public class DialogueVersionController {

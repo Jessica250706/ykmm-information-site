@@ -69,6 +69,30 @@ public interface CardService {
     boolean canCreate(Long cardId);
 
     /**
+     * 断言当前用户可以对指定卡面进行写操作（新增/编辑话数）。
+     * <p>
+     * 规则：
+     * <ul>
+     *   <li>管理员：允许</li>
+     *   <li>普通用户：card.creator_id = 当前用户</li>
+     *   <li>游客：拒绝</li>
+     * </ul>
+     *
+     * @param cardId 卡面ID
+     * @throws com.xq.exception.ForbiddenException 无权操作
+     */
+    void assertWritable(Long cardId);
+
+    /**
+     * 用户在卡面下新增/编辑话数后，将卡面重新置为「待审核」。
+     * <p>
+     * 管理员操作时不改变卡面状态（管理员本身是审核人，无需自我审核）。
+     *
+     * @param cardId 卡面ID
+     */
+    void markPendingIfNeeded(Long cardId);
+
+    /**
      * 审核卡面
      *
      * @param id  卡面ID

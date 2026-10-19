@@ -1,5 +1,7 @@
 package com.xq.controller.admin;
 
+import com.xq.annotation.RequireRole;
+import com.xq.constant.UserRoleConstant;
 import com.xq.dto.MenuDTO;
 import com.xq.result.Result;
 import com.xq.service.MenuService;
@@ -12,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
  */
 @RestController("AdminMenuController")
 @RequestMapping("/admin/menu")
+@RequireRole(UserRoleConstant.ADMIN)
 @Slf4j
 public class MenuController {
 

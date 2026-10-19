@@ -1,5 +1,7 @@
 package com.xq.controller.admin;
 
+import com.xq.annotation.RequireRole;
+import com.xq.constant.UserRoleConstant;
 import com.xq.dto.IdolGroupDTO;
 import com.xq.result.Result;
 import com.xq.service.IdolGroupService;
@@ -13,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
  */
 @RestController("AdminIdolGroupController")
 @RequestMapping("/admin/idol-group")
+@RequireRole(UserRoleConstant.ADMIN)
 @Slf4j
 public class IdolGroupController {
 

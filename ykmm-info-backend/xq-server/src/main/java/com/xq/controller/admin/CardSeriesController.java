@@ -1,5 +1,7 @@
 package com.xq.controller.admin;
 
+import com.xq.annotation.RequireRole;
+import com.xq.constant.UserRoleConstant;
 import com.xq.dto.CardSeriesDTO;
 import com.xq.dto.CardSeriesPageQueryDTO;
 import com.xq.result.PageResult;
@@ -15,6 +17,7 @@ import org.springframework.web.bind.annotation.*;
  */
 @RestController("AdminCardSeriesController")
 @RequestMapping("/admin/card-series")
+@RequireRole(UserRoleConstant.ADMIN)
 @Slf4j
 public class CardSeriesController {
 

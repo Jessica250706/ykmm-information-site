@@ -2,11 +2,11 @@ package com.xq.service.impl;
 
 import com.xq.context.BaseContext;
 import com.xq.dto.CardRtvDTO;
-import com.xq.entity.CardRc;
 import com.xq.entity.CardRtv;
 import com.xq.exception.ForbiddenException;
 import com.xq.mapper.CardRtvMapper;
 import com.xq.service.CardRtvService;
+import com.xq.service.CardService;
 import com.xq.vo.CardRtvVO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
@@ -26,6 +26,8 @@ public class CardRtvServiceImpl implements CardRtvService {
 
     @Autowired
     private CardRtvMapper cardRtvMapper;
+    @Autowired
+    private CardService cardService;
 
     /**
      * 查询卡面下的 RTV 列表
@@ -75,10 +77,15 @@ public class CardRtvServiceImpl implements CardRtvService {
     @Override
     @Transactional
     public Long create(CardRtvDTO dto) {
+        cardService.assertWritable(dto.getCardId());
+
         CardRtv rtv = new CardRtv();
         BeanUtils.copyProperties(dto, rtv);
         rtv.setCreatorId(BaseContext.getCurrentId());
         cardRtvMapper.insert(rtv);
+
+        cardService.markPendingIfNeeded(dto.getCardId());
+
         log.info("新增卡面 RTV 成功，id={}", rtv.getId());
         return rtv.getId();
     }
@@ -92,11 +99,18 @@ public class CardRtvServiceImpl implements CardRtvService {
     @Override
     @Transactional
     public void update(Long id, CardRtvDTO dto) {
-        checkOperable(id);
+        CardRtv exist = checkOperable(id);
+        cardService.assertWritable(exist.getCardId());
+
         CardRtv rtv = new CardRtv();
         BeanUtils.copyProperties(dto, rtv);
         rtv.setId(id);
+        rtv.setCardId(exist.getCardId());  // 防止越权迁移
+
         cardRtvMapper.update(rtv);
+
+        cardService.markPendingIfNeeded(exist.getCardId());
+
         log.info("编辑卡面 RTV 成功，id={}", id);
     }
 
@@ -135,7 +149,7 @@ public class CardRtvServiceImpl implements CardRtvService {
      * @throws RuntimeException 资源不存在
      * @throws ForbiddenException 无权操作
      */
-    private void checkOperable(Long id) {
+    private CardRtv checkOperable(Long id) {
         if (id == null) {
             throw new RuntimeException("RTV ID不能为空");
         }
@@ -147,5 +161,6 @@ public class CardRtvServiceImpl implements CardRtvService {
         if (!Boolean.TRUE.equals(can)) {
             throw new ForbiddenException("无权操作该 RTV");
         }
+        return exist;
     }
 }

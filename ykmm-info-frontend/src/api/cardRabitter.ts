@@ -17,18 +17,20 @@ export const getCardRabitterDetailAPI = (id: number) => {
   return request.get<CardRabitterVO>(`/pub/card-rabitter/${id}`)
 }
 
+// ---------- 用户 ----------
+
 /**
  * @description: 新增 Rabitter
  */
 export const createCardRabitterAPI = (data: CardRabitterDTO) => {
-  return request.post<number>('/pub/card-rabitter', data)
+  return request.post<number>('/user/card-rabitter', data)
 }
 
 /**
  * @description: 编辑 Rabitter
  */
 export const updateCardRabitterAPI = (id: number, data: CardRabitterDTO) => {
-  return request.put(`/pub/card-rabitter/${id}`, data)
+  return request.put(`/user/card-rabitter/${id}`, data)
 }
 
 // ---------- 管理员 ----------

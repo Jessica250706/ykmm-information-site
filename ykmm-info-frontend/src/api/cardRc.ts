@@ -17,18 +17,20 @@ export const getCardRcDetailAPI = (id: number) => {
   return request.get<CardRcVO>(`/pub/card-rc/${id}`)
 }
 
+// ---------- 用户 ----------
+
 /**
  * @description: 新增 RC
  */
 export const createCardRcAPI = (data: CardRcDTO) => {
-  return request.post<number>('/pub/card-rc', data)
+  return request.post<number>('/user/card-rc', data)
 }
 
 /**
  * @description: 编辑 RC
  */
 export const updateCardRcAPI = (id: number, data: CardRcDTO) => {
-  return request.put(`/pub/card-rc/${id}`, data)
+  return request.put(`/user/card-rc/${id}`, data)
 }
 
 // ---------- 管理员 ----------

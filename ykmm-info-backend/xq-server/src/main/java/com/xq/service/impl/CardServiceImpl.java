@@ -383,6 +383,45 @@ public class CardServiceImpl implements CardService {
     }
 
     /**
+     * 断言当前用户可以对指定卡面进行写操作
+     */
+    @Override
+    public void assertWritable(Long cardId) {
+        if (cardId == null) {
+            throw new RuntimeException("卡面ID不能为空");
+        }
+        Card card = cardMapper.getById(cardId);
+        if (card == null) {
+            throw new RuntimeException("卡面不存在");
+        }
+        if (!canCreate(cardId)) {
+            throw new ForbiddenException("无权操作该卡面下的内容");
+        }
+    }
+
+    /**
+     * 用户修改内容后，将卡面重新置为待审核；管理员操作不改变状态
+     */
+    @Override
+    @Transactional
+    public void markPendingIfNeeded(Long cardId) {
+        if (cardId == null) {
+            return;
+        }
+        // 管理员：不改变状态
+        if (RoleContext.isAdmin()) {
+            return;
+        }
+        // 游客：理论上已被 assertWritable 拦截，这里兜底
+        if (RoleContext.isGuest()) {
+            return;
+        }
+        // 普通用户：置为待审核，并清空上一次的审核记录
+        cardMapper.markPending(cardId);
+        log.info("用户修改卡面下的内容，卡面回到待审核状态，cardId={}, userId={}", cardId, BaseContext.getCurrentId());
+    }
+
+    /**
      * 审核卡面
      * <p>
      * 规则：

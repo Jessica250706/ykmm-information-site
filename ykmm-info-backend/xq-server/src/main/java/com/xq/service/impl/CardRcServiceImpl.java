@@ -7,6 +7,7 @@ import com.xq.enums.DialogueSideEnum;
 import com.xq.exception.ForbiddenException;
 import com.xq.mapper.CardRcMapper;
 import com.xq.service.CardRcService;
+import com.xq.service.CardService;
 import com.xq.vo.CardRcVO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
@@ -25,6 +26,8 @@ public class CardRcServiceImpl implements CardRcService {
 
     @Autowired
     private CardRcMapper cardRcMapper;
+    @Autowired
+    private CardService cardService;
 
     /**
      * 查询卡面下的 RC 列表
@@ -61,10 +64,17 @@ public class CardRcServiceImpl implements CardRcService {
     @Override
     @Transactional
     public Long create(CardRcDTO dto) {
+        // 1. 权限校验：仅管理员或卡面创建者可写
+        cardService.assertWritable(dto.getCardId());
+
         CardRc rc = new CardRc();
         BeanUtils.copyProperties(dto, rc);
         rc.setCreatorId(BaseContext.getCurrentId());
         cardRcMapper.insert(rc);
+
+        // 2. 用户操作 → 卡面回到待审核；管理员操作不变
+        cardService.markPendingIfNeeded(dto.getCardId());
+
         log.info("新增卡面 RC 成功，id={}", rc.getId());
         return rc.getId();
     }
@@ -75,11 +85,22 @@ public class CardRcServiceImpl implements CardRcService {
     @Override
     @Transactional
     public void update(Long id, CardRcDTO dto) {
-        checkOperable(id);
+        CardRc exist = checkOperable(id);
+
+        // 1. 权限校验：以「卡面归属」为准，而不是 RC 归属
+        cardService.assertWritable(exist.getCardId());
+
         CardRc rc = new CardRc();
         BeanUtils.copyProperties(dto, rc);
         rc.setId(id);
+        // 强制保持原卡面归属，防止通过编辑把 RC 挪到别人的卡面下
+        rc.setCardId(exist.getCardId());
+
         cardRcMapper.update(rc);
+
+        // 2. 用户操作 → 卡面回到待审核
+        cardService.markPendingIfNeeded(exist.getCardId());
+
         log.info("编辑卡面 RC 成功，id={}", id);
     }
 
@@ -126,7 +147,7 @@ public class CardRcServiceImpl implements CardRcService {
      * @throws RuntimeException 资源不存在
      * @throws ForbiddenException 无权操作
      */
-    private void checkOperable(Long id) {
+    private CardRc checkOperable(Long id) {
         if (id == null) {
             throw new RuntimeException("RC ID不能为空");
         }
@@ -138,5 +159,6 @@ public class CardRcServiceImpl implements CardRcService {
         if (!Boolean.TRUE.equals(can)) {
             throw new ForbiddenException("无权操作该 RC");
         }
+        return exist;
     }
 }

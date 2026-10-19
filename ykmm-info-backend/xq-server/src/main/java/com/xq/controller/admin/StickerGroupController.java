@@ -1,5 +1,7 @@
 package com.xq.controller.admin;
 
+import com.xq.annotation.RequireRole;
+import com.xq.constant.UserRoleConstant;
 import com.xq.dto.StickerGroupDTO;
 import com.xq.dto.StickerGroupPageQueryDTO;
 import com.xq.result.PageResult;
@@ -18,6 +20,7 @@ import org.springframework.web.bind.annotation.*;
  */
 @RestController("AdminStickerGroupController")
 @RequestMapping("/admin/sticker-group")
+@RequireRole(UserRoleConstant.ADMIN)
 @RequiredArgsConstructor
 @Validated
 public class StickerGroupController {

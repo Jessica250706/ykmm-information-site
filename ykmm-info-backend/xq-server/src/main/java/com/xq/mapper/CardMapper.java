@@ -48,4 +48,11 @@ public interface CardMapper {
      * 判断同名卡面是否存在
      */
     int countByName(@Param("name") String name, @Param("excludeId") Long excludeId);
+
+    /**
+     * 将卡面置为待审核，并清空上一次审核记录
+     *
+     * @param id 卡面ID
+     */
+    void markPending(@Param("id") Long id);
 }

@@ -1,5 +1,7 @@
 package com.xq.controller.admin;
 
+import com.xq.annotation.RequireRole;
+import com.xq.constant.UserRoleConstant;
 import com.xq.dto.StoryCategoryTypeDTO;
 import com.xq.result.Result;
 import com.xq.service.StoryCategoryTypeService;
@@ -13,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
  */
 @RestController("AdminStoryCategoryTypeController")
 @RequestMapping("/admin/story-category-type")
+@RequireRole(UserRoleConstant.ADMIN)
 @Slf4j
 public class StoryCategoryTypeController {
 
