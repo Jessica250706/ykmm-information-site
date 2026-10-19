@@ -21,12 +21,12 @@
         v-model="keyword"
         :prefix-icon="Search"
         placeholder="搜索卡面"
-        style="width: 256px"
+        style="width: 320px"
         clearable
         @clear="handleSearch"
         @keyup.enter="handleSearch"
       />
-      <el-button v-if="isLogin" type="primary" plain @click="handleCreate">
+      <el-button v-if="isLogin" type="primary" @click="handleCreate">
         <el-icon class="mr-1"><Plus /></el-icon>
         新增卡面
       </el-button>

@@ -46,6 +46,17 @@
         </el-select>
       </el-form-item>
 
+      <el-form-item label="状态">
+        <el-select v-model="query.status" placeholder="全部" style="width: 120px" clearable>
+          <el-option
+            v-for="opt in STATUS_OPTIONS"
+            :key="opt.value"
+            :label="opt.label"
+            :value="opt.value"
+          />
+        </el-select>
+      </el-form-item>
+
       <el-form-item label="人物">
         <el-select
           v-model="query.personId"
@@ -194,6 +205,7 @@ import {
   cardAttachedStoryTypeTagLabel,
   cardAttributeLabel,
   cardMaxRarityLabel,
+  STATUS_OPTIONS,
   statusLabel,
   UserRouteName,
 } from '@/constants'
@@ -219,12 +231,14 @@ const query = reactive<{
   seriesId?: number
   maxRarity?: number
   attribute?: number
+  status?: number
   personId?: number
 }>({
   keyword: '',
   seriesId: undefined,
   maxRarity: undefined,
   attribute: undefined,
+  status: undefined,
   personId: undefined,
 })
 
@@ -266,6 +280,7 @@ function handleSearch() {
     seriesId: query.seriesId ?? undefined,
     maxRarity: query.maxRarity ?? undefined,
     attribute: query.attribute ?? undefined,
+    status: query.status ?? undefined,
     personId: query.personId ?? undefined,
   })
 }
@@ -275,6 +290,7 @@ function handleReset() {
   query.seriesId = undefined
   query.maxRarity = undefined
   query.attribute = undefined
+  query.status = undefined
   query.personId = undefined
   tableRef.value?.reset()
 }
