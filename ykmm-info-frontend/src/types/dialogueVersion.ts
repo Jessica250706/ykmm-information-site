@@ -1,6 +1,7 @@
 import type { PageRequest } from './common'
 import type { DialogueImageVO } from './dialogueImage'
 import type { DialogueLineVO } from './dialogueLine'
+import type { DialogueVersionContributorVO } from './dialogueVersionContributor'
 
 export interface DialogueVersionPageQueryDTO extends PageRequest {
   /**
@@ -119,6 +120,17 @@ export interface DialogueVersionDTO {
  */
 export interface DialogueVersionOptionVO {
   /**
+   * 当前用户能否修改
+   */
+  canOperate?: boolean
+  /**
+   * 贡献者列表；版本不存在时为空列表。
+   * <p>
+   * 每项含 displayName（有账号优先取昵称，无账号取 contributorName）、
+   * contributorRole（1内容作者 2代传管理员 3协作者）等。
+   */
+  contributors?: DialogueVersionContributorVO[]
+  /**
    * 是否已存在
    */
   exists?: boolean
@@ -151,12 +163,16 @@ export interface DialogueVersionOptionVO {
    */
   scopeLabel?: string
   /**
+   * 版本状态：1已发布 2待审核 3已拒绝；版本不存在时为 null
+   */
+  status?: number
+  /**
+   * 版本状态标签；版本不存在时为 null
+   */
+  statusLabel?: string
+  /**
    * 版本ID，当前来源下不存在时为 null
    */
   versionId?: number
-  /**
-   * 当前用户能否修改
-   */
-  canOperate?: boolean
   [property: string]: any
 }

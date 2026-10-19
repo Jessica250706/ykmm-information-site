@@ -266,32 +266,49 @@ public class DialogueVersionServiceImpl implements DialogueVersionService {
         List<DialogueVersion> existed = dialogueVersionMapper.listBySourceIds(
                 sourceType, List.of(sourceId), statusFilter, viewerId);
 
-        // 建索引：language + format + scope -> versionId
-        Map<String, Long> existedMap = new HashMap<>();
+        // 建索引：language + format + scope -> 版本实体
+        Map<String, DialogueVersion> existedMap = new HashMap<>();
         if (existed != null) {
             for (DialogueVersion v : existed) {
-                existedMap.put(keyOf(v.getLanguage(), v.getFormat(), v.getScope()), v.getId());
+                existedMap.put(keyOf(v.getLanguage(), v.getFormat(), v.getScope()), v);
             }
         }
 
         // 预计算：当前用户可编辑的版本ID集合
         Set<Long> editableVersionIds = resolveEditableVersionIds(existed);
 
+        // 批量查询所有已存在版本的贡献者（一次查询，避免循环内 N+1）
+        Map<Long, List<DialogueVersionContributorVO>> contributorsMap = Collections.emptyMap();
+        if (existed != null && !existed.isEmpty()) {
+            List<Long> versionIds = existed.stream()
+                    .map(DialogueVersion::getId)
+                    .filter(Objects::nonNull)
+                    .toList();
+            if (!versionIds.isEmpty()) {
+                List<DialogueVersionContributorVO> allContributors =
+                        dialogueVersionContributorMapper.listByVersionIds(versionIds);
+                if (allContributors != null && !allContributors.isEmpty()) {
+                    contributorsMap = allContributors.stream()
+                            .collect(Collectors.groupingBy(DialogueVersionContributorVO::getVersionId));
+                }
+            }
+        }
+
         // 是否游客：游客只返回已存在的版本，不展示"可创建"的空选项
         boolean guest = RoleContext.isGuest();
 
-        // 枚举所有组合
         List<DialogueVersionOptionVO> result = new ArrayList<>();
         for (DialogueLanguageEnum lang : DialogueLanguageEnum.values()) {
             for (DialogueScopeEnum scope : DialogueScopeEnum.values()) {
                 for (DialogueFormatEnum format : DialogueFormatEnum.values()) {
                     if (!formats.contains(format)) continue;
 
-                    Long versionId = existedMap.get(
+                    DialogueVersion matched = existedMap.get(
                             keyOf(lang.getValue(), format.getValue(), scope.getValue()));
+                    Long versionId = matched != null ? matched.getId() : null;
 
-                    // 游客：跳过不存在的组合，只返回真实已有的版本
-                    if (guest && versionId == null) continue;
+                    // 游客：跳过不存在的组合
+                    if (guest && matched == null) continue;
 
                     DialogueVersionOptionVO vo = new DialogueVersionOptionVO();
                     vo.setLanguage(lang.getValue());
@@ -304,9 +321,19 @@ public class DialogueVersionServiceImpl implements DialogueVersionService {
                             + " · " + scope.getLabel());
 
                     vo.setVersionId(versionId);
-                    vo.setExists(versionId != null);
+                    vo.setExists(matched != null);
                     // 版本不存在时无内容可改，恒为 false
-                    vo.setCanOperate(versionId != null && editableVersionIds.contains(versionId));
+                    vo.setCanOperate(matched != null && editableVersionIds.contains(versionId));
+
+                    // 状态 + 贡献者
+                    if (matched != null) {
+                        vo.setStatus(matched.getStatus());
+                        vo.setStatusLabel(StatusEnum.getLabel(matched.getStatus()));
+                        vo.setContributors(contributorsMap.getOrDefault(versionId, Collections.emptyList()));
+                    } else {
+                        // 不存在的组合：状态为 null，贡献者为空列表
+                        vo.setContributors(Collections.emptyList());
+                    }
 
                     result.add(vo);
                 }

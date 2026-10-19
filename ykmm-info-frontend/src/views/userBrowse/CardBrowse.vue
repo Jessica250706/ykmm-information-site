@@ -21,7 +21,7 @@
       :can-edit="canEditCurrent"
       :card-detail="episodeDetail"
       :card-name="cardName"
-      :class="showEditPanel ? 'flex-1 max-w-1/2' : 'flex-1 max-w-3xl'"
+      :class="showEditPanel ? 'flex-1 max-w-1/2' : 'flex-1 max-w-3/7'"
       :color="color"
       :current-category="null"
       :editing-line-id="editingLineId"

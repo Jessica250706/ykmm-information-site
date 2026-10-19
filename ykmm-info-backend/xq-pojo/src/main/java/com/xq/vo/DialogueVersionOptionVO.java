@@ -5,6 +5,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 /**
  * 对话版本选项（供下拉框使用）
  */
@@ -53,4 +55,19 @@ public class DialogueVersionOptionVO {
      * 当前用户能否修改
      */
     private Boolean canOperate;
+    /**
+     * 版本状态：1已发布 2待审核 3已拒绝；版本不存在时为 null
+     */
+    private Integer status;
+    /**
+     * 版本状态标签；版本不存在时为 null
+     */
+    private String statusLabel;
+    /**
+     * 贡献者列表；版本不存在时为空列表。
+     * <p>
+     * 每项含 displayName（有账号优先取昵称，无账号取 contributorName）、
+     * contributorRole（1内容作者 2代传管理员 3协作者）等。
+     */
+    private List<DialogueVersionContributorVO> contributors;
 }

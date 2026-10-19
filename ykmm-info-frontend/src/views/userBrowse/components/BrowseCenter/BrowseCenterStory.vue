@@ -38,7 +38,7 @@
     />
 
     <!-- 版本选择 -->
-    <div class="mb-4 flex items-center gap-2 shrink-0">
+    <div class="mb-3 flex items-center gap-2 shrink-0">
       <span class="text-xs text-slate-500 shrink-0">版本：</span>
       <el-select
         :model-value="selectedVersionKey"
@@ -95,6 +95,9 @@
         class="scroll-shadow-bottom pointer-events-none absolute inset-x-0 bottom-0 h-6 transition-opacity duration-200"
       />
     </div>
+
+    <!-- 状态 + 贡献者 -->
+    <VersionMetaBar :option="currentOptionVersion" class="mt-3 shrink-0" />
   </div>
 </template>
 
@@ -109,6 +112,7 @@ import type { StoryDetailVO } from '@/types/story'
 import type { VersionSelectItem } from '@/views/userBrowse/composables/useVersionSelection'
 import BrowseHeader from './BrowseHeader.vue'
 import DialogueView from './DialogueView.vue'
+import VersionMetaBar from './VersionMetaBar.vue'
 
 /* -------- Props / Emits -------- */
 
