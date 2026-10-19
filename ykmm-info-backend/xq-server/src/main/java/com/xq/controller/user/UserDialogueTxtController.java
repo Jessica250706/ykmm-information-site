@@ -30,7 +30,7 @@ public class UserDialogueTxtController {
     @PostMapping("/parse/{versionId}")
     public Result<DialogueTxtParseVO> parseTxt(
             @PathVariable @NotNull(message = "版本ID不能为空") Long versionId,
-            @RequestParam("file") @NotEmpty(message = "文件不能为空") MultipartFile file
+            @RequestParam("file") @NotNull(message = "文件不能为空") MultipartFile file
     ) {
         return Result.success(dialogueTxtService.parseTxt(versionId, file));
     }
@@ -40,7 +40,7 @@ public class UserDialogueTxtController {
      */
     @PostMapping("/import/{versionId}")
     public Result<Void> importParsed(@PathVariable @NotNull(message = "版本ID不能为空") Long versionId,
-                                     @RequestBody @NotEmpty(message = "导入内容不能为空") DialogueTxtImportDTO dto) {
+                                     @RequestBody @NotNull(message = "导入内容不能为空") DialogueTxtImportDTO dto) {
         dialogueTxtService.importParsed(versionId, dto);
         return Result.success();
     }
