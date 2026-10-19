@@ -15,7 +15,7 @@ import java.util.List;
 @RestController("PubCardSeriesController")
 @RequestMapping("/pub/card-series")
 @Slf4j
-public class PubCardSeriesController {
+public class PublicCardSeriesController {
 
     @Autowired
     private CardSeriesService cardSeriesService;

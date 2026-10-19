@@ -10,6 +10,7 @@ import com.xq.context.RoleContext;
 import com.xq.dto.CardDTO;
 import com.xq.dto.CardImageDTO;
 import com.xq.dto.CardPageQueryDTO;
+import com.xq.dto.CardReviewDTO;
 import com.xq.entity.*;
 import com.xq.enums.*;
 import com.xq.exception.ForbiddenException;
@@ -25,6 +26,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -378,6 +380,67 @@ public class CardServiceImpl implements CardService {
             return false;
         }
         return userId.equals(card.getCreatorId());
+    }
+
+    /**
+     * 审核卡面
+     * <p>
+     * 规则：
+     * <ul>
+     *   <li>仅管理员可操作</li>
+     *   <li>仅 PENDING（待审核）状态可审核</li>
+     *   <li>审核结果只允许「通过 1 / 拒绝 3」</li>
+     *   <li>拒绝时必须填写审核备注</li>
+     * </ul>
+     */
+    @Override
+    @Transactional
+    public void review(Long id, CardReviewDTO dto) {
+        // 1. 身份校验
+        if (RoleContext.isGuest()) {
+            throw new UnauthorizedException("请先登录");
+        }
+        if (!RoleContext.isAdmin()) {
+            throw new ForbiddenException("只有管理员才能审核卡面");
+        }
+
+        // 2. 参数校验
+        if (dto == null || dto.getStatus() == null) {
+            throw new RuntimeException("审核状态不能为空");
+        }
+        Integer targetStatus = dto.getStatus();
+        boolean pass = StatusEnum.PUBLISHED.getValue().equals(targetStatus);
+        boolean reject = StatusEnum.REJECTED.getValue().equals(targetStatus);
+        if (!pass && !reject) {
+            throw new RuntimeException("审核状态只能为「已发布」或「已拒绝」");
+        }
+        String remark = dto.getReviewRemark();
+        if (reject && (remark == null || remark.isBlank())) {
+            throw new RuntimeException("拒绝时必须填写审核备注");
+        }
+
+        // 3. 存在性 + 状态检查
+        Card exist = cardMapper.getById(id);
+        if (exist == null) {
+            throw new RuntimeException("卡面不存在");
+        }
+        if (!StatusEnum.PENDING.getValue().equals(exist.getStatus())) {
+            throw new RuntimeException("当前卡面不是待审核状态，无法审核");
+        }
+
+        // 4. 更新审核字段
+        Card update = new Card();
+        update.setId(id);
+        update.setStatus(targetStatus);
+        update.setReviewerId(BaseContext.getCurrentId());
+        update.setReviewTime(LocalDateTime.now());
+        // 通过时若未填备注，显式写空串，避免把上一次「已拒绝」遗留的备注带出来
+        update.setReviewRemark(remark == null ? "" : remark.trim());
+
+        cardMapper.update(update);
+
+        log.info("审核卡面成功，id={}, status={}, reviewerId={}, remark={}",
+                id, targetStatus, BaseContext.getCurrentId(), update.getReviewRemark());
     }
 
     /* ---------------- 私有方法 ---------------- */

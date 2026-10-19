@@ -1,18 +1,17 @@
 package com.xq.controller.admin;
 
+import com.xq.dto.CardReviewDTO;
 import com.xq.result.Result;
 import com.xq.service.CardService;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 /**
- * 管理端 - 卡面浏览
+ * 卡面管理
  */
 @RestController("AdminCardController")
 @RequestMapping("/admin/card")
@@ -32,6 +31,22 @@ public class CardController {
     @DeleteMapping("/{id}")
     public Result<Void> delete(@PathVariable @NotNull(message = "卡面ID不能为空") Long id) {
         cardService.delete(id);
+        return Result.success();
+    }
+
+    /**
+     * 审核卡面
+     *
+     * @param id  卡面ID
+     * @param dto 审核参数
+     * @return 统一返回
+     */
+    @PostMapping("/{id}/review")
+    public Result<Void> review(
+            @PathVariable @NotNull(message = "卡面ID不能为空") Long id,
+            @RequestBody @Valid CardReviewDTO dto
+    ) {
+        cardService.review(id, dto);
         return Result.success();
     }
 }

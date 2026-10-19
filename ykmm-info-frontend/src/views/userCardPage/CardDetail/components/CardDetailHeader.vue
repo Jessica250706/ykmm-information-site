@@ -10,6 +10,16 @@
 
     <div class="flex items-center gap-2">
       <div v-if="canOperate" class="flex gap-1">
+        <el-button
+          v-if="isAdmin && card?.status === STATUS.PENDING"
+          type="warning"
+          plain
+          @click="emit('review')"
+        >
+          <el-icon class="mr-1"><Checked /></el-icon>
+          审核
+        </el-button>
+
         <el-button type="primary" plain @click="emit('edit')">
           <el-icon class="mr-1"><Edit /></el-icon>
           编辑卡面
@@ -51,12 +61,13 @@
 </template>
 
 <script setup lang="ts">
-import { Plus } from '@element-plus/icons-vue'
+import { Checked, Edit, Plus } from '@element-plus/icons-vue'
 import {
   cardMaxRarityLabel,
   SOURCE_TYPE,
   SOURCE_TYPE_SMALL_LABEL,
   type SourceTypeSmallLabelValue,
+  STATUS,
 } from '@/constants'
 import type { CardVO } from '@/types/card'
 import { getCardRarityTagType } from '@/utils'
@@ -67,6 +78,8 @@ defineProps<{
   isList: boolean
   /** 当前用户能否编辑此卡面（管理员或创建者） */
   canOperate: boolean
+  /** 当前用户是否为管理员 */
+  isAdmin: boolean
 }>()
 
 const emit = defineEmits<{
@@ -74,5 +87,6 @@ const emit = defineEmits<{
   goto: []
   addEpisode: [mode: SourceTypeSmallLabelValue]
   edit: []
+  review: []
 }>()
 </script>

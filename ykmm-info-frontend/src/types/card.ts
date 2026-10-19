@@ -1,4 +1,5 @@
 import type { PageRequest } from './common'
+import { STATUS } from '@/constants'
 
 export interface CardPageQueryDTO extends PageRequest {
   /**
@@ -547,5 +548,24 @@ export interface RcOptionVO {
    * 版本ID
    */
   versionId?: number
+  [property: string]: any
+}
+
+export type CardReviewStatus = typeof STATUS.PUBLISHED | typeof STATUS.REJECTED
+
+/**
+ * 审核参数
+ */
+export interface CardReviewDTO {
+  /**
+   * 审核备注（拒绝时必填；通过时可选，用于留痕）
+   */
+  reviewRemark?: string
+  /**
+   * 审核结果：
+   * 1 - 通过（已发布）
+   * 3 - 拒绝（已拒绝）
+   */
+  status: CardReviewStatus
   [property: string]: any
 }

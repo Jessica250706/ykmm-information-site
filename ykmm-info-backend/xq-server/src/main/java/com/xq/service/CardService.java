@@ -2,6 +2,7 @@ package com.xq.service;
 
 import com.xq.dto.CardDTO;
 import com.xq.dto.CardPageQueryDTO;
+import com.xq.dto.CardReviewDTO;
 import com.xq.result.PageResult;
 import com.xq.vo.CardEpisodeVO;
 import com.xq.vo.CardVO;
@@ -66,4 +67,12 @@ public interface CardService {
      * @return true 表示可以新增
      */
     boolean canCreate(Long cardId);
+
+    /**
+     * 审核卡面
+     *
+     * @param id  卡面ID
+     * @param dto 审核参数（通过 / 拒绝 + 备注）
+     */
+    void review(Long id, CardReviewDTO dto);
 }

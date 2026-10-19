@@ -162,6 +162,15 @@
 
         <!-- 操作 -->
         <template #action="{ row }">
+          <el-button
+            v-if="row.status === STATUS.PENDING"
+            size="small"
+            type="warning"
+            link
+            @click="handleReview(row)"
+          >
+            审核
+          </el-button>
           <el-button size="small" type="primary" link @click="handleDetail(row)">详情</el-button>
           <el-button size="small" type="primary" link @click="handleEdit(row)">编辑</el-button>
           <el-dropdown trigger="click">
@@ -180,6 +189,7 @@
         </template>
       </ProTable>
     </el-card>
+    <ReviewCardDialog ref="reviewDialogRef" @success="handleReviewSuccess" />
   </div>
 </template>
 
@@ -205,6 +215,7 @@ import {
   cardAttachedStoryTypeTagLabel,
   cardAttributeLabel,
   cardMaxRarityLabel,
+  STATUS,
   STATUS_OPTIONS,
   statusLabel,
   UserRouteName,
@@ -219,6 +230,7 @@ import {
   getStatusTagType,
   personTagStyle,
 } from '@/utils'
+import ReviewCardDialog from './components/ReviewCardDialog.vue'
 
 const router = useRouter()
 const personStore = usePersonStore()
@@ -243,15 +255,16 @@ const query = reactive<{
 })
 
 const seriesOptions = ref<CardSeriesVO[]>([])
+const reviewDialogRef = ref<InstanceType<typeof ReviewCardDialog> | null>(null)
 
 const columns: ProTableColumn<CardVO>[] = [
   { label: '封面', width: 100, align: 'center', slot: 'cover', fixed: 'left' },
   { label: '名称', minWidth: 200, slot: 'name', fixed: 'left' },
+  { label: '状态', width: 100, align: 'center', slot: 'status' },
   { label: '最高等级', width: 110, align: 'center', slot: 'maxRarity' },
   { label: '属性', width: 110, align: 'center', slot: 'attribute' },
   { label: '人物', minWidth: 200, align: 'center', slot: 'persons' },
   { label: '附属剧情', width: 120, align: 'center', slot: 'attachedStoryType' },
-  { label: '状态', width: 100, align: 'center', slot: 'status' },
   {
     label: '首次入池',
     prop: 'firstPoolTime',
@@ -259,7 +272,7 @@ const columns: ProTableColumn<CardVO>[] = [
     align: 'center',
     showOverflowTooltip: true,
   },
-  { label: '操作', width: 180, align: 'center', fixed: 'right', slot: 'action', displayFlex: true },
+  { label: '操作', width: 220, align: 'center', fixed: 'right', slot: 'action', displayFlex: true },
 ]
 
 /* -------- 请求适配 -------- */
@@ -347,6 +360,15 @@ async function handleDelete(row: CardVO) {
 
   await deleteCardAPI(row.id!)
   ElMessage.success('删除成功')
+  await tableRef.value?.refresh()
+}
+
+/* -------- 审核 -------- */
+function handleReview(row: CardVO) {
+  reviewDialogRef.value?.open(row)
+}
+
+async function handleReviewSuccess() {
   await tableRef.value?.refresh()
 }
 

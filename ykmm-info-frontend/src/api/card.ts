@@ -3,6 +3,7 @@ import type {
   CardEpisodeDialogueDTO,
   CardEpisodeVO,
   CardPageQueryDTO,
+  CardReviewDTO,
   CardVO,
 } from '@/types/card'
 import type { PageResult } from '@/types/common'
@@ -61,4 +62,11 @@ export const updateCardAPI = (id: number, data: CardDTO) => {
  */
 export const deleteCardAPI = (id: number) => {
   return request.delete(`/admin/card/${id}`)
+}
+
+/**
+ * @description: 审核卡面
+ */
+export function reviewCardAPI(id: number, data: CardReviewDTO) {
+  return request.post(`/admin/card/${id}/review`, data)
 }

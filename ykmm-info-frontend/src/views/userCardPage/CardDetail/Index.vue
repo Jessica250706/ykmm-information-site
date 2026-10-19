@@ -4,11 +4,13 @@
       :attached-type="attachedType"
       :can-operate="canOperate"
       :card="card"
+      :is-admin="isAdmin"
       :is-list="isList"
       @add-episode="handleAddEpisode"
       @back="handleBack"
       @edit="handleEditCard"
       @goto="handleGoto"
+      @review="handleReviewCard"
     />
 
     <div v-if="card" class="grid min-h-0 flex-1 grid-cols-1 gap-6 lg:grid-cols-[1fr_320px]">
@@ -70,6 +72,7 @@
       :saving="episodeSaving"
       @submit="handleSubmitEpisode"
     />
+    <ReviewCardDialog ref="reviewDialogRef" @success="handleReviewSuccess" />
   </section>
 </template>
 
@@ -85,8 +88,10 @@ import {
   type SourceTypeSmallLabelValue,
   UserRouteName,
 } from '@/constants'
+import { useUserStore } from '@/stores'
 import type { CardRcVO } from '@/types/cardRc'
 import type { CardRtvVO } from '@/types/cardRtv'
+import ReviewCardDialog from '@/views/adminContent/cardManage/components/ReviewCardDialog.vue'
 import AddEpisodeDialog, { type EpisodeFormData } from './components/AddEpisodeDialog.vue'
 import CardBasicInfo from './components/CardBasicInfo.vue'
 import CardDetailHeader from './components/CardDetailHeader.vue'
@@ -99,6 +104,8 @@ import { useEpisodeManagement } from './composables/useEpisodeManagement'
 
 const route = useRoute()
 const router = useRouter()
+
+const { isAdmin } = useUserStore()
 
 const cardId = computed(() => Number(route.params.id ?? 0))
 
@@ -159,6 +166,17 @@ async function handleSubmitEpisode(payload: {
   } finally {
     episodeSaving.value = false
   }
+}
+
+const reviewDialogRef = ref<InstanceType<typeof ReviewCardDialog> | null>(null)
+
+function handleReviewCard() {
+  if (card.value) reviewDialogRef.value?.open(card.value)
+}
+
+/** 审核完成后重新加载详情，状态会同步刷新 */
+async function handleReviewSuccess() {
+  await load(cardId.value)
 }
 
 /* -------- 查看 / 删除 -------- */
