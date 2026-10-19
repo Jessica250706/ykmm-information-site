@@ -4,8 +4,8 @@
     <div class="mb-3 flex shrink-0 items-center gap-3">
       <el-select
         v-model="statusFilter"
-        class="w-32"
         placeholder="全部状态"
+        style="width: 320px"
         clearable
         @change="reload"
       >

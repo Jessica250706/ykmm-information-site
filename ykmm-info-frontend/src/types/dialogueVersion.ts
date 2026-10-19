@@ -1,6 +1,7 @@
 import type { PageRequest } from './common'
 import type { DialogueImageVO } from './dialogueImage'
 import type { DialogueLineVO } from './dialogueLine'
+import type { RcOptionVO } from './card'
 import type { DialogueVersionContributorVO } from './dialogueVersionContributor'
 
 export interface DialogueVersionPageQueryDTO extends PageRequest {
@@ -32,6 +33,10 @@ export interface DialogueVersionPageQueryDTO extends PageRequest {
  */
 export interface DialogueVersionVO {
   /**
+   * 贡献者列表
+   */
+  contributors?: DialogueVersionContributorVO[]
+  /**
    * 创建时间
    */
   createdAt?: string
@@ -49,10 +54,18 @@ export interface DialogueVersionVO {
   languageLabel?: string
   lines?: DialogueLineVO[]
   /**
+   * RC 选项列表
+   */
+  options?: RcOptionVO[]
+  /**
    * 1全部 2节选
    */
   scope?: number
   scopeLabel?: string
+  /**
+   * 来源展示信息（我的版本等场景使用）
+   */
+  source?: DialogueVersionSourceVO
   /**
    * 来源ID
    */
@@ -65,6 +78,53 @@ export interface DialogueVersionVO {
    * 来源类型标签
    */
   sourceTypeLabel?: string
+  /**
+   * 状态
+   */
+  status?: number
+  [property: string]: any
+}
+
+/**
+ * 来源展示信息（我的版本等场景使用）
+ */
+export interface DialogueVersionSourceVO {
+  /**
+   * 所属卡面ID（仅 card 类，便于前端跳转）
+   */
+  cardId?: number
+  /**
+   * 剧情分类类型（仅 story 类，便于前端拼路由 params.type）
+   */
+  categoryType?: number
+  /**
+   * 话数（仅 card 类）
+   */
+  episodeNo?: number
+  /**
+   * 话标题（仅 card 类）
+   */
+  episodeTitle?: string
+  /**
+   * 来源ID：card_rc.id / card_rtv.id / card_rabitter.id / story.id
+   */
+  sourceId?: number
+  /**
+   * 来源类型：1-RC 2-RTV 3-Rabitter 4-剧情
+   */
+  sourceType?: number
+  /**
+   * 副标题：
+   * - card 类：卡面系列名
+   * - story 类：剧情分类名
+   */
+  subtitle?: string
+  /**
+   * 主标题：
+   * - card 类：卡面名称
+   * - story 类：剧情话标题
+   */
+  title?: string
   [property: string]: any
 }
 

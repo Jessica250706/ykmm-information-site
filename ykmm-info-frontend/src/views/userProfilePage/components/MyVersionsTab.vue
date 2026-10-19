@@ -3,8 +3,8 @@
     <div class="mb-3 flex shrink-0 items-center gap-3">
       <el-select
         v-model="statusFilter"
-        class="w-32"
         placeholder="全部状态"
+        style="width: 320px"
         clearable
         @change="reload"
       >
@@ -27,21 +27,53 @@
           :key="v.id"
           class="flex items-center gap-3 rounded-lg border border-slate-200 px-3 py-2.5"
         >
-          <el-tag :type="getStatusTagType(v.status)" effect="plain">
+          <el-tag :type="getStatusTagType(v.status)" class="shrink-0" effect="plain">
             {{ statusLabel(v.status) }}
           </el-tag>
 
           <div class="min-w-0 flex-1">
+            <!-- 第一行：来源主标题 + 版本信息 -->
             <div class="flex flex-wrap items-center gap-2 text-sm">
+              <!-- 来源主标题：story=剧情标题；card=卡面名 [系列名] -->
               <span class="font-medium">
-                {{ v.label || `${v.languageLabel} · ${v.formatLabel} · ${v.scopeLabel}` }}
+                <template v-if="v.source?.sourceType === SOURCE_TYPE.STORY">
+                  {{ v.source.title || '剧情' }}
+                </template>
+                <template v-else-if="v.source">
+                  {{ v.source.title || '未知卡面' }}
+                  <span v-if="v.source.subtitle" class="text-slate-400">
+                    [{{ v.source.subtitle }}]
+                  </span>
+                </template>
+                <template v-else>来源已删除</template>
               </span>
+
               <el-tag effect="plain" size="small" type="info">
                 {{ v.sourceTypeLabel || '未知来源' }}
               </el-tag>
             </div>
+
+            <!-- 第二行：话标题（card 类）+ 版本信息 -->
+            <div class="mt-0.5 flex flex-wrap items-center gap-2 text-xs text-slate-500">
+              <!-- card 类：第X话 · 话标题 -->
+              <span v-if="v.source && v.source.sourceType !== SOURCE_TYPE.STORY">
+                <template v-if="v.source.episodeNo != null">第{{ v.source.episodeNo }}话</template>
+                <template v-if="v.source.episodeTitle">· {{ v.source.episodeTitle }}</template>
+              </span>
+              <!-- story 类：分类名 -->
+              <span v-if="v.source?.sourceType === SOURCE_TYPE.STORY && v.source.subtitle">
+                {{ v.source.subtitle }}
+              </span>
+
+              <!-- 版本信息 -->
+              <span class="text-slate-300">|</span>
+              <span>
+                {{ v.label || `${v.languageLabel} · ${v.formatLabel} · ${v.scopeLabel}` }}
+              </span>
+            </div>
+
             <div class="mt-0.5 truncate text-xs text-slate-400">
-              #{{ v.id }} · 创建于 {{ v.createdAt || '-' }}
+              创建于 {{ v.createdAt || '-' }}
             </div>
             <div
               v-if="v.status === STATUS.REJECTED && v.reviewRemark"
@@ -51,7 +83,15 @@
             </div>
           </div>
 
-          <el-button size="small" type="primary" link @click="handleOpen(v)">查看</el-button>
+          <el-button
+            :disabled="!v.source?.sourceId"
+            size="small"
+            type="primary"
+            link
+            @click="handleOpen(v)"
+          >
+            查看
+          </el-button>
         </li>
       </ul>
     </div>
@@ -72,9 +112,7 @@
 import { onMounted, ref } from 'vue'
 import { ElMessage } from 'element-plus'
 import { useRouter } from 'vue-router'
-import { getCardEpisodeDialogueAPI } from '@/api/card'
 import { pageMyVersionsAPI } from '@/api/dialogueVersion'
-import { getStoryDetailAPI } from '@/api/story'
 import { SOURCE_TYPE, STATUS, STATUS_OPTIONS, statusLabel, UserRouteName } from '@/constants'
 import type { DialogueVersionVO } from '@/types/dialogueVersion'
 import { getStatusTagType } from '@/utils'
@@ -108,53 +146,47 @@ function reload() {
   void load()
 }
 
-/** 跳转到对应浏览页 */
+/** 跳转到对应浏览页：直接使用后端已带出的 source 信息，无需再请求 */
 async function handleOpen(v: DialogueVersionVO) {
-  if (v.sourceType == null || v.sourceId == null) {
+  const src = v.source
+  if (!src || src.sourceId == null || src.sourceType == null) {
     ElMessage.warning('该版本缺少来源信息，无法查看')
     return
   }
 
-  try {
-    if (v.sourceType === SOURCE_TYPE.STORY) {
-      const res = await getStoryDetailAPI(v.sourceId)
-      const categoryType = res.data.categoryType ?? 1
-      await router.push({
-        name: UserRouteName.STORY_BROWSE_DETAIL,
-        params: {
-          type: String(categoryType),
-          kind: 'story',
-          id: String(v.sourceId),
-        },
-      })
+  // 剧情
+  if (src.sourceType === SOURCE_TYPE.STORY) {
+    if (src.categoryType == null) {
+      ElMessage.warning('剧情分类信息缺失，无法跳转')
       return
     }
-
-    // 判空后这里 sourceType / sourceId 都已是 number
-    const res = await getCardEpisodeDialogueAPI({
-      sourceType: v.sourceType,
-      sourceId: v.sourceId,
-    })
-    const cardId = res.data.cardId
-    if (cardId == null) {
-      ElMessage.error('该话数所属卡面信息缺失')
-      return
-    }
-
-    const routeName =
-      v.sourceType === SOURCE_TYPE.RC
-        ? UserRouteName.CARD_RC_BROWSE
-        : v.sourceType === SOURCE_TYPE.RTV
-          ? UserRouteName.CARD_RTV_BROWSE
-          : UserRouteName.CARD_RABITTER_BROWSE
-
     await router.push({
-      name: routeName,
-      query: { cardId: String(cardId), sourceId: String(v.sourceId) },
+      name: UserRouteName.STORY_BROWSE_DETAIL,
+      params: {
+        type: String(src.categoryType),
+        kind: 'story',
+        id: String(src.sourceId),
+      },
     })
-  } catch {
-    ElMessage.error('该内容可能已被删除或您无权查看')
+    return
   }
+
+  // 卡面话数
+  if (src.cardId == null) {
+    ElMessage.warning('该话数所属卡面信息缺失')
+    return
+  }
+  const routeName =
+    src.sourceType === SOURCE_TYPE.RC
+      ? UserRouteName.CARD_RC_BROWSE
+      : src.sourceType === SOURCE_TYPE.RTV
+        ? UserRouteName.CARD_RTV_BROWSE
+        : UserRouteName.CARD_RABITTER_BROWSE
+
+  await router.push({
+    name: routeName,
+    query: { cardId: String(src.cardId), sourceId: String(src.sourceId) },
+  })
 }
 
 onMounted(load)

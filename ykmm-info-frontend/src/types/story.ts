@@ -1,5 +1,5 @@
 import type { PageRequest } from './common'
-import type { DialogueLineVO } from './dialogueLine'
+import type { DialogueVersionVO } from './dialogueVersion'
 
 export interface StoryPageQueryDTO extends PageRequest {
   /**
@@ -182,63 +182,5 @@ export interface StoryDetailVO {
    * 对话版本列表
    */
   versions?: DialogueVersionVO[]
-  [property: string]: any
-}
-
-/**
- * 对话版本
- *
- * DialogueVersionVO
- */
-export interface DialogueVersionVO {
-  /**
-   * 1文字 2图片
-   */
-  format?: number
-  formatLabel?: string
-  id?: number
-  images?: DialogueImageVO[]
-  /**
-   * 1中文 2日文
-   */
-  language?: number
-  languageLabel?: string
-  lines?: DialogueLineVO[]
-  /**
-   * 1全部 2节选
-   */
-  scope?: number
-  scopeLabel?: string
-  [property: string]: any
-}
-
-/**
- * 对话图片
- *
- * DialogueImageVO
- */
-export interface DialogueImageVO {
-  id?: number
-  sort?: number
-  url?: string
-  [property: string]: any
-}
-
-/**
- * 对话片段
- *
- * DialogueSegmentVO
- */
-export interface DialogueSegmentVO {
-  content?: string
-  id?: number
-  /**
-   * 1文本 2表情包
-   */
-  segmentType?: number
-  sort?: number
-  stickerEmoji?: string
-  stickerId?: number
-  stickerUrl?: string
   [property: string]: any
 }

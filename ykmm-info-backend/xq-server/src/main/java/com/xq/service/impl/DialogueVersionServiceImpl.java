@@ -6,10 +6,7 @@ import com.xq.context.BaseContext;
 import com.xq.context.RoleContext;
 import com.xq.dto.DialogueVersionDTO;
 import com.xq.dto.DialogueVersionPageQueryDTO;
-import com.xq.entity.DialogueImage;
-import com.xq.entity.DialogueLine;
-import com.xq.entity.DialogueSegment;
-import com.xq.entity.DialogueVersion;
+import com.xq.entity.*;
 import com.xq.enums.*;
 import com.xq.exception.ForbiddenException;
 import com.xq.exception.UnauthorizedException;
@@ -48,6 +45,20 @@ public class DialogueVersionServiceImpl implements DialogueVersionService {
     private DialogueVersionContributorService dialogueVersionContributorService;
     @Autowired
     private DialogueVersionContributorMapper dialogueVersionContributorMapper;
+    @Autowired
+    private CardMapper cardMapper;
+    @Autowired
+    private CardSeriesMapper cardSeriesMapper;
+    @Autowired
+    private CardRcMapper cardRcMapper;
+    @Autowired
+    private CardRtvMapper cardRtvMapper;
+    @Autowired
+    private CardRabitterMapper cardRabitterMapper;
+    @Autowired
+    private StoryMapper storyMapper;
+    @Autowired
+    private StoryCategoryMapper storyCategoryMapper;
 
     /**
      * 分页查询（三身份过滤）
@@ -343,7 +354,7 @@ public class DialogueVersionServiceImpl implements DialogueVersionService {
     }
 
     /**
-     * 分页查询当前用户创建的版本
+     * 分页查询当前用户创建的版本（含来源展示信息）
      */
     @Override
     public PageResult<DialogueVersionVO> pageMyVersions(DialogueVersionPageQueryDTO query) {
@@ -359,12 +370,101 @@ public class DialogueVersionServiceImpl implements DialogueVersionService {
         List<DialogueVersionVO> voList = page.getList().stream()
                 .map(this::toBasicVO)
                 .collect(Collectors.toList());
+
+        // 填充来源展示信息
+        fillSourceInfo(voList);
+
         return new PageResult<>(page.getTotal(), voList);
     }
 
     /* ============================================================
      * 私有方法
      * ============================================================ */
+
+    /**
+     * 为版本列表批量填充来源展示信息。
+     * <p>
+     * 说明：一页最多 pageSize（默认 20）条，每条最多 3 次主键查询，
+     * 总查询次数可控（毫秒级）；如果后续 pageSize 调大或对性能有更高要求，
+     * 可改写为按类型 listByIds 批量查询。
+     */
+    private void fillSourceInfo(List<DialogueVersionVO> voList) {
+        if (voList == null || voList.isEmpty()) return;
+        for (DialogueVersionVO vo : voList) {
+            vo.setSource(buildSourceInfo(vo.getSourceType(), vo.getSourceId()));
+        }
+    }
+
+    /**
+     * 构建单个版本的来源展示信息
+     */
+    private DialogueVersionSourceVO buildSourceInfo(Integer sourceType, Long sourceId) {
+        if (sourceType == null || sourceId == null) return null;
+
+        DialogueVersionSourceVO src = new DialogueVersionSourceVO();
+        src.setSourceType(sourceType);
+        src.setSourceId(sourceId);
+
+        // ---------- 剧情：story.id ----------
+        if (DialogueSourceTypeEnum.STORY.getValue().equals(sourceType)) {
+            Story story = storyMapper.getById(sourceId);
+            if (story == null) return src;
+            src.setTitle(story.getTitle());
+            if (story.getCategoryId() != null) {
+                StoryCategory cat = storyCategoryMapper.getById(story.getCategoryId());
+                if (cat != null) {
+                    src.setSubtitle(cat.getName());
+                    src.setCategoryType(cat.getCategoryType());
+                }
+            }
+            return src;
+        }
+
+        // ---------- 卡面类：card_rc.id / card_rtv.id / card_rabitter.id ----------
+        Long cardId = null;
+        Integer episodeNo = null;
+        String episodeTitle = null;
+
+        if (DialogueSourceTypeEnum.RC.getValue().equals(sourceType)) {
+            CardRc rc = cardRcMapper.getById(sourceId);
+            if (rc != null) {
+                cardId = rc.getCardId();
+                episodeNo = rc.getEpisodeNo();
+                episodeTitle = rc.getTitle();
+            }
+        } else if (DialogueSourceTypeEnum.RTV.getValue().equals(sourceType)) {
+            CardRtv rtv = cardRtvMapper.getById(sourceId);
+            if (rtv != null) {
+                cardId = rtv.getCardId();
+                episodeNo = rtv.getEpisodeNo();
+                episodeTitle = rtv.getTitle();
+            }
+        } else if (DialogueSourceTypeEnum.RABITTER.getValue().equals(sourceType)) {
+            CardRabitter rabitter = cardRabitterMapper.getById(sourceId);
+            if (rabitter != null) {
+                cardId = rabitter.getCardId();
+                episodeNo = rabitter.getEpisodeNo();
+                episodeTitle = rabitter.getTitle();
+            }
+        }
+
+        src.setCardId(cardId);
+        src.setEpisodeNo(episodeNo);
+        src.setEpisodeTitle(episodeTitle);
+
+        // 卡面名称 + 系列名
+        if (cardId != null) {
+            Card card = cardMapper.getById(cardId);
+            if (card != null) {
+                src.setTitle(card.getName());
+                if (card.getSeriesId() != null) {
+                    CardSeries series = cardSeriesMapper.getById(card.getSeriesId());
+                    if (series != null) src.setSubtitle(series.getName());
+                }
+            }
+        }
+        return src;
+    }
 
     /**
      * 计算当前用户对「已存在版本」集合中每个版本的编辑权限。

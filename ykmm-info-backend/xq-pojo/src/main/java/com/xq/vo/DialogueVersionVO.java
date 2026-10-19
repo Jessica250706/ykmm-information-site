@@ -94,6 +94,11 @@ public class DialogueVersionVO implements Serializable {
     private List<DialogueVersionContributorVO> contributors;
 
     /**
+     * 来源展示信息（我的版本等场景使用）
+     */
+    private DialogueVersionSourceVO source;
+
+    /**
      * 创建时间
      */
     private LocalDateTime createdAt;
