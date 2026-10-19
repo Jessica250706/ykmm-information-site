@@ -2,18 +2,22 @@ import type { PageResult } from '@/types/common'
 import type { RoleDTO, RoleGroupVO, RolePageQueryDTO, RoleVO } from '@/types/role'
 import request from '@/utils/http'
 
-/**
- * @description: 分页查询角色
- */
-export const listRoleAPI = (params: RolePageQueryDTO) => {
-  return request.get<PageResult<RoleVO>>('/admin/role', { params })
-}
+// ---------- 用户 ----------
 
 /**
  * @description: 查询全部角色（按人物分组）
  */
 export const listGroupedRolesAPI = () => {
-  return request.get<RoleGroupVO[]>('/admin/role/all-grouped')
+  return request.get<RoleGroupVO[]>('/user/role/all-grouped')
+}
+
+// ---------- 管理员 ----------
+
+/**
+ * @description: 分页查询角色
+ */
+export const listRoleAPI = (params: RolePageQueryDTO) => {
+  return request.get<PageResult<RoleVO>>('/admin/role', { params })
 }
 
 /**
