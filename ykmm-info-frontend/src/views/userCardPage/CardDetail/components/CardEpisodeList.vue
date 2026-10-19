@@ -39,6 +39,7 @@
             @click.stop="emit('edit', ep)"
           />
           <el-button
+            v-if="isAdmin"
             :icon="Delete"
             size="small"
             type="danger"
@@ -54,6 +55,7 @@
 <script setup lang="ts">
 import { Delete, Edit } from '@element-plus/icons-vue'
 import { SOURCE_TYPE, SOURCE_TYPE_SMALL_LABEL, type SourceTypeSmallLabelValue } from '@/constants'
+import { useUserStore } from '@/stores'
 import type { CardRabitterVO } from '@/types/cardRabitter'
 import type { CardRcVO } from '@/types/cardRc'
 import type { CardRtvVO } from '@/types/cardRtv'
@@ -69,4 +71,6 @@ const emit = defineEmits<{
   edit: [ep: CardRcVO | CardRtvVO | CardRabitterVO]
   delete: [ep: CardRcVO | CardRtvVO | CardRabitterVO]
 }>()
+
+const { isAdmin } = useUserStore()
 </script>
