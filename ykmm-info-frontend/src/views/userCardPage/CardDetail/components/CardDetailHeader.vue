@@ -6,6 +6,14 @@
       <el-tag v-if="card?.maxRarity" :type="getCardRarityTagType(card.maxRarity)" effect="plain">
         {{ card.maxRarityLabel ?? cardMaxRarityLabel(card.maxRarity) }}
       </el-tag>
+      <!-- 状态角标 -->
+      <el-tag
+        v-if="card?.status === STATUS.PENDING || card?.status === STATUS.REJECTED"
+        :type="STATUS_TAG_TYPE[card?.status]"
+        effect="dark"
+      >
+        {{ STATUS_LABEL[card?.status] }}
+      </el-tag>
     </div>
 
     <div class="flex items-center gap-2">
@@ -68,6 +76,8 @@ import {
   SOURCE_TYPE_SMALL_LABEL,
   type SourceTypeSmallLabelValue,
   STATUS,
+  STATUS_LABEL,
+  STATUS_TAG_TYPE,
 } from '@/constants'
 import type { CardVO } from '@/types/card'
 import { getCardRarityTagType } from '@/utils'

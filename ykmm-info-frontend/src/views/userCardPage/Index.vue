@@ -119,15 +119,15 @@
               class="h-full w-full object-cover transition duration-300 group-hover:scale-105"
             />
             <div v-else class="h-full w-full bg-linear-to-br from-slate-200 to-slate-300" />
-            <!-- 待审核角标 -->
+            <!-- 状态角标 -->
             <el-tag
-              v-if="item.status === STATUS.PENDING"
-              :type="STATUS_TAG_TYPE[STATUS.PENDING]"
+              v-if="item.status === STATUS.PENDING || item.status === STATUS.REJECTED"
+              :type="STATUS_TAG_TYPE[item.status]"
               class="absolute right-2 top-2"
               effect="dark"
               size="small"
             >
-              {{ STATUS_LABEL[STATUS.PENDING] }}
+              {{ STATUS_LABEL[item.status] }}
             </el-tag>
           </div>
           <div class="p-3">

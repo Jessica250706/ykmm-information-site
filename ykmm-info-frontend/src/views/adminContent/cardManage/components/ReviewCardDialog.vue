@@ -9,7 +9,9 @@
     <div v-if="card" class="space-y-4">
       <div class="text-sm text-slate-500">
         卡面：
-        <span class="font-medium text-slate-800">{{ card.name || `#${card.id}` }}</span>
+        <span class="font-medium text-slate-800">
+          {{ card.name || `#${card.id}` }}[{{ card.seriesName }}]
+        </span>
       </div>
 
       <el-form label-width="84px">

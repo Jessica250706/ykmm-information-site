@@ -70,7 +70,7 @@
         )
       </if>
     </where>
-    ORDER BY c.first_pool_time DESC, c.id DESC
+    ORDER BY c.status DESC, c.first_pool_time DESC, c.id DESC
   </select>
 
   <select id="getById" resultType="com.xq.entity.Card">
