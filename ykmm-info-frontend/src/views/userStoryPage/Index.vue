@@ -1,5 +1,5 @@
 <template>
-  <section class="story-index h-full overflow-auto p-6">
+  <section class="story-index h-full overflow-auto">
     <h1 class="mb-6 text-2xl font-semibold">剧情</h1>
 
     <div class="grid grid-cols-1 gap-4">
