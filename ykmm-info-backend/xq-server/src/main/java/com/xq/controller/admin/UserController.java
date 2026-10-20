@@ -2,10 +2,8 @@ package com.xq.controller.admin;
 
 import com.xq.annotation.RequireRole;
 import com.xq.constant.UserRoleConstant;
-import com.xq.dto.UserEditDTO;
 import com.xq.dto.UserPageQueryDTO;
 import com.xq.dto.UserStatusDTO;
-import com.xq.entity.SysUser;
 import com.xq.result.PageResult;
 import com.xq.result.Result;
 import com.xq.service.UserService;
@@ -29,30 +27,10 @@ public class UserController {
     /**
      * 用户列表（分页 + 条件查询）
      */
-    @RequireRole(UserRoleConstant.ADMIN)
     @GetMapping
     public Result<PageResult<UserInfo>> page(UserPageQueryDTO query) {
         log.info("管理端查询用户列表：{}", query);
         return Result.success(userService.pageQuery(query));
-    }
-
-    /**
-     * 用户详情
-     */
-    @RequireRole({UserRoleConstant.ADMIN, UserRoleConstant.USER})
-    @GetMapping("/{id}")
-    public Result<UserInfo> detail(@PathVariable Long id) {
-        return Result.success(userService.getById(id));
-    }
-
-    /**
-     * 编辑用户
-     */
-    @PutMapping("/{id}")
-    public Result<Void> update(@PathVariable Long id,
-                               @RequestBody UserEditDTO dto) {
-        userService.update(id, dto);
-        return Result.success();
     }
 
     /**

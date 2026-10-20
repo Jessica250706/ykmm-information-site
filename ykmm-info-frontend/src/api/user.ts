@@ -1,26 +1,51 @@
 import type { PageResult } from '@/types/common'
-import type { UserEditDTO, UserInfo, UserRequest, UserStatusDTO } from '@/types/user'
+import type {
+  RebindEmailDTO,
+  SendRebindEmailCodeDTO,
+  UserEditDTO,
+  UserInfo,
+  UserRequest,
+  UserStatusDTO,
+} from '@/types/user'
 import request from '@/utils/http'
 
-/**
- * @description: 用户列表（分页 + 条件查询）
- */
-export const listUserAPI = (params: UserRequest) => {
-  return request.get<PageResult<UserInfo>>('/admin/user', { params })
-}
+// ---------- 游客 ----------
 
 /**
  * @description: 用户详情
  */
 export const detailUserAPI = (id: number) => {
-  return request.get<UserInfo>(`/admin/user/${id}`)
+  return request.get<UserInfo>(`/user/user/${id}`)
 }
 
 /**
  * @description: 编辑用户
  */
 export const editUserAPI = (id: number, params: UserEditDTO) => {
-  return request.put(`/admin/user/${id}`, { params })
+  return request.put(`/user/user/${id}`, { params })
+}
+
+/**
+ * 发送换绑邮箱验证码
+ */
+export function sendRebindEmailCodeAPI(data: SendRebindEmailCodeDTO) {
+  return request.post<void>('/user/user/email/rebind/send-code', data)
+}
+
+/**
+ * 换绑邮箱
+ */
+export function rebindEmailAPI(data: RebindEmailDTO) {
+  return request.put<UserInfo>('/user/user/email/rebind', data)
+}
+
+// ---------- 管理员 ----------
+
+/**
+ * @description: 用户列表（分页 + 条件查询）
+ */
+export const listUserAPI = (params: UserRequest) => {
+  return request.get<PageResult<UserInfo>>('/admin/user', { params })
 }
 
 /**

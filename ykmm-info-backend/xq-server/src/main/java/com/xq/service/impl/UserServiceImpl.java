@@ -2,9 +2,13 @@ package com.xq.service.impl;
 
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
+import com.xq.context.BaseContext;
+import com.xq.context.RoleContext;
 import com.xq.dto.UserEditDTO;
 import com.xq.dto.UserPageQueryDTO;
 import com.xq.entity.SysUser;
+import com.xq.exception.ForbiddenException;
+import com.xq.exception.UnauthorizedException;
 import com.xq.mapper.UserMapper;
 import com.xq.result.PageResult;
 import com.xq.service.UserService;
@@ -53,13 +57,30 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    public void update(Long id, UserEditDTO dto) {
+    public UserInfo update(Long id, UserEditDTO dto) {
+        // 1. 登录校验
+        Long currentId = BaseContext.getCurrentId();
+        if (currentId == null) {
+            throw new UnauthorizedException("请先登录");
+        }
+
+        // 2. 权限校验：普通用户只能改自己，管理员全放行
+        boolean admin = RoleContext.isAdmin();
+        if (!admin && !currentId.equals(id)) {
+            throw new ForbiddenException("只能修改自己的信息");
+        }
+
         SysUser exist = userMapper.getById(id);
         if (exist == null) {
             throw new RuntimeException("用户不存在");
         }
 
-        // 邮箱变更时，做唯一性校验
+        // 3. 普通用户不允许修改 status（禁用/启用是管理员权限）
+        if (!admin) {
+            dto.setStatus(null);
+        }
+
+        // 4. 邮箱变更时做唯一性校验
         if (dto.getEmail() != null && !dto.getEmail().equals(exist.getEmail())) {
             SysUser byEmail = userMapper.getByEmail(dto.getEmail());
             if (byEmail != null && !byEmail.getId().equals(id)) {
@@ -71,7 +92,11 @@ public class UserServiceImpl implements UserService {
         BeanUtils.copyProperties(dto, update);
         update.setId(id);
         userMapper.update(update);
-        log.info("编辑用户成功，id={}", id);
+
+        log.info("编辑用户成功，id={}, operatorId={}, admin={}", id, currentId, admin);
+
+        // 5. 返回最新用户信息
+        return getById(id);
     }
 
     @Override

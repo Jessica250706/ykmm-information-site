@@ -19,9 +19,19 @@ public interface UserService {
     UserInfo getById(Long id);
 
     /**
-     * 编辑用户
+     * 编辑用户信息。
+     * <p>
+     * 权限规则：
+     * <ul>
+     *   <li>普通用户：只能改自己；不允许改 status</li>
+     *   <li>管理员：可改任意用户，含 status</li>
+     * </ul>
+     *
+     * @param id  用户ID
+     * @param dto 编辑参数
+     * @return 更新后的用户信息
      */
-    void update(Long id, UserEditDTO dto);
+    UserInfo update(Long id, UserEditDTO dto);
 
     /**
      * 删除用户

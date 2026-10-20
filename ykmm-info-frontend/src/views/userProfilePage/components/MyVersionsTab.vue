@@ -43,13 +43,9 @@
         <li
           v-for="v in list"
           :key="v.id"
-          class="flex items-center gap-3 rounded-lg border border-slate-200 px-3 py-2.5"
+          class="flex items-center justify-between gap-3 rounded-lg border border-slate-200 px-3 py-2.5"
         >
-          <el-tag :type="getStatusTagType(v.status)" class="shrink-0" effect="plain">
-            {{ statusLabel(v.status) }}
-          </el-tag>
-
-          <div class="min-w-0 flex-1">
+          <div class="min-w-0 shrink-0">
             <!-- 第一行：来源主标题 + 版本信息 -->
             <div class="flex flex-wrap items-center gap-2 text-sm">
               <!-- 来源主标题：story=剧情标题；card=卡面名 [系列名] -->
@@ -100,6 +96,10 @@
               审核备注：{{ v.reviewRemark }}
             </div>
           </div>
+
+          <el-tag :type="getStatusTagType(v.status)" class="shrink-0" effect="plain">
+            {{ statusLabel(v.status) }}
+          </el-tag>
 
           <el-button
             :disabled="!v.source?.sourceId"

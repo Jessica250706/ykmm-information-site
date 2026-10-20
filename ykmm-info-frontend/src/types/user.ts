@@ -59,3 +59,22 @@ export interface UserStatusDTO {
   status?: UserStatusValue
   [property: string]: any
 }
+
+export interface SendRebindEmailCodeDTO {
+  /**
+   * 目标邮箱（NEW 时必填；OLD 时忽略，后端强制用当前用户邮箱）
+   */
+  email?: string
+  /**
+   * 目标类型：OLD 发到旧邮箱 / NEW 发到新邮箱
+   */
+  target: string
+  [property: string]: any
+}
+
+export interface RebindEmailDTO {
+  newCode: string
+  newEmail: string
+  oldCode: string
+  [property: string]: any
+}

@@ -31,6 +31,9 @@ public class AuthServiceImpl implements AuthService {
 
     private static final String REGISTER_CODE_KEY_PREFIX = "auth:register:code:";
     private static final String REGISTER_CODE_LIMIT_KEY_PREFIX = "auth:register:code:limit:";
+    private static final String REBIND_OLD_CODE_KEY_PREFIX = "auth:rebind:code:old:";
+    private static final String REBIND_NEW_CODE_KEY_PREFIX = "auth:rebind:code:new:";
+    private static final String REBIND_CODE_LIMIT_KEY_PREFIX = "auth:rebind:code:limit:";
 
     private static final Duration REGISTER_CODE_TTL = Duration.ofMinutes(5);
     private static final Duration REGISTER_CODE_SEND_LIMIT = Duration.ofSeconds(60);
@@ -188,6 +191,114 @@ public class AuthServiceImpl implements AuthService {
         String encoded = passwordEncoder.encode(newPassword);
         sysUserMapper.updatePassword(userId, encoded);
         log.info("密码修改成功：userId={}", userId);
+    }
+
+    @Override
+    public void sendRebindEmailCode(Long userId, String target, String targetEmail) {
+        SysUser user = sysUserMapper.getById(userId);
+        if (user == null) {
+            throw new AccountNotFoundException(MessageConstant.ACCOUNT_NOT_FOUND);
+        }
+
+        String email;
+        String codePrefix;
+
+        if ("OLD".equalsIgnoreCase(target)) {
+            // 旧邮箱：强制使用用户真实邮箱，前端传什么都忽略，防止越权发送
+            email = user.getEmail();
+            codePrefix = REBIND_OLD_CODE_KEY_PREFIX;
+        } else if ("NEW".equalsIgnoreCase(target)) {
+            email = normalizeEmail(targetEmail);
+            if (email == null || email.isBlank()) {
+                throw new RuntimeException("新邮箱不能为空");
+            }
+            if (email.equalsIgnoreCase(user.getEmail())) {
+                throw new RuntimeException("新邮箱不能与旧邮箱相同");
+            }
+            SysUser exist = sysUserMapper.getByEmail(email);
+            if (exist != null) {
+                throw new EmailAlreadyExistsException(MessageConstant.EMAIL_ALREADY_EXISTS);
+            }
+            codePrefix = REBIND_NEW_CODE_KEY_PREFIX;
+        } else {
+            throw new RuntimeException("目标类型不合法");
+        }
+
+        // 频率限制：与注册共用 60s 规则
+        String limitKey = REBIND_CODE_LIMIT_KEY_PREFIX + email;
+        Boolean canSend = stringRedisTemplate.opsForValue()
+                .setIfAbsent(limitKey, "1", REGISTER_CODE_SEND_LIMIT);
+        if (!Boolean.TRUE.equals(canSend)) {
+            throw new RuntimeException("验证码发送过于频繁，请1分钟后再试");
+        }
+
+        String code = generateCode();
+        stringRedisTemplate.opsForValue().set(codePrefix + email, code, REGISTER_CODE_TTL);
+
+        try {
+            mailService.sendEmailCode(email, code, "换绑邮箱验证码");
+        } catch (Exception e) {
+            log.error("换绑验证码邮件发送失败：email={}", email, e);
+        }
+
+        log.info("换绑邮箱验证码已生成：email={}, target={}", email, target);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public SysUser rebindEmail(Long userId, String newEmail, String oldCode, String newCode) {
+        SysUser user = sysUserMapper.getById(userId);
+        if (user == null) {
+            throw new AccountNotFoundException(MessageConstant.ACCOUNT_NOT_FOUND);
+        }
+
+        String oldEmail = user.getEmail();
+        newEmail = normalizeEmail(newEmail);
+
+        if (newEmail == null || newEmail.isBlank()) {
+            throw new RuntimeException("新邮箱不能为空");
+        }
+        if (newEmail.equalsIgnoreCase(oldEmail)) {
+            throw new RuntimeException("新邮箱不能与旧邮箱相同");
+        }
+
+        // 校验旧邮箱验证码
+        String cachedOld = stringRedisTemplate.opsForValue().get(REBIND_OLD_CODE_KEY_PREFIX + oldEmail);
+        if (cachedOld == null) {
+            throw new RuntimeException("旧邮箱验证码已过期，请重新获取");
+        }
+        if (!cachedOld.equals(oldCode)) {
+            throw new RuntimeException("旧邮箱验证码错误");
+        }
+
+        // 校验新邮箱验证码
+        String cachedNew = stringRedisTemplate.opsForValue().get(REBIND_NEW_CODE_KEY_PREFIX + newEmail);
+        if (cachedNew == null) {
+            throw new RuntimeException("新邮箱验证码已过期，请重新获取");
+        }
+        if (!cachedNew.equals(newCode)) {
+            throw new RuntimeException("新邮箱验证码错误");
+        }
+
+        // 并发兜底：再确认一次新邮箱未被占用
+        SysUser exist = sysUserMapper.getByEmail(newEmail);
+        if (exist != null && !exist.getId().equals(userId)) {
+            throw new EmailAlreadyExistsException(MessageConstant.EMAIL_ALREADY_EXISTS);
+        }
+
+        SysUser update = new SysUser();
+        update.setId(userId);
+        update.setEmail(newEmail);
+        sysUserMapper.updateById(update);
+
+        // 清理验证码与限流 key
+        stringRedisTemplate.delete(REBIND_OLD_CODE_KEY_PREFIX + oldEmail);
+        stringRedisTemplate.delete(REBIND_NEW_CODE_KEY_PREFIX + newEmail);
+        stringRedisTemplate.delete(REBIND_CODE_LIMIT_KEY_PREFIX + oldEmail);
+        stringRedisTemplate.delete(REBIND_CODE_LIMIT_KEY_PREFIX + newEmail);
+
+        log.info("邮箱换绑成功：userId={}, oldEmail={}, newEmail={}", userId, oldEmail, newEmail);
+        return sysUserMapper.getById(userId);
     }
 
     private String generateCode() {

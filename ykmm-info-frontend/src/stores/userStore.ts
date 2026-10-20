@@ -34,6 +34,10 @@ export const useUserStore = defineStore(
       userInfo.value = nextUser
     }
 
+    function setUserInfo(nextUser: UserInfo) {
+      userInfo.value = nextUser
+    }
+
     function logout() {
       token.value = null
       userInfo.value = null
@@ -53,6 +57,7 @@ export const useUserStore = defineStore(
       isAdmin,
       login,
       setAuth,
+      setUserInfo,
       logout,
       clearUserInfo,
     }
