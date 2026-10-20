@@ -301,6 +301,29 @@ public class AuthServiceImpl implements AuthService {
         return sysUserMapper.getById(userId);
     }
 
+    @Override
+    public void verifyRebindOldCode(Long userId, String code) {
+        SysUser user = sysUserMapper.getById(userId);
+        if (user == null) {
+            throw new AccountNotFoundException(MessageConstant.ACCOUNT_NOT_FOUND);
+        }
+        String email = user.getEmail();
+        if (email == null || email.isBlank()) {
+            throw new RuntimeException("当前账号未绑定邮箱");
+        }
+
+        String cached = stringRedisTemplate.opsForValue()
+                .get(REBIND_OLD_CODE_KEY_PREFIX + email);
+        if (cached == null) {
+            throw new RuntimeException("验证码已过期，请重新获取");
+        }
+        if (!cached.equals(code)) {
+            throw new RuntimeException("验证码错误");
+        }
+        // 不删除验证码：最终 rebindEmail 时还要再用一次
+        log.info("旧邮箱验证码校验通过：userId={}, email={}", userId, email);
+    }
+
     private String generateCode() {
         return String.format("%06d", RANDOM.nextInt(1_000_000));
     }

@@ -77,3 +77,8 @@ export interface RebindEmailDTO {
   oldCode: string
   [property: string]: any
 }
+
+export interface VerifyRebindOldCodeDTO {
+  code: string
+  [property: string]: any
+}

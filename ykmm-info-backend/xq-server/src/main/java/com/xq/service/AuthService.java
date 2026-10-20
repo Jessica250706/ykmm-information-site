@@ -39,4 +39,14 @@ public interface AuthService {
      * @return 更新后的用户信息
      */
     SysUser rebindEmail(Long userId, String newEmail, String oldCode, String newCode);
+
+    /**
+     * 校验旧邮箱验证码（用于分步换绑的 Step 1）
+     * <p>
+     * 注意：校验成功不删除验证码，因为最终换绑时还需要再校验一次。
+     *
+     * @param userId 当前用户ID
+     * @param code   用户输入的验证码
+     */
+    void verifyRebindOldCode(Long userId, String code);
 }

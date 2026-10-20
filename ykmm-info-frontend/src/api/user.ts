@@ -6,10 +6,11 @@ import type {
   UserInfo,
   UserRequest,
   UserStatusDTO,
+  VerifyRebindOldCodeDTO,
 } from '@/types/user'
 import request from '@/utils/http'
 
-// ---------- 游客 ----------
+// ---------- 用户 ----------
 
 /**
  * @description: 用户详情
@@ -26,17 +27,24 @@ export const editUserAPI = (id: number, data: UserEditDTO) => {
 }
 
 /**
- * 发送换绑邮箱验证码
+ * @description: 发送换绑邮箱验证码
  */
 export function sendRebindEmailCodeAPI(data: SendRebindEmailCodeDTO) {
   return request.post<void>('/user/user/email/rebind/send-code', data)
 }
 
 /**
- * 换绑邮箱
+ * @description: 换绑邮箱
  */
 export function rebindEmailAPI(data: RebindEmailDTO) {
   return request.put<UserInfo>('/user/user/email/rebind', data)
+}
+
+/**
+ * @description: 校验旧邮箱验证码（换绑邮箱 Step 1）
+ */
+export function verifyOldEmailCodeAPI(data: VerifyRebindOldCodeDTO) {
+  return request.post<void>('/user/user/email/rebind/verify-old', data)
 }
 
 // ---------- 管理员 ----------

@@ -6,6 +6,7 @@ import com.xq.context.BaseContext;
 import com.xq.dto.RebindEmailDTO;
 import com.xq.dto.SendRebindEmailCodeDTO;
 import com.xq.dto.UserEditDTO;
+import com.xq.dto.VerifyRebindOldCodeDTO;
 import com.xq.entity.SysUser;
 import com.xq.result.Result;
 import com.xq.service.AuthService;
@@ -69,5 +70,14 @@ public class UserUserController {
         SysUser user = authService.rebindEmail(
                 BaseContext.getCurrentId(), dto.getNewEmail(), dto.getOldCode(), dto.getNewCode());
         return Result.success(UserInfo.from(user));
+    }
+
+    /**
+     * 换绑邮箱 - 校验旧邮箱验证码
+     */
+    @PostMapping("/email/rebind/verify-old")
+    public Result<Void> verifyOldEmailCode(@RequestBody @Valid VerifyRebindOldCodeDTO dto) {
+        authService.verifyRebindOldCode(BaseContext.getCurrentId(), dto.getCode());
+        return Result.success();
     }
 }
