@@ -8,11 +8,6 @@ import java.io.Serializable;
 public class UserEditDTO implements Serializable {
 
     /**
-     * 邮箱
-     */
-    private String email;
-
-    /**
      * 昵称
      */
     private String nickname;

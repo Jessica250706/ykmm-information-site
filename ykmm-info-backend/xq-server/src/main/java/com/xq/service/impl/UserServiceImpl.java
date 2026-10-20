@@ -80,12 +80,11 @@ public class UserServiceImpl implements UserService {
             dto.setStatus(null);
         }
 
-        // 4. 邮箱变更时做唯一性校验
-        if (dto.getEmail() != null && !dto.getEmail().equals(exist.getEmail())) {
-            SysUser byEmail = userMapper.getByEmail(dto.getEmail());
-            if (byEmail != null && !byEmail.getId().equals(id)) {
-                throw new RuntimeException("邮箱已被使用");
-            }
+        if (dto.getNickname() == null
+                && dto.getAvatar() == null
+                && dto.getStatus() == null) {
+            log.info("用户编辑未产生实际变更，直接返回：id={}", id);
+            return getById(id);
         }
 
         SysUser update = new SysUser();

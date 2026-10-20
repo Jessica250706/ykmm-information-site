@@ -40,7 +40,6 @@ export interface UserInfo {
  */
 export interface UserEditDTO {
   avatar?: string
-  email?: string
   nickname?: string
   /**
    * 1正常 0禁用

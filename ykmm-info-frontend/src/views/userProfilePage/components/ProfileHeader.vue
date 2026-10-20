@@ -12,7 +12,7 @@
         </el-tag>
       </div>
       <div class="mt-1 text-sm text-slate-500">
-        <span v-if="userInfo?.email">邮箱：{{ userInfo.email }}</span>
+        <span v-if="userInfo?.email">{{ userInfo.email }}</span>
       </div>
       <div v-if="userInfo?.createdAt" class="mt-0.5 text-xs text-slate-400">
         加入于 {{ userInfo.createdAt }}
@@ -24,38 +24,49 @@
         <el-icon class="mr-1"><Edit /></el-icon>
         编辑资料
       </el-button>
+
+      <el-button plain @click="handleRebind">
+        <el-icon class="mr-1"><Message /></el-icon>
+        换绑邮箱
+      </el-button>
+
       <el-button v-if="isAdmin" plain @click="router.push('/admin')">进入管理端</el-button>
     </div>
 
     <EditProfileDialog ref="editDialogRef" />
+    <RebindEmailDialog ref="rebindDialogRef" />
   </div>
 </template>
 
 <script setup lang="ts">
 import { computed, ref } from 'vue'
-import { Edit } from '@element-plus/icons-vue'
+import { Edit, Message } from '@element-plus/icons-vue'
 import { storeToRefs } from 'pinia'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '@/stores'
 import EditProfileDialog from './EditProfileDialog.vue'
+import RebindEmailDialog from './RebindEmailDialog.vue'
 
 const router = useRouter()
 const userStore = useUserStore()
 
-// 用 storeToRefs 保持响应性（原来直接解构会丢响应性）
 const { isAdmin, userInfo } = storeToRefs(userStore)
 
 const displayName = computed(() => userInfo.value?.nickname || userInfo.value?.email || '个人中心')
 
-// 原代码 userInfo?.value 是 undefined，导致头像文字永远显示"我"
 const avatarText = computed(() => {
   const name = userInfo.value?.nickname || userInfo.value?.email || ''
   return name ? name.charAt(0).toUpperCase() : '我'
 })
 
 const editDialogRef = ref<InstanceType<typeof EditProfileDialog> | null>(null)
+const rebindDialogRef = ref<InstanceType<typeof RebindEmailDialog> | null>(null)
 
 function handleEdit() {
   editDialogRef.value?.open()
+}
+
+function handleRebind() {
+  rebindDialogRef.value?.open()
 }
 </script>

@@ -71,7 +71,6 @@
   <update id="update" parameterType="com.xq.entity.SysUser">
     UPDATE sys_user
     <set>
-      <if test="email != null">email = #{email},</if>
       <if test="nickname != null">nickname = #{nickname},</if>
       <if test="avatar != null">avatar = #{avatar},</if>
       <if test="status != null">status = #{status},</if>

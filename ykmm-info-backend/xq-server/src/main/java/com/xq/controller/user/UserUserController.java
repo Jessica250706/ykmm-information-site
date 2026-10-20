@@ -47,10 +47,9 @@ public class UserUserController {
      * 编辑用户
      */
     @PutMapping("/{id}")
-    public Result<Void> update(@PathVariable @NotNull(message = "用户ID不能为空") Long id,
+    public Result<UserInfo> update(@PathVariable @NotNull(message = "用户ID不能为空") Long id,
                                @RequestBody @NotNull(message = "修改内容不能为空") UserEditDTO dto) {
-        userService.update(id, dto);
-        return Result.success();
+        return Result.success(userService.update(id, dto));
     }
 
     /**

@@ -20,21 +20,12 @@
           show-word-limit
         />
       </el-form-item>
-
-      <el-form-item label="邮箱">
-        <div class="flex w-full items-center gap-2">
-          <el-input :model-value="userStore.userInfo?.email" disabled />
-          <el-button plain @click="handleRebind">换绑邮箱</el-button>
-        </div>
-      </el-form-item>
     </el-form>
 
     <template #footer>
       <el-button @click="visible = false">取消</el-button>
       <el-button :loading="submitting" type="primary" @click="handleSubmit">保存</el-button>
     </template>
-
-    <RebindEmailDialog ref="rebindDialogRef" />
   </el-dialog>
 </template>
 
@@ -44,7 +35,6 @@ import { ElMessage } from 'element-plus'
 import { editUserAPI } from '@/api/user'
 import { useUserStore } from '@/stores'
 import type { UserInfo } from '@/types/user'
-import RebindEmailDialog from './RebindEmailDialog.vue'
 import type { FormInstance, FormRules } from 'element-plus'
 
 const userStore = useUserStore()
@@ -95,12 +85,6 @@ async function handleSubmit() {
   } finally {
     submitting.value = false
   }
-}
-
-const rebindDialogRef = ref<InstanceType<typeof RebindEmailDialog> | null>(null)
-
-function handleRebind() {
-  rebindDialogRef.value?.open()
 }
 
 function handleClosed() {

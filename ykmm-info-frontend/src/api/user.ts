@@ -21,8 +21,8 @@ export const detailUserAPI = (id: number) => {
 /**
  * @description: 编辑用户
  */
-export const editUserAPI = (id: number, params: UserEditDTO) => {
-  return request.put(`/user/user/${id}`, { params })
+export const editUserAPI = (id: number, data: UserEditDTO) => {
+  return request.put<UserInfo>(`/user/user/${id}`, data)
 }
 
 /**
