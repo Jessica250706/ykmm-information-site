@@ -1,6 +1,8 @@
 import type { PageResult } from '@/types/common'
 import type {
+  ChangePasswordDTO,
   RebindEmailDTO,
+  ResetPasswordDTO,
   SendRebindEmailCodeDTO,
   UserEditDTO,
   UserInfo,
@@ -45,6 +47,27 @@ export function rebindEmailAPI(data: RebindEmailDTO) {
  */
 export function verifyOldEmailCodeAPI(data: VerifyRebindOldCodeDTO) {
   return request.post<void>('/user/user/email/rebind/verify-old', data)
+}
+
+/**
+ * @description: 修改密码（需原密码）
+ */
+export function changePasswordAPI(data: ChangePasswordDTO) {
+  return request.put<void>('/user/user/password', data)
+}
+
+/**
+ * @description: 发送重置密码验证码（发送到当前用户绑定邮箱）
+ */
+export function sendResetPasswordCodeAPI() {
+  return request.post<void>('/user/user/password/reset-code')
+}
+
+/**
+ * @description: 通过邮箱验证码重置密码
+ */
+export function resetPasswordByCodeAPI(data: ResetPasswordDTO) {
+  return request.put<void>('/user/user/password/reset', data)
 }
 
 // ---------- 管理员 ----------

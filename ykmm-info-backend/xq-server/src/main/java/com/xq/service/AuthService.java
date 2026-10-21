@@ -49,4 +49,20 @@ public interface AuthService {
      * @param code   用户输入的验证码
      */
     void verifyRebindOldCode(Long userId, String code);
+
+    /**
+     * 发送重置密码验证码到当前用户绑定邮箱
+     *
+     * @param userId 当前登录用户ID
+     */
+    void sendResetPasswordCode(Long userId);
+
+    /**
+     * 通过邮箱验证码重置密码（忘记原密码场景）
+     *
+     * @param userId      当前登录用户ID
+     * @param code        邮箱验证码
+     * @param newPassword 新密码
+     */
+    void resetPasswordByCode(Long userId, String code, String newPassword);
 }

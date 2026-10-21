@@ -82,3 +82,15 @@ export interface VerifyRebindOldCodeDTO {
   code: string
   [property: string]: any
 }
+
+export interface ChangePasswordDTO {
+  newPassword: string
+  oldPassword: string
+  [property: string]: any
+}
+
+export interface ResetPasswordDTO {
+  code: string
+  newPassword: string
+  [property: string]: any
+}

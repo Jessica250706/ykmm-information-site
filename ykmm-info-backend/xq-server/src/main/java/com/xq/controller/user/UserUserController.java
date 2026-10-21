@@ -3,10 +3,7 @@ package com.xq.controller.user;
 import com.xq.annotation.RequireRole;
 import com.xq.constant.UserRoleConstant;
 import com.xq.context.BaseContext;
-import com.xq.dto.RebindEmailDTO;
-import com.xq.dto.SendRebindEmailCodeDTO;
-import com.xq.dto.UserEditDTO;
-import com.xq.dto.VerifyRebindOldCodeDTO;
+import com.xq.dto.*;
 import com.xq.entity.SysUser;
 import com.xq.result.Result;
 import com.xq.service.AuthService;
@@ -78,6 +75,33 @@ public class UserUserController {
     @PostMapping("/email/rebind/verify-old")
     public Result<Void> verifyOldEmailCode(@RequestBody @Valid VerifyRebindOldCodeDTO dto) {
         authService.verifyRebindOldCode(BaseContext.getCurrentId(), dto.getCode());
+        return Result.success();
+    }
+
+    /**
+     * 修改密码（需原密码）
+     */
+    @PutMapping("/password")
+    public Result<Void> changePassword(@RequestBody @Valid ChangePasswordDTO dto) {
+        authService.changePassword(BaseContext.getCurrentId(), dto.getOldPassword(), dto.getNewPassword());
+        return Result.success();
+    }
+
+    /**
+     * 发送重置密码验证码（忘记原密码场景）
+     */
+    @PostMapping("/password/reset-code")
+    public Result<Void> sendResetPasswordCode() {
+        authService.sendResetPasswordCode(BaseContext.getCurrentId());
+        return Result.success();
+    }
+
+    /**
+     * 通过邮箱验证码重置密码（忘记原密码场景）
+     */
+    @PutMapping("/password/reset")
+    public Result<Void> resetPasswordByCode(@RequestBody @Valid ResetPasswordDTO dto) {
+        authService.resetPasswordByCode(BaseContext.getCurrentId(), dto.getCode(), dto.getNewPassword());
         return Result.success();
     }
 }

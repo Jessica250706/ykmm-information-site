@@ -30,20 +30,27 @@
         换绑邮箱
       </el-button>
 
+      <el-button plain @click="handleChangePassword">
+        <el-icon class="mr-1"><Lock /></el-icon>
+        修改密码
+      </el-button>
+
       <el-button v-if="isAdmin" plain @click="router.push('/admin')">进入管理端</el-button>
     </div>
 
     <EditProfileDialog ref="editDialogRef" />
     <RebindEmailDialog ref="rebindDialogRef" />
+    <ChangePasswordDialog ref="changePasswordDialogRef" />
   </div>
 </template>
 
 <script setup lang="ts">
 import { computed, ref } from 'vue'
-import { Edit, Message } from '@element-plus/icons-vue'
+import { Edit, Lock, Message } from '@element-plus/icons-vue'
 import { storeToRefs } from 'pinia'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '@/stores'
+import ChangePasswordDialog from './components/ChangePasswordDialog.vue'
 import EditProfileDialog from './components/EditProfileDialog.vue'
 import RebindEmailDialog from './components/RebindEmailDialog.vue'
 
@@ -61,6 +68,7 @@ const avatarText = computed(() => {
 
 const editDialogRef = ref<InstanceType<typeof EditProfileDialog> | null>(null)
 const rebindDialogRef = ref<InstanceType<typeof RebindEmailDialog> | null>(null)
+const changePasswordDialogRef = ref<InstanceType<typeof ChangePasswordDialog> | null>(null)
 
 function handleEdit() {
   editDialogRef.value?.open()
@@ -68,5 +76,9 @@ function handleEdit() {
 
 function handleRebind() {
   rebindDialogRef.value?.open()
+}
+
+function handleChangePassword() {
+  changePasswordDialogRef.value?.open()
 }
 </script>
