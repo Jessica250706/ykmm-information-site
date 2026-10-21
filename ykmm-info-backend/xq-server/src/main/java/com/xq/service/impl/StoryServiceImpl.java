@@ -62,10 +62,6 @@ public class StoryServiceImpl implements StoryService {
     @Autowired
     private RoleMapper roleMapper;
 
-    /* ============================================================
-     * 分类树
-     * ============================================================ */
-
     /**
      * 查询剧情分类树（无身份限制）
      *
@@ -102,10 +98,6 @@ public class StoryServiceImpl implements StoryService {
         return roots;
     }
 
-    /* ============================================================
-     * 分页查询（三身份）
-     * ============================================================ */
-
     /**
      * 分页查询剧情
      * <p>
@@ -140,10 +132,6 @@ public class StoryServiceImpl implements StoryService {
         return new PageResult<>(page.getTotal(), voList);
     }
 
-    /* ============================================================
-     * 详情 - 简单版（不加载对话版本）
-     * ============================================================ */
-
     /**
      * 查询剧情详情 - 简单版（不含对话版本）
      *
@@ -158,10 +146,6 @@ public class StoryServiceImpl implements StoryService {
         ViewerFilterSupport.checkCanView(story.getStatus(), story.getCreatorId());
         return toVO(story);
     }
-
-    /* ============================================================
-     * 详情 - 完整版（含对话版本，按身份过滤）
-     * ============================================================ */
 
     /**
      * 查询剧情详情（含对话版本）
@@ -218,13 +202,9 @@ public class StoryServiceImpl implements StoryService {
         return vo;
     }
 
-    /* ============================================================
-     * 新增
-     * ============================================================ */
-
     /**
      * 新增剧情
-     *
+     * <p>
      * - 管理员 → 直接发布
      * - 用户 → 待审核
      * - 游客 → 拒绝
@@ -259,13 +239,9 @@ public class StoryServiceImpl implements StoryService {
         return story.getId();
     }
 
-    /* ============================================================
-     * 编辑
-     * ============================================================ */
-
     /**
      * 编辑剧情
-     *
+     * <p>
      * - 管理员：可改任意剧情，状态保持原样
      * - 用户：只能改自己创建的，编辑后重置为待审核
      * - 游客：拒绝
@@ -307,10 +283,6 @@ public class StoryServiceImpl implements StoryService {
         storyMapper.update(story);
         log.info("编辑剧情成功，id={}, role={}, status={}", id, UserRoleEnum.current(), story.getStatus());
     }
-
-    /* ============================================================
-     * 删除
-     * ============================================================ */
 
     /**
      * 删除剧情（仅管理员）
@@ -356,12 +328,8 @@ public class StoryServiceImpl implements StoryService {
         log.info("删除剧情成功，id={}, 操作人={}, 角色={}", id, BaseContext.getCurrentId(), UserRoleEnum.current());
     }
 
-    /* ============================================================
-     * 审核（仅管理员）
-     * ============================================================ */
-
     /**
-     * 审核剧情
+     * 审核剧情（仅管理员）
      *
      * @param id  主键
      * @param dto 审核参数
@@ -395,10 +363,6 @@ public class StoryServiceImpl implements StoryService {
         log.info("审核剧情成功，id={}, status={}", id, dto.getStatus());
     }
 
-    /* ============================================================
-     * 按分类查询
-     * ============================================================ */
-
     /**
      * 根据分类ID查询剧情列表（管理端用，不过滤身份）
      *
@@ -428,10 +392,6 @@ public class StoryServiceImpl implements StoryService {
         }
         return voList;
     }
-
-    /* ============================================================
-     * 私有辅助方法
-     * ============================================================ */
 
     /**
      * 组装版本 VO 列表（含句子、片段、表情包、说话人、图片）

@@ -118,6 +118,9 @@ export const AdminRouteName = {
   CONTRIBUTOR_MANAGE: 'AdminDialogueVersionContributorManage',
   CONTRIBUTOR_CREATE: 'AdminDialogueVersionContributorCreate',
   CONTRIBUTOR_EDIT: 'AdminDialogueVersionContributorEdit',
+
+  // ---------- 消息管理 ----------
+  MESSAGE_MANAGE: 'AdminMessageManage',
 } as const
 
 /** 用户端路由名称联合类型 */

@@ -4,6 +4,7 @@ import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.xq.constant.DialogueSourceTypeConstant;
 import com.xq.constant.StatusConstant;
+import com.xq.constant.SysMessageConstant;
 import com.xq.constant.UserRoleConstant;
 import com.xq.context.BaseContext;
 import com.xq.context.RoleContext;
@@ -18,6 +19,7 @@ import com.xq.exception.UnauthorizedException;
 import com.xq.mapper.*;
 import com.xq.result.PageResult;
 import com.xq.service.CardService;
+import com.xq.service.SysMessageService;
 import com.xq.support.ViewerFilterSupport;
 import com.xq.vo.*;
 import lombok.extern.slf4j.Slf4j;
@@ -69,6 +71,8 @@ public class CardServiceImpl implements CardService {
     private RoleMapper roleMapper;
     @Autowired
     private PersonMapper personMapper;
+    @Autowired
+    private SysMessageService sysMessageService;
 
     /**
      * 分页查询
@@ -477,6 +481,24 @@ public class CardServiceImpl implements CardService {
         update.setReviewRemark(remark == null ? "" : remark.trim());
 
         cardMapper.update(update);
+
+        if (pass) {
+            sysMessageService.send(
+                    exist.getCreatorId(),
+                    SysMessageConstant.TYPE_REVIEW_PASSED,
+                    SysMessageConstant.TARGET_CARD,
+                    id,
+                    "卡面审核通过",
+                    "您提交的卡面「" + exist.getName() + "」已通过审核");
+        } else {
+            sysMessageService.send(
+                    exist.getCreatorId(),
+                    SysMessageConstant.TYPE_REVIEW_REJECTED,
+                    SysMessageConstant.TARGET_CARD,
+                    id,
+                    "卡面审核未通过",
+                    "您提交的卡面「" + exist.getName() + "」未通过审核，原因：" + remark);
+        }
 
         log.info("审核卡面成功，id={}, status={}, reviewerId={}, remark={}",
                 id, targetStatus, BaseContext.getCurrentId(), update.getReviewRemark());

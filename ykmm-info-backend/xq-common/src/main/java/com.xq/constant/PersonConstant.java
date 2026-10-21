@@ -10,7 +10,7 @@ public class PersonConstant {
     /**
      * 分页默认页大小
      */
-    public static final int DEFAULT_PAGE_SIZE = 10;
+    public static final int DEFAULT_PAGE_SIZE = 20;
 
     /**
      * 分页最大页大小

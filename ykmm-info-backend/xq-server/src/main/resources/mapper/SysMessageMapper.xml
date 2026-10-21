@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xq.mapper.SysMessageMapper">
+
+  <sql id="baseColumns">
+    id,
+    user_id     AS userId,
+    type,
+    target_type AS targetType,
+    target_id   AS targetId,
+    title,
+    content,
+    is_read     AS isRead,
+    read_at     AS readAt,
+    created_at  AS createdAt
+  </sql>
+
+  <insert id="insert" parameterType="com.xq.entity.SysMessage"
+          useGeneratedKeys="true" keyProperty="id">
+    INSERT INTO sys_message (user_id, type, target_type, target_id, title, content, is_read)
+    VALUES (#{userId}, #{type}, #{targetType}, #{targetId}, #{title}, #{content}, #{isRead})
+  </insert>
+
+  <select id="getById" resultType="com.xq.entity.SysMessage">
+    SELECT
+    <include refid="baseColumns"/>
+    FROM sys_message
+    WHERE id = #{id}
+  </select>
+
+  <select id="pageQuery" resultType="com.xq.entity.SysMessage">
+    SELECT
+    <include refid="baseColumns"/>
+    FROM sys_message
+    <where>
+      <!-- 普通用户：强制只看自己的消息 -->
+      <if test="viewerId != null">
+        AND user_id = #{viewerId}
+      </if>
+      <!-- 管理员：可通过 query.userId 精确筛选某个用户 -->
+      <if test="viewerId == null and query.userId != null">
+        AND user_id = #{query.userId}
+      </if>
+
+      <if test="query.type != null">
+        AND type = #{query.type}
+      </if>
+      <if test="query.targetType != null">
+        AND target_type = #{query.targetType}
+      </if>
+      <if test="query.isRead != null">
+        AND is_read = #{query.isRead}
+      </if>
+      <if test="query.keyword != null and query.keyword != ''">
+        AND (
+        title LIKE CONCAT('%', #{query.keyword}, '%')
+        OR content LIKE CONCAT('%', #{query.keyword}, '%')
+        )
+      </if>
+    </where>
+    <!-- 未读优先，再按时间倒序 -->
+    ORDER BY is_read ASC, created_at DESC, id DESC
+  </select>
+
+  <select id="countUnread" resultType="long">
+    SELECT COUNT(*)
+    FROM sys_message
+    WHERE user_id = #{userId}
+      AND is_read = 0
+  </select>
+
+  <!--
+    标记已读：
+    - userId 非 null 时作为越权防护（用户只能标记自己的）
+    - is_read = 0 条件避免重复写入 read_at
+  -->
+  <update id="markRead">
+    UPDATE sys_message
+    SET is_read = 1,
+    read_at = NOW()
+    WHERE id = #{id}
+    AND is_read = 0
+    <if test="userId != null">
+      AND user_id = #{userId}
+    </if>
+  </update>
+
+  <update id="markAllRead">
+    UPDATE sys_message
+    SET is_read = 1,
+        read_at = NOW()
+    WHERE user_id = #{userId}
+      AND is_read = 0
+  </update>
+
+</mapper>

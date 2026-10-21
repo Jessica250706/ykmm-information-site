@@ -264,5 +264,12 @@ export const adminRoutes: RouteRecordRaw = {
         import('@/views/adminContent/contributorManage/components/EditContributor.vue'),
       meta: { title: '编辑贡献者' },
     },
+    // ---------- 消息管理 ----------
+    {
+      path: 'message',
+      name: AdminRouteName.MESSAGE_MANAGE,
+      component: () => import('@/views/adminContent/messageManage/Index.vue'),
+      meta: { title: '消息管理' },
+    },
   ],
 }

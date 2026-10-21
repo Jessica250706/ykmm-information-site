@@ -9,6 +9,9 @@
       <el-tab-pane class="h-full" label="我的版本" name="versions">
         <MyVersionsTab v-if="activeTab === 'versions'" class="h-full" />
       </el-tab-pane>
+      <el-tab-pane class="h-full" label="我的消息" name="messages">
+        <MyMessagesTab v-if="activeTab === 'messages'" class="h-full" />
+      </el-tab-pane>
     </el-tabs>
   </section>
 </template>
@@ -17,17 +20,17 @@
 import { ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import MyCardsTab from './components/MyCardsTab.vue'
+import MyMessagesTab from './components/MyMessagesTab/Index.vue'
 import MyVersionsTab from './components/MyVersionsTab.vue'
-import ProfileHeader from './components/ProfileHeader.vue'
+import ProfileHeader from './components/ProfileHeader/Index.vue'
 
-type TabName = 'cards' | 'versions'
-const TAB_NAMES: TabName[] = ['cards', 'versions']
+type TabName = 'cards' | 'versions' | 'messages'
+const TAB_NAMES: TabName[] = ['cards', 'versions', 'messages']
 const DEFAULT_TAB: TabName = 'cards'
 
 const route = useRoute()
 const router = useRouter()
 
-/** 从 URL 解析 tab，非法值回退到默认 */
 function resolveTab(): TabName {
   const raw = route.query.tab
   if (typeof raw === 'string' && (TAB_NAMES as string[]).includes(raw)) {
@@ -46,7 +49,6 @@ const activeTab = ref<TabName>(resolveTab())
 watch(activeTab, (v) => {
   const currentQuery = route.query.tab
   const nextQuery = v === DEFAULT_TAB ? undefined : v
-
   if (currentQuery === nextQuery) return
 
   const query = { ...route.query }

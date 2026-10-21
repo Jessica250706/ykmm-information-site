@@ -44,8 +44,8 @@ import { Edit, Message } from '@element-plus/icons-vue'
 import { storeToRefs } from 'pinia'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '@/stores'
-import EditProfileDialog from './EditProfileDialog.vue'
-import RebindEmailDialog from './RebindEmailDialog.vue'
+import EditProfileDialog from './components/EditProfileDialog.vue'
+import RebindEmailDialog from './components/RebindEmailDialog.vue'
 
 const router = useRouter()
 const userStore = useUserStore()
