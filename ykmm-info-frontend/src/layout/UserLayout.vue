@@ -105,6 +105,7 @@
 <script setup lang="ts">
 import { computed, onMounted } from 'vue'
 import { ElMessageBox } from 'element-plus'
+import { storeToRefs } from 'pinia'
 import { RouterLink, RouterView, useRoute, useRouter } from 'vue-router'
 import { AdminRouteName, CommonRouteName } from '@/constants'
 import { useMenuStore, useUserStore } from '@/stores'
@@ -113,7 +114,9 @@ import ChangeColor from './components/ChangeColor.vue'
 const route = useRoute()
 const router = useRouter()
 const menuStore = useMenuStore()
-const { isAdmin, isLogin, userInfo, logout } = useUserStore()
+const userStore = useUserStore()
+const { logout } = userStore
+const { isAdmin, isLogin, userInfo } = storeToRefs(userStore)
 
 const isActive = (path: string) => route.path === path || route.path.startsWith(`${path}/`)
 

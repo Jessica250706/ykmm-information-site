@@ -38,8 +38,7 @@ public class SysMessage implements Serializable {
     /**
      * 接收者用户ID，关联 sys_user.id
      * <p>
-     * 消息只属于一个用户，不做群发；如需群发，也建议按用户逐条插入，
-     * 便于每个用户独立维护已读状态。
+     * 个人消息必填；广播消息（broadcastRole 非空）时为空。
      */
     private Long userId;
 
@@ -97,6 +96,23 @@ public class SysMessage implements Serializable {
      * 使用 TINYINT 而非 BOOLEAN，与项目内其他状态字段（status 等）保持一致。
      */
     private Integer isRead;
+
+    /**
+     * 广播角色：NULL-个人消息 1-广播给管理员
+     * <p>
+     * 为 NULL 时按 user_id 定向投递给某个用户；
+     * 非空时 user_id 为空，该消息属于某个角色群体，
+     * 所有属于该角色的用户共享同一条消息和同一个已读状态。
+     */
+    private Integer broadcastRole;
+
+    /**
+     * 首个已读用户ID（仅广播消息使用）
+     * <p>
+     * 因为广播消息的 is_read 是"群体共享"的，
+     * 记录谁第一个点开有助于审计和"已由 XXX 处理"的展示。
+     */
+    private Long readByUserId;
 
     /**
      * 阅读时间

@@ -2,6 +2,7 @@ package com.xq.service.impl;
 
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
+import com.xq.constant.SysMessageConstant;
 import com.xq.context.BaseContext;
 import com.xq.context.RoleContext;
 import com.xq.dto.DialogueVersionDTO;
@@ -14,6 +15,7 @@ import com.xq.mapper.*;
 import com.xq.result.PageResult;
 import com.xq.service.DialogueVersionContributorService;
 import com.xq.service.DialogueVersionService;
+import com.xq.service.SysMessageService;
 import com.xq.support.ViewerFilterSupport;
 import com.xq.vo.*;
 import lombok.extern.slf4j.Slf4j;
@@ -59,6 +61,8 @@ public class DialogueVersionServiceImpl implements DialogueVersionService {
     private StoryMapper storyMapper;
     @Autowired
     private StoryCategoryMapper storyCategoryMapper;
+    @Autowired
+    private SysMessageService sysMessageService;
 
     /**
      * 分页查询（三身份过滤）
@@ -173,6 +177,19 @@ public class DialogueVersionServiceImpl implements DialogueVersionService {
                 creatorRole,
                 dto.getContributorUserId(),
                 dto.getContributorName());
+
+        // 用户提交对话版本 → 广播给管理员
+        if (UserRoleEnum.current() == UserRoleEnum.USER) {
+            // 来源描述用于消息正文，尽量给管理员一个直观的"这是什么"
+            String sourceHint = buildSourceHint(dto.getSourceType(), dto.getSourceId());
+            sysMessageService.sendToRole(
+                    SysMessageConstant.BROADCAST_ROLE_ADMIN,
+                    SysMessageConstant.TYPE_SYSTEM,
+                    SysMessageConstant.TARGET_DIALOGUE_VERSION,
+                    versionId,
+                    "新对话版本待审核",
+                    "用户提交了新的对话版本（" + sourceHint + "），请及时审核");
+        }
 
         return versionId;
     }
@@ -609,5 +626,38 @@ public class DialogueVersionServiceImpl implements DialogueVersionService {
      */
     private String keyOf(Integer language, Integer format, Integer scope) {
         return language + "-" + format + "-" + scope;
+    }
+
+    /**
+     * 用于广播消息正文的"来源提示"，例如「剧情·第1话 欢迎来到彩虹城」
+     * 找不到对应来源时返回通用文案，不影响消息发送
+     */
+    private String buildSourceHint(Integer sourceType, Long sourceId) {
+        try {
+            if (DialogueSourceTypeEnum.STORY.getValue().equals(sourceType)) {
+                Story story = storyMapper.getById(sourceId);
+                if (story != null) {
+                    return "剧情《" + story.getTitle() + "》";
+                }
+            } else if (DialogueSourceTypeEnum.RC.getValue().equals(sourceType)) {
+                CardRc rc = cardRcMapper.getById(sourceId);
+                if (rc != null) {
+                    return "RC 第" + rc.getEpisodeNo() + "话";
+                }
+            } else if (DialogueSourceTypeEnum.RTV.getValue().equals(sourceType)) {
+                CardRtv rtv = cardRtvMapper.getById(sourceId);
+                if (rtv != null) {
+                    return "RTV 第" + rtv.getEpisodeNo() + "话";
+                }
+            } else if (DialogueSourceTypeEnum.RABITTER.getValue().equals(sourceType)) {
+                CardRabitter rabitter = cardRabitterMapper.getById(sourceId);
+                if (rabitter != null) {
+                    return "Rabitter 第" + rabitter.getEpisodeNo() + "话";
+                }
+            }
+        } catch (Exception e) {
+            log.warn("构建来源提示失败：sourceType={}, sourceId={}", sourceType, sourceId, e);
+        }
+        return "对话版本 #" + sourceId;
     }
 }

@@ -50,6 +50,15 @@ public class SysMessageVO {
     /** 0-未读 1-已读 */
     private Integer isRead;
 
+    /** 广播角色：NULL-个人消息 1-广播给管理员 */
+    private Integer broadcastRole;
+
+    /** 广播角色标签，如「管理员广播」 */
+    private String broadcastRoleLabel;
+
+    /** 首个已读用户ID（仅广播消息） */
+    private Long readByUserId;
+
     /**
      * 阅读时间
      */

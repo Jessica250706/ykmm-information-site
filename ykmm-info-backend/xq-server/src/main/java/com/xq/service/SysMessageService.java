@@ -57,4 +57,20 @@ public interface SysMessageService {
      */
     void send(Long userId, Integer type, Integer targetType, Long targetId,
               String title, String content);
+
+    /**
+     * 向某个角色群体广播一条消息
+     * <p>
+     * 广播消息只插一条，user_id 为空、broadcast_role 非空，
+     * 该角色成员共享同一条消息和同一个已读状态。
+     *
+     * @param broadcastRole 广播角色：1-管理员（未来可扩展 2-普通用户）
+     * @param type          消息类型
+     * @param targetType    关联业务类型
+     * @param targetId      关联业务主键
+     * @param title         标题
+     * @param content       正文
+     */
+    void sendToRole(Integer broadcastRole, Integer type, Integer targetType,
+                    Long targetId, String title, String content);
 }

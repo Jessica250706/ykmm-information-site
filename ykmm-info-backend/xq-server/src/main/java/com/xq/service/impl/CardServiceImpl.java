@@ -249,6 +249,17 @@ public class CardServiceImpl implements CardService {
         saveImages(cardId, dto.getImages());
         savePersonRels(cardId, dto.getPersonIds());
 
+        // 用户提交卡面 → 广播给管理员
+        if (UserRoleEnum.current() == UserRoleEnum.USER) {
+            sysMessageService.sendToRole(
+                    SysMessageConstant.BROADCAST_ROLE_ADMIN,
+                    SysMessageConstant.TYPE_SYSTEM,
+                    SysMessageConstant.TARGET_CARD,
+                    cardId,
+                    "新卡面待审核",
+                    "用户提交了新卡面「" + card.getName() + "」，请及时审核");
+        }
+
         log.info("新增卡面成功，id={}, status={}, creatorId={}", cardId, card.getStatus(), card.getCreatorId());
         return cardId;
     }
@@ -288,6 +299,17 @@ public class CardServiceImpl implements CardService {
         if (dto.getPersonIds() != null) {
             cardPersonRelMapper.deleteByCardId(id);
             savePersonRels(id, dto.getPersonIds());
+        }
+
+        // 用户更新卡面 → 广播给管理员
+        if (UserRoleEnum.current() == UserRoleEnum.USER) {
+            sysMessageService.sendToRole(
+                    SysMessageConstant.BROADCAST_ROLE_ADMIN,
+                    SysMessageConstant.TYPE_SYSTEM,
+                    SysMessageConstant.TARGET_CARD,
+                    id,
+                    "卡面重新提交审核",
+                    "用户重新提交了卡面「" + exist.getName() + "」，请审核");
         }
 
         log.info("编辑卡面成功，id={}", id);
@@ -422,6 +444,19 @@ public class CardServiceImpl implements CardService {
         }
         // 普通用户：置为待审核，并清空上一次的审核记录
         cardMapper.markPending(cardId);
+
+        // 用户更新卡面 → 广播给管理员
+        Card card = cardMapper.getById(cardId);
+        if (UserRoleEnum.current() == UserRoleEnum.USER) {
+            sysMessageService.sendToRole(
+                    SysMessageConstant.BROADCAST_ROLE_ADMIN,
+                    SysMessageConstant.TYPE_SYSTEM,
+                    SysMessageConstant.TARGET_CARD,
+                    cardId,
+                    "修改卡面待审核",
+                    "用户修改了卡面「" + card.getName() + "」的内容（RC/RTV/Rabitter），请及时审核");
+        }
+
         log.info("用户修改卡面下的内容，卡面回到待审核状态，cardId={}, userId={}", cardId, BaseContext.getCurrentId());
     }
 

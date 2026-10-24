@@ -37,10 +37,14 @@ public class SysMessageServiceImpl implements SysMessageService {
 
     @Override
     public PageResult<SysMessageVO> pageQuery(SysMessagePageQueryDTO query) {
-        Long viewerId = resolveViewerId();
+        Long currentId = BaseContext.getCurrentId();
+        if (currentId == null) {
+            throw new UnauthorizedException("请先登录");
+        }
+        boolean isAdmin = RoleContext.isAdmin();
 
         PageHelper.startPage(query.getPageNum(), query.getPageSize());
-        List<SysMessage> list = sysMessageMapper.pageQuery(query, viewerId);
+        List<SysMessage> list = sysMessageMapper.pageQuery(query, currentId, isAdmin);
         PageInfo<SysMessage> page = new PageInfo<>(list);
 
         List<SysMessageVO> voList = page.getList().stream()
@@ -59,13 +63,19 @@ public class SysMessageServiceImpl implements SysMessageService {
             throw new RuntimeException("消息不存在");
         }
 
-        // 权限：普通用户只能看自己的消息
-        if (!RoleContext.isAdmin()) {
-            Long currentId = BaseContext.getCurrentId();
-            if (currentId == null) {
-                throw new UnauthorizedException("请先登录");
+        Long currentId = BaseContext.getCurrentId();
+        if (currentId == null) {
+            throw new UnauthorizedException("请先登录");
+        }
+
+        // 广播消息：仅管理员能看
+        if (msg.getBroadcastRole() != null) {
+            if (!RoleContext.isAdmin()) {
+                throw new ForbiddenException("无权查看该消息");
             }
-            if (!Objects.equals(msg.getUserId(), currentId)) {
+        } else {
+            // 个人消息：只能看自己的（管理员也可以看任意个人消息）
+            if (!RoleContext.isAdmin() && !Objects.equals(msg.getUserId(), currentId)) {
                 throw new ForbiddenException("无权查看该消息");
             }
         }
@@ -78,7 +88,7 @@ public class SysMessageServiceImpl implements SysMessageService {
         if (currentId == null) {
             throw new UnauthorizedException("请先登录");
         }
-        return sysMessageMapper.countUnread(currentId);
+        return sysMessageMapper.countUnread(currentId, RoleContext.isAdmin());
     }
 
     @Override
@@ -87,12 +97,29 @@ public class SysMessageServiceImpl implements SysMessageService {
         if (id == null) {
             throw new RuntimeException("消息ID不能为空");
         }
-        // 管理员：不限制 user_id；普通用户：强制限定为当前用户
-        Long userId = RoleContext.isAdmin() ? null : BaseContext.getCurrentId();
-        if (!RoleContext.isAdmin() && userId == null) {
+        Long currentId = BaseContext.getCurrentId();
+        if (currentId == null) {
             throw new UnauthorizedException("请先登录");
         }
-        sysMessageMapper.markRead(id, userId);
+
+        SysMessage msg = sysMessageMapper.getById(id);
+        if (msg == null) {
+            throw new RuntimeException("消息不存在");
+        }
+
+        if (msg.getBroadcastRole() != null) {
+            // 广播消息：仅管理员可操作；任一管理员操作即全群体已读
+            if (!RoleContext.isAdmin()) {
+                throw new ForbiddenException("无权操作该消息");
+            }
+            sysMessageMapper.markBroadcastRead(id, currentId);
+        } else {
+            // 个人消息：只有消息接收者本人可以标记
+            if (!Objects.equals(msg.getUserId(), currentId)) {
+                throw new ForbiddenException("无权操作该消息");
+            }
+            sysMessageMapper.markPersonalRead(id, currentId);
+        }
     }
 
     @Override
@@ -102,7 +129,14 @@ public class SysMessageServiceImpl implements SysMessageService {
         if (currentId == null) {
             throw new UnauthorizedException("请先登录");
         }
-        sysMessageMapper.markAllRead(currentId);
+
+        // 自己的个人消息全部已读
+        sysMessageMapper.markAllPersonalRead(currentId);
+
+        // 管理员额外把全部广播消息标记为已读
+        if (RoleContext.isAdmin()) {
+            sysMessageMapper.markAllBroadcastRead(currentId);
+        }
     }
 
     @Override
@@ -136,26 +170,39 @@ public class SysMessageServiceImpl implements SysMessageService {
                 userId, type, targetType, targetId);
     }
 
-    /* ---------------- 私有方法 ---------------- */
+    @Override
+    @Transactional
+    public void sendToRole(Integer broadcastRole, Integer type, Integer targetType,
+                           Long targetId, String title, String content) {
+        if (broadcastRole == null || title == null) {
+            log.warn("广播消息参数不完整，跳过：broadcastRole={}, title={}", broadcastRole, title);
+            return;
+        }
+        if (!SysMessageTypeEnum.isValid(type)) {
+            log.warn("广播消息类型不合法，跳过：type={}", type);
+            return;
+        }
+        if (targetType != null && !SysMessageTargetTypeEnum.isValid(targetType)) {
+            log.warn("广播消息关联类型不合法，跳过：targetType={}", targetType);
+            return;
+        }
 
-    /**
-     * 解析"数据可见性"的用户ID：
-     * <ul>
-     *   <li>游客：未登录 → 拒绝</li>
-     *   <li>普通用户：返回当前用户ID（SQL 里只看自己）</li>
-     *   <li>管理员：返回 null（SQL 不加 user_id 限制）</li>
-     * </ul>
-     */
-    private Long resolveViewerId() {
-        if (RoleContext.isAdmin()) {
-            return null;
-        }
-        Long currentId = BaseContext.getCurrentId();
-        if (currentId == null) {
-            throw new UnauthorizedException("请先登录");
-        }
-        return currentId;
+        SysMessage message = new SysMessage();
+        message.setUserId(null);                 // 广播消息不绑定具体用户
+        message.setBroadcastRole(broadcastRole);
+        message.setType(type);
+        message.setTargetType(targetType);
+        message.setTargetId(targetId);
+        message.setTitle(title);
+        message.setContent(content);
+        message.setIsRead(SysMessageConstant.READ_STATUS_UNREAD);
+        sysMessageMapper.insert(message);
+
+        log.debug("广播消息已生成：role={}, type={}, targetType={}, targetId={}",
+                broadcastRole, type, targetType, targetId);
     }
+
+    /* ---------------- 私有方法 ---------------- */
 
     private SysMessageVO toVO(SysMessage msg) {
         if (msg == null) return null;
@@ -163,6 +210,7 @@ public class SysMessageServiceImpl implements SysMessageService {
         BeanUtils.copyProperties(msg, vo);
         vo.setTypeLabel(SysMessageTypeEnum.getLabel(msg.getType()));
         vo.setTargetTypeLabel(SysMessageTargetTypeEnum.getLabel(msg.getTargetType()));
+        vo.setBroadcastRoleLabel(SysMessageConstant.broadcastRoleLabel(msg.getBroadcastRole()));
         return vo;
     }
 }

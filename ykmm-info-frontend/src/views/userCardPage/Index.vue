@@ -68,7 +68,7 @@
       <el-select
         v-model="filter.maxRarity"
         class="w-32"
-        placeholder="等级"
+        placeholder="最高等级"
         clearable
         @change="handleFilterChange"
       >
