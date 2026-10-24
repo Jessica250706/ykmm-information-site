@@ -98,7 +98,8 @@
 <script setup lang="ts">
 import { onMounted, reactive, ref } from 'vue'
 import { ElMessage } from 'element-plus'
-import { getUnreadCountAPI, markAllReadAPI, markReadAPI, pageMyMessagesAPI } from '@/api/message'
+import { storeToRefs } from 'pinia'
+import { markAllReadAPI, markReadAPI, pageMyMessagesAPI } from '@/api/message'
 import {
   type PageResult,
   ProTable,
@@ -113,13 +114,15 @@ import {
   messageTargetTypeLabel,
   messageTypeLabel,
 } from '@/constants'
+import { useMessageStore } from '@/stores'
 import type { SysMessagePageQueryDTO, SysMessageVO } from '@/types/message'
 import MessageDetailDialog from './components/MessageDetailDialog.vue'
 
 const tableRef = ref<ProTableExpose<SysMessageVO>>()
 const detailDialogRef = ref<InstanceType<typeof MessageDetailDialog> | null>(null)
 
-const unreadCount = ref(0)
+const messageStore = useMessageStore()
+const { unreadCount } = storeToRefs(messageStore)
 
 const query = reactive<{
   type?: number
@@ -166,16 +169,6 @@ async function fetchList(params: SysMessagePageQueryDTO): Promise<PageResult<Sys
   }
 }
 
-/** 未读数 */
-async function loadUnreadCount() {
-  try {
-    const res = await getUnreadCountAPI()
-    unreadCount.value = res.data ?? 0
-  } catch {
-    unreadCount.value = 0
-  }
-}
-
 function handleSearch() {
   tableRef.value?.search({
     type: query.type ?? undefined,
@@ -189,7 +182,7 @@ function handleReset() {
   query.isRead = undefined
   query.keyword = ''
   tableRef.value?.reset()
-  void loadUnreadCount()
+  void messageStore.loadUnreadCount()
 }
 
 function handleDetail(row: SysMessageVO) {
@@ -200,21 +193,21 @@ async function handleMarkRead(row: SysMessageVO) {
   if (!row.id) return
   await markReadAPI(row.id)
   ElMessage.success('已标记为已读')
-  await Promise.all([tableRef.value?.refresh(), loadUnreadCount()])
+  await Promise.all([tableRef.value?.refresh(), messageStore.loadUnreadCount()])
 }
 
 async function handleMarkAllRead() {
   await markAllReadAPI()
   ElMessage.success('全部已标记为已读')
-  await Promise.all([tableRef.value?.refresh(), loadUnreadCount()])
+  await Promise.all([tableRef.value?.refresh(), messageStore.loadUnreadCount()])
 }
 
 /** 详情弹窗里自动标已读后，刷新列表 + 未读数 */
 async function handleMarkedRead() {
-  await Promise.all([tableRef.value?.refresh(), loadUnreadCount()])
+  await Promise.all([tableRef.value?.refresh(), messageStore.loadUnreadCount()])
 }
 
 onMounted(async () => {
-  await loadUnreadCount()
+  await messageStore.loadUnreadCount()
 })
 </script>

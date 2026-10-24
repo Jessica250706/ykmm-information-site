@@ -54,9 +54,11 @@
                 :class="isActive('/profile') ? 'theme-pill-active' : 'hover:bg-slate-100'"
                 class="flex cursor-pointer items-center gap-2 rounded-full py-1 pl-1 pr-3 transition"
               >
-                <el-avatar :size="28" :src="userInfo?.avatar" class="bg-slate-200! text-xs!">
-                  {{ avatarText }}
-                </el-avatar>
+                <el-badge :hidden="!hasUnread" :max="99" :value="unreadCount" class="avatar-badge">
+                  <el-avatar :size="28" :src="userInfo?.avatar" class="bg-slate-200! text-xs!">
+                    {{ avatarText }}
+                  </el-avatar>
+                </el-badge>
                 <span class="text-sm">{{ displayName }}</span>
               </div>
               <template #dropdown>
@@ -103,20 +105,25 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted } from 'vue'
+import { computed, onMounted, watch } from 'vue'
 import { ElMessageBox } from 'element-plus'
 import { storeToRefs } from 'pinia'
 import { RouterLink, RouterView, useRoute, useRouter } from 'vue-router'
 import { AdminRouteName, CommonRouteName } from '@/constants'
-import { useMenuStore, useUserStore } from '@/stores'
+import { useMenuStore, useMessageStore, useUserStore } from '@/stores'
 import ChangeColor from './components/ChangeColor.vue'
 
 const route = useRoute()
 const router = useRouter()
+
 const menuStore = useMenuStore()
+
 const userStore = useUserStore()
 const { logout } = userStore
 const { isAdmin, isLogin, userInfo } = storeToRefs(userStore)
+
+const messageStore = useMessageStore()
+const { unreadCount, hasUnread } = storeToRefs(messageStore)
 
 const isActive = (path: string) => route.path === path || route.path.startsWith(`${path}/`)
 
@@ -161,9 +168,24 @@ async function handleUserCommand(cmd: string) {
   }
 }
 
+/** 登录状态变化时同步未读数 */
+watch(
+  () => userStore.isLogin,
+  (login) => {
+    if (login) {
+      void messageStore.loadUnreadCount()
+    } else {
+      messageStore.reset()
+    }
+  },
+)
+
 onMounted(() => {
   if (!menuStore.userMenu.length) {
     void menuStore.loadUserMenu()
+  }
+  if (userStore.isLogin) {
+    void messageStore.loadUnreadCount()
   }
 })
 </script>
