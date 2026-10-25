@@ -9,7 +9,12 @@
       <el-tab-pane class="h-full" label="我的版本" name="versions">
         <MyVersionsTab v-if="activeTab === 'versions'" class="h-full" />
       </el-tab-pane>
-      <el-tab-pane class="h-full" label="我的消息" name="messages">
+      <el-tab-pane class="h-full" name="messages">
+        <template #label>
+          <el-badge :is-dot="unreadCount" :offset="[5, 3]">
+            <span>我的消息</span>
+          </el-badge>
+        </template>
         <MyMessagesTab v-if="activeTab === 'messages'" class="h-full" />
       </el-tab-pane>
     </el-tabs>
@@ -18,7 +23,9 @@
 
 <script setup lang="ts">
 import { ref, watch } from 'vue'
+import { storeToRefs } from 'pinia'
 import { useRoute, useRouter } from 'vue-router'
+import { useMessageStore } from '@/stores'
 import MyCardsTab from './components/MyCardsTab.vue'
 import MyMessagesTab from './components/MyMessagesTab/Index.vue'
 import MyVersionsTab from './components/MyVersionsTab.vue'
@@ -30,6 +37,9 @@ const DEFAULT_TAB: TabName = 'cards'
 
 const route = useRoute()
 const router = useRouter()
+
+const messageStore = useMessageStore()
+const { unreadCount } = storeToRefs(messageStore)
 
 function resolveTab(): TabName {
   const raw = route.query.tab

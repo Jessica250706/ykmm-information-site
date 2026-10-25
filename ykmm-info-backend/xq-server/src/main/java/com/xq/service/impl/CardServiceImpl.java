@@ -251,13 +251,14 @@ public class CardServiceImpl implements CardService {
 
         // 用户提交卡面 → 广播给管理员
         if (UserRoleEnum.current() == UserRoleEnum.USER) {
+            CardSeries cardSeries = cardSeriesMapper.getById(card.getSeriesId());
             sysMessageService.sendToRole(
                     SysMessageConstant.BROADCAST_ROLE_ADMIN,
                     SysMessageConstant.TYPE_SYSTEM,
                     SysMessageConstant.TARGET_CARD,
                     cardId,
                     "新卡面待审核",
-                    "用户提交了新卡面「" + card.getName() + "」，请及时审核");
+                    "用户提交了新卡面「" + card.getName() + "[" + cardSeries.getName() + "]" + "」，请及时审核");
         }
 
         log.info("新增卡面成功，id={}, status={}, creatorId={}", cardId, card.getStatus(), card.getCreatorId());
@@ -303,13 +304,14 @@ public class CardServiceImpl implements CardService {
 
         // 用户更新卡面 → 广播给管理员
         if (UserRoleEnum.current() == UserRoleEnum.USER) {
+            CardSeries cardSeries = cardSeriesMapper.getById(exist.getSeriesId());
             sysMessageService.sendToRole(
                     SysMessageConstant.BROADCAST_ROLE_ADMIN,
                     SysMessageConstant.TYPE_SYSTEM,
                     SysMessageConstant.TARGET_CARD,
                     id,
                     "卡面重新提交审核",
-                    "用户重新提交了卡面「" + exist.getName() + "」，请审核");
+                    "用户重新提交了卡面「" + exist.getName() + "[" + cardSeries.getName() + "]" + "」，请审核");
         }
 
         log.info("编辑卡面成功，id={}", id);
@@ -445,16 +447,17 @@ public class CardServiceImpl implements CardService {
         // 普通用户：置为待审核，并清空上一次的审核记录
         cardMapper.markPending(cardId);
 
-        // 用户更新卡面 → 广播给管理员
+        // 用户更新卡面 → 广播给管理员（已是待审核状态不发送）
         Card card = cardMapper.getById(cardId);
-        if (UserRoleEnum.current() == UserRoleEnum.USER) {
+        if (UserRoleEnum.current() == UserRoleEnum.USER && card.getStatus() != StatusConstant.PUBLISHED) {
+            CardSeries cardSeries = cardSeriesMapper.getById(card.getSeriesId());
             sysMessageService.sendToRole(
                     SysMessageConstant.BROADCAST_ROLE_ADMIN,
                     SysMessageConstant.TYPE_SYSTEM,
                     SysMessageConstant.TARGET_CARD,
                     cardId,
                     "修改卡面待审核",
-                    "用户修改了卡面「" + card.getName() + "」的内容（RC/RTV/Rabitter），请及时审核");
+                    "用户修改了卡面「" + card.getName() + "[" + cardSeries.getName() + "]" + "」的内容（RC/RTV/Rabitter），请及时审核");
         }
 
         log.info("用户修改卡面下的内容，卡面回到待审核状态，cardId={}, userId={}", cardId, BaseContext.getCurrentId());
@@ -517,6 +520,7 @@ public class CardServiceImpl implements CardService {
 
         cardMapper.update(update);
 
+        CardSeries cardSeries = cardSeriesMapper.getById(exist.getSeriesId());
         if (pass) {
             sysMessageService.send(
                     exist.getCreatorId(),
@@ -524,7 +528,7 @@ public class CardServiceImpl implements CardService {
                     SysMessageConstant.TARGET_CARD,
                     id,
                     "卡面审核通过",
-                    "您提交的卡面「" + exist.getName() + "」已通过审核");
+                    "您提交的卡面「" + exist.getName() + "[" + cardSeries.getName() + "]" + "」已通过审核");
         } else {
             sysMessageService.send(
                     exist.getCreatorId(),
@@ -532,7 +536,7 @@ public class CardServiceImpl implements CardService {
                     SysMessageConstant.TARGET_CARD,
                     id,
                     "卡面审核未通过",
-                    "您提交的卡面「" + exist.getName() + "」未通过审核，原因：" + remark);
+                    "您提交的卡面「" + exist.getName() + "[" + cardSeries.getName() + "]" + "」未通过审核，原因：" + remark);
         }
 
         log.info("审核卡面成功，id={}, status={}, reviewerId={}, remark={}",

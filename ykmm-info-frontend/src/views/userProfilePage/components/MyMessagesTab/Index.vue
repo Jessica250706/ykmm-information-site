@@ -135,7 +135,8 @@ const query = reactive<{
 })
 
 const columns: ProTableColumn<SysMessageVO>[] = [
-  { label: '标题', minWidth: 240, slot: 'title' },
+  { label: '标题', minWidth: 160, slot: 'title' },
+  { label: '内容', prop: 'content', minWidth: 240, showOverflowTooltip: true },
   { label: '类型', width: 110, align: 'center', slot: 'type' },
   { label: '关联业务', width: 120, align: 'center', slot: 'targetType' },
   {
