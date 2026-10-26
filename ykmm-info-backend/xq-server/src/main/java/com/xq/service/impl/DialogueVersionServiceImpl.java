@@ -481,6 +481,25 @@ public class DialogueVersionServiceImpl implements DialogueVersionService {
                 id, targetStatus, currentUserId, update.getReviewRemark());
     }
 
+    @Override
+    @Transactional
+    public void markPendingIfNeeded(Long versionId) {
+        if (versionId == null) {
+            return;
+        }
+        // 管理员：不改变状态
+        if (RoleContext.isAdmin()) {
+            return;
+        }
+        // 游客：理论上已被权限校验拦截，兜底跳过
+        if (RoleContext.isGuest()) {
+            return;
+        }
+        dialogueVersionMapper.markPending(versionId);
+        log.info("用户修改版本下内容，版本回到待审核状态，versionId={}, userId={}",
+                versionId, BaseContext.getCurrentId());
+    }
+
     /* ============================================================
      * 私有方法
      * ============================================================ */

@@ -102,8 +102,8 @@ public class UserDialogueLineController {
     public Result<Void> sort(
             @PathVariable @NotNull(message = "版本ID不能为空") Long versionId,
             @RequestBody
-            @Valid                                  // ★ 新增：触发 SortDTO 内部字段校验
-            @NotNull(message = "参数不能为空")        // ★ @NotEmpty → @NotNull
+            @Valid
+            @NotNull(message = "参数不能为空")
             DialogueLineSortDTO dto) {
         dialogueLineService.sort(versionId, dto.getLineIds());
         return Result.success();

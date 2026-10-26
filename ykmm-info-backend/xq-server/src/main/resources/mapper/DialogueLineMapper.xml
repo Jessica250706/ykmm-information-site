@@ -118,4 +118,13 @@
     </foreach>
   </select>
 
+  <select id="listDistinctVersionIdsByIds" resultType="java.lang.Long">
+    SELECT DISTINCT version_id
+    FROM dialogue_line
+    WHERE id IN
+    <foreach collection="ids" item="id" open="(" separator="," close=")">
+      #{id}
+    </foreach>
+  </select>
+
 </mapper>

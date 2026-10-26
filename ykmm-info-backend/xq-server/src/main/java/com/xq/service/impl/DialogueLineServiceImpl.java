@@ -8,6 +8,7 @@ import com.xq.entity.*;
 import com.xq.enums.*;
 import com.xq.mapper.*;
 import com.xq.service.DialogueLineService;
+import com.xq.service.DialogueVersionService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,24 +33,20 @@ public class DialogueLineServiceImpl implements DialogueLineService {
 
     @Autowired
     private DialogueLineMapper dialogueLineMapper;
-
     @Autowired
     private DialogueSegmentMapper dialogueSegmentMapper;
-
     @Autowired
     private DialogueVersionMapper dialogueVersionMapper;
-
     @Autowired
     private RoleMapper roleMapper;
-
     @Autowired
     private StickerMapper stickerMapper;
-
     @Autowired
     private CardRcMapper cardRcMapper;
-
     @Autowired
     private RcOptionMapper rcOptionMapper;
+    @Autowired
+    private DialogueVersionService dialogueVersionService;
 
     /**
      * 批量保存句子
@@ -116,6 +113,9 @@ public class DialogueLineServiceImpl implements DialogueLineService {
             dialogueSegmentMapper.insertBatch(allSegments);
         }
 
+        // 用户新增句子后，版本回到待审核
+        dialogueVersionService.markPendingIfNeeded(versionId);
+
         log.info("批量保存对话句子成功，versionId={}, count={}, initiatorRoleId={}",
                 versionId, entityList.size(), initiatorRoleId);
     }
@@ -157,6 +157,9 @@ public class DialogueLineServiceImpl implements DialogueLineService {
             }
         }
 
+        // 用户新增句子后，版本回到待审核
+        dialogueVersionService.markPendingIfNeeded(exist.getVersionId());
+
         log.info("编辑对话句子成功，id={}", lineId);
     }
 
@@ -174,6 +177,10 @@ public class DialogueLineServiceImpl implements DialogueLineService {
         }
         dialogueSegmentMapper.deleteByLineId(lineId);
         dialogueLineMapper.deleteById(lineId);
+
+        // 用户新增句子后，版本回到待审核
+        dialogueVersionService.markPendingIfNeeded(exist.getVersionId());
+
         log.info("删除对话句子成功，id={}", lineId);
     }
 
@@ -202,6 +209,10 @@ public class DialogueLineServiceImpl implements DialogueLineService {
             }
             dialogueLineMapper.updateSort(lineId, i + 1);
         }
+
+        // 用户调整顺序后，版本回到待审核
+        dialogueVersionService.markPendingIfNeeded(versionId);
+
         log.info("调整对话句子顺序成功，versionId={}", versionId);
     }
 
@@ -309,6 +320,9 @@ public class DialogueLineServiceImpl implements DialogueLineService {
             saveRcOptions(version, versionId, lines, updatedEntities);
         }
 
+        // 用户批量更新句子后，版本回到待审核
+        dialogueVersionService.markPendingIfNeeded(versionId);
+
         log.info("批量更新对话句子成功，versionId={}, count={}", versionId, lines.size());
     }
 
@@ -320,14 +334,25 @@ public class DialogueLineServiceImpl implements DialogueLineService {
     @Override
     @Transactional
     public void deleteBatch(List<Long> lineIds) {
-        // 先删 rc_option
+        // 0. 先反查涉及的版本ID（跨版本删除时可能不止一个）
+        List<Long> affectedVersionIds = lineIds.isEmpty()
+                ? Collections.emptyList()
+                : dialogueLineMapper.listDistinctVersionIdsByIds(lineIds);
+
+        // 1. 先删 rc_option
         rcOptionMapper.deleteByLineIds(lineIds);
 
-        // 再删片段和句子
+        // 2. 再删片段和句子
         dialogueSegmentMapper.deleteByLineIds(lineIds);
         dialogueLineMapper.deleteByIds(lineIds);
 
-        log.info("批量删除对话句子成功，count={}", lineIds.size());
+        // 3. 涉及的版本回到待审核
+        for (Long vid : affectedVersionIds) {
+            dialogueVersionService.markPendingIfNeeded(vid);
+        }
+
+        log.info("批量删除对话句子成功，count={}, affectedVersions={}",
+                lineIds.size(), affectedVersionIds);
     }
 
     // ---------------------------------------------------

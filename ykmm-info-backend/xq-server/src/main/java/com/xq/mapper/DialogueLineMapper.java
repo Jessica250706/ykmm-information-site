@@ -123,4 +123,14 @@ public interface DialogueLineMapper {
      * @return 句子主键列表
      */
     List<Long> listIdsByVersionIds(@Param("versionIds") List<Long> versionIds);
+
+    /**
+     * 根据对话句子ID列表查询涉及的版本ID（去重）
+     * <p>
+     * 用于批量删除后判断"哪些版本需要重新进入待审核"。
+     *
+     * @param ids 句子ID列表
+     * @return 涉及的版本ID（去重）；ids 为空时返回空列表
+     */
+    List<Long> listDistinctVersionIdsByIds(@Param("ids") List<Long> ids);
 }

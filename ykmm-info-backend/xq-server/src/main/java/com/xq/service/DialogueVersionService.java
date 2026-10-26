@@ -102,4 +102,19 @@ public interface DialogueVersionService {
      * @param dto 审核参数
      */
     void review(Long id, DialogueVersionReviewDTO dto);
+
+    /**
+     * 用户在版本下修改内容后，将版本重新置为「待审核」。
+     * <p>
+     * 规则：
+     * <ul>
+     *   <li>管理员修改：不改变状态（管理员本身即审核人，无需自我审核）</li>
+     *   <li>游客：不改变状态（理论上已被权限校验拦截，此处兜底）</li>
+     *   <li>普通用户：将版本置为待审核，并清空上一次的审核记录</li>
+     *   <li>幂等：已处于待审核状态时不重复写库</li>
+     * </ul>
+     *
+     * @param versionId 版本ID
+     */
+    void markPendingIfNeeded(Long versionId);
 }

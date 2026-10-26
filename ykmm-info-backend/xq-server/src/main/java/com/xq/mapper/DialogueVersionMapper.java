@@ -132,4 +132,14 @@ public interface DialogueVersionMapper {
      * @param version 待更新的审核字段（至少包含 id / status）
      */
     void review(DialogueVersion version);
+
+    /**
+     * 将对话版本置为待审核，并清空上一次审核记录
+     * <p>
+     * 幂等：已处于待审核状态时不再更新（SQL 里带 {@code AND status != 2}），
+     * 避免用户连续编辑同一版本时反复写库。
+     *
+     * @param id 版本ID
+     */
+    void markPending(@Param("id") Long id);
 }
