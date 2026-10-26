@@ -115,34 +115,62 @@ async function open(row: SysMessageVO) {
 }
 
 /**
- * 跳转到关联业务。
+ * 跳转到关联业务（新标签页打开）。
  * - CARD：直接跳卡面详情
  * - STORY：先查详情拿 categoryType，再跳剧情浏览页
  * - DIALOGUE_VERSION：查版本详情拿 sourceType / sourceId，再按来源跳
+ *
+ * 实现说明：
+ * 函数内有 await，若在 await 之后再 window.open 会被浏览器拦截。
+ * 所以入口处先同步打开空白占位窗口（占住"用户手势"），
+ * 异步拿到目标 URL 后再填 href；失败则关闭占位窗口。
  */
 async function handleNavigate() {
   const msg = message.value
   if (!msg || msg.targetType == null || msg.targetId == null) return
 
+  // 同步阶段先占位打开新标签页，避免后续 await 后被浏览器拦截
+  const newWindow = window.open('', '_blank')
+  if (!newWindow) {
+    ElMessage.warning('浏览器拦截了新窗口，请允许弹出窗口后重试')
+    return
+  }
+  // 立即断开 opener 引用，防止新页面通过 window.opener 操作当前页
+  newWindow.opener = null
+
+  /** 打开成功：填充 URL 并关闭弹窗 */
+  const openUrl = (href: string) => {
+    newWindow.location.href = href
+    visible.value = false
+  }
+
+  /** 中途放弃：关闭占位窗口 */
+  const abort = () => {
+    newWindow.close()
+  }
+
   navigating.value = true
   try {
+    // ---------- 卡面：直接跳详情 ----------
     if (msg.targetType === MESSAGE_TARGET_TYPE.CARD) {
-      await router.push({
+      const { href } = router.resolve({
         name: UserRouteName.CARD_DETAIL,
         params: { id: String(msg.targetId) },
       })
-      visible.value = false
+      openUrl(href)
       return
     }
 
+    // ---------- 剧情：先查详情拿 categoryType ----------
     if (msg.targetType === MESSAGE_TARGET_TYPE.STORY) {
       const detail = await getStoryDetailAPI(msg.targetId)
       const categoryType = detail.data?.categoryType
       if (categoryType == null) {
+        abort()
         ElMessage.warning('剧情分类信息缺失，无法跳转')
         return
       }
-      await router.push({
+      const { href } = router.resolve({
         name: UserRouteName.STORY_BROWSE_DETAIL,
         params: {
           type: String(categoryType),
@@ -150,27 +178,31 @@ async function handleNavigate() {
           id: String(msg.targetId),
         },
       })
-      visible.value = false
+      openUrl(href)
       return
     }
 
+    // ---------- 对话版本：先查版本详情，再按来源跳 ----------
     if (msg.targetType === MESSAGE_TARGET_TYPE.DIALOGUE_VERSION) {
       const v = await getDialogueVersionDetailAPI(msg.targetId)
       const sourceType = v.data?.sourceType
       const sourceId = v.data?.sourceId
       if (sourceType == null || sourceId == null) {
+        abort()
         ElMessage.warning('版本来源信息缺失，无法跳转')
         return
       }
 
+      // 版本来自剧情
       if (sourceType === SOURCE_TYPE.STORY) {
         const detail = await getStoryDetailAPI(sourceId)
         const categoryType = detail.data?.categoryType
         if (categoryType == null) {
+          abort()
           ElMessage.warning('剧情分类信息缺失，无法跳转')
           return
         }
-        await router.push({
+        const { href } = router.resolve({
           name: UserRouteName.STORY_BROWSE_DETAIL,
           params: {
             type: String(categoryType),
@@ -178,30 +210,37 @@ async function handleNavigate() {
             id: String(sourceId),
           },
         })
-      } else {
-        const ep = await getCardEpisodeDialogueAPI({ sourceType, sourceId })
-        const cardId = ep.data?.cardId
-        if (cardId == null) {
-          ElMessage.warning('该话数所属卡面信息缺失')
-          return
-        }
-        const routeName =
-          sourceType === SOURCE_TYPE.RC
-            ? UserRouteName.CARD_RC_BROWSE
-            : sourceType === SOURCE_TYPE.RTV
-              ? UserRouteName.CARD_RTV_BROWSE
-              : UserRouteName.CARD_RABITTER_BROWSE
-        await router.push({
-          name: routeName,
-          query: { cardId: String(cardId), sourceId: String(sourceId) },
-        })
+        openUrl(href)
+        return
       }
-      visible.value = false
+
+      // 版本来自卡面话数（RC / RTV / Rabitter）
+      const ep = await getCardEpisodeDialogueAPI({ sourceType, sourceId })
+      const cardId = ep.data?.cardId
+      if (cardId == null) {
+        abort()
+        ElMessage.warning('该话数所属卡面信息缺失')
+        return
+      }
+      const routeName =
+        sourceType === SOURCE_TYPE.RC
+          ? UserRouteName.CARD_RC_BROWSE
+          : sourceType === SOURCE_TYPE.RTV
+            ? UserRouteName.CARD_RTV_BROWSE
+            : UserRouteName.CARD_RABITTER_BROWSE
+      const { href } = router.resolve({
+        name: routeName,
+        query: { cardId: String(cardId), sourceId: String(sourceId) },
+      })
+      openUrl(href)
       return
     }
 
+    // 未支持的类型
+    abort()
     ElMessage.info('暂不支持跳转到该类型')
   } catch {
+    abort()
     ElMessage.error('跳转失败，该内容可能已被删除')
   } finally {
     navigating.value = false

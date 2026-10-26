@@ -2,6 +2,7 @@ package com.xq.mapper;
 
 import com.xq.dto.CardPageQueryDTO;
 import com.xq.entity.Card;
+import com.xq.vo.CardSourceVO;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
@@ -64,4 +65,15 @@ public interface CardMapper {
      */
     List<Card> pageQueryByCreator(@Param("query") CardPageQueryDTO query,
                                   @Param("creatorId") Long creatorId);
+
+    /**
+     * 按卡面ID查询「卡面 + 所属系列名」。
+     * <p>
+     * 用 LEFT JOIN 一次拿到系列名，避免调用方再查一次 card_series。
+     * 卡面不存在时返回 null；系列不存在时 seriesName 为 null。
+     *
+     * @param id 卡面ID
+     * @return 轻量来源信息；不存在返回 null
+     */
+    CardSourceVO getWithSeriesById(@Param("id") Long id);
 }

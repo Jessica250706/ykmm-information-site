@@ -177,4 +177,21 @@
     ORDER BY c.created_at DESC, c.id DESC
   </select>
 
+  <!--
+    按 ID 查询「卡面 + 系列名」：
+    - LEFT JOIN card_series，无系列时 seriesName 为 null
+    - 只查来源提示需要的字段，不返回图片/人物等重字段
+  -->
+  <select id="getWithSeriesById" resultType="com.xq.vo.CardSourceVO">
+    SELECT
+      c.id,
+      c.name,
+      c.status,
+      c.series_id AS seriesId,
+      s.name      AS seriesName
+    FROM card c
+           LEFT JOIN card_series s ON s.id = c.series_id
+    WHERE c.id = #{id}
+  </select>
+
 </mapper>

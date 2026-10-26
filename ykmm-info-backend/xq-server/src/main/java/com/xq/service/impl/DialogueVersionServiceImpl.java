@@ -716,8 +716,15 @@ public class DialogueVersionServiceImpl implements DialogueVersionService {
     }
 
     /**
-     * 用于广播消息正文的"来源提示"，例如「剧情·第1话 欢迎来到彩虹城」
-     * 找不到对应来源时返回通用文案，不影响消息发送
+     * 用于广播消息正文的"来源提示"：
+     * <ul>
+     *   <li>剧情：{@code 剧情《xxx》}</li>
+     *   <li>RC / RTV / Rabitter：{@code 卡面名[系列名]·RC 第 N 话}</li>
+     * </ul>
+     * 找不到来源时回退到 {@code 对话版本 #xxx}，不影响消息发送。
+     * <p>
+     * 卡面类通过 {@link CardMapper#getWithSeriesById(Long)} 一次拿到卡面名 + 系列名，
+     * 避免再查一次 card_series。
      */
     private String buildSourceHint(Integer sourceType, Long sourceId) {
         try {
@@ -729,22 +736,54 @@ public class DialogueVersionServiceImpl implements DialogueVersionService {
             } else if (DialogueSourceTypeEnum.RC.getValue().equals(sourceType)) {
                 CardRc rc = cardRcMapper.getById(sourceId);
                 if (rc != null) {
-                    return "RC 第" + rc.getEpisodeNo() + "话";
+                    return buildCardEpisodeHint(rc.getCardId(), "RC", rc.getEpisodeNo(), rc.getTitle());
                 }
             } else if (DialogueSourceTypeEnum.RTV.getValue().equals(sourceType)) {
                 CardRtv rtv = cardRtvMapper.getById(sourceId);
                 if (rtv != null) {
-                    return "RTV 第" + rtv.getEpisodeNo() + "话";
+                    return buildCardEpisodeHint(rtv.getCardId(), "RTV", rtv.getEpisodeNo(), rtv.getTitle());
                 }
             } else if (DialogueSourceTypeEnum.RABITTER.getValue().equals(sourceType)) {
                 CardRabitter rabitter = cardRabitterMapper.getById(sourceId);
                 if (rabitter != null) {
-                    return "Rabitter 第" + rabitter.getEpisodeNo() + "话";
+                    return buildCardEpisodeHint(rabitter.getCardId(), "Rabitter", rabitter.getEpisodeNo(), rabitter.getTitle());
                 }
             }
         } catch (Exception e) {
             log.warn("构建来源提示失败：sourceType={}, sourceId={}", sourceType, sourceId, e);
         }
         return "对话版本 #" + sourceId;
+    }
+
+    /**
+     * 卡面话数的来源提示：{@code 卡面名[系列名]·RC 第 N 话}
+     * <p>
+     * 卡面不存在或无系列名时降级展示，保证提示始终有值。
+     *
+     * @param cardId       所属卡面ID
+     * @param typeLabel    RC / RTV / Rabitter
+     * @param episodeNo    第几话
+     * @param episodeTitle 话名
+     */
+    private String buildCardEpisodeHint(Long cardId, String typeLabel, Integer episodeNo, String episodeTitle) {
+        String episodePart = typeLabel + " 第" + (episodeNo == null ? "?" : episodeNo) + "话 " + episodeTitle;
+        if (cardId == null) {
+            return episodePart;
+        }
+
+        CardSourceVO card = cardMapper.getWithSeriesById(cardId);
+        if (card == null) {
+            return episodePart;
+        }
+
+        StringBuilder sb = new StringBuilder();
+        sb.append(card.getName() != null && !card.getName().isBlank()
+                ? card.getName()
+                : "卡面 #" + cardId);
+        if (card.getSeriesName() != null && !card.getSeriesName().isBlank()) {
+            sb.append("[").append(card.getSeriesName()).append("]");
+        }
+        sb.append("·").append(episodePart);
+        return sb.toString();
     }
 }

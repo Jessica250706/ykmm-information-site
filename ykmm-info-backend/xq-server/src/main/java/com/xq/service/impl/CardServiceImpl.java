@@ -448,16 +448,15 @@ public class CardServiceImpl implements CardService {
         cardMapper.markPending(cardId);
 
         // 用户更新卡面 → 广播给管理员（已是待审核状态不发送）
-        Card card = cardMapper.getById(cardId);
+        CardSourceVO card = cardMapper.getWithSeriesById(cardId);
         if (UserRoleEnum.current() == UserRoleEnum.USER && card.getStatus() != StatusConstant.PUBLISHED) {
-            CardSeries cardSeries = cardSeriesMapper.getById(card.getSeriesId());
             sysMessageService.sendToRole(
                     SysMessageConstant.BROADCAST_ROLE_ADMIN,
                     SysMessageConstant.TYPE_SYSTEM,
                     SysMessageConstant.TARGET_CARD,
                     cardId,
                     "修改卡面待审核",
-                    "用户修改了卡面「" + card.getName() + "[" + cardSeries.getName() + "]" + "」的内容（RC/RTV/Rabitter），请及时审核");
+                    "用户修改了卡面「" + card.getName() + "[" + card.getSeriesName() + "]" + "」的内容（RC/RTV/Rabitter），请及时审核");
         }
 
         log.info("用户修改卡面下的内容，卡面回到待审核状态，cardId={}, userId={}", cardId, BaseContext.getCurrentId());

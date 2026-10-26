@@ -174,8 +174,8 @@ function reload() {
   void load()
 }
 
-/** 跳转到对应浏览页：直接使用后端已带出的 source 信息，无需再请求 */
-async function handleOpen(v: DialogueVersionVO) {
+/** 跳转到对应浏览页（新标签页打开）：直接使用后端已带出的 source 信息，无需再请求 */
+function handleOpen(v: DialogueVersionVO) {
   const src = v.source
   if (!src || src.sourceId == null || src.sourceType == null) {
     ElMessage.warning('该版本缺少来源信息，无法查看')
@@ -188,7 +188,7 @@ async function handleOpen(v: DialogueVersionVO) {
       ElMessage.warning('剧情分类信息缺失，无法跳转')
       return
     }
-    await router.push({
+    const { href } = router.resolve({
       name: UserRouteName.STORY_BROWSE_DETAIL,
       params: {
         type: String(src.categoryType),
@@ -196,6 +196,7 @@ async function handleOpen(v: DialogueVersionVO) {
         id: String(src.sourceId),
       },
     })
+    window.open(href, '_blank', 'noopener')
     return
   }
 
@@ -211,10 +212,11 @@ async function handleOpen(v: DialogueVersionVO) {
     return
   }
 
-  await router.push({
+  const { href } = router.resolve({
     name: routeName,
     query: { cardId: String(src.cardId), sourceId: String(src.sourceId) },
   })
+  window.open(href, '_blank', 'noopener')
 }
 
 onMounted(load)
