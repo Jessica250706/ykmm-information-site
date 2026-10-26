@@ -70,7 +70,22 @@
         )
       </if>
     </where>
-    ORDER BY c.status DESC, c.first_pool_time DESC, c.id DESC
+    <!--
+      业务排序：
+        1. 状态：待审核(2) → 已发布(1) → 已拒绝(3)
+           —— 管理员一眼看到待处理队列，不用先筛选
+        2. 同状态内：首次入池时间倒序（新的在前，NULL 排最后）
+        3. 再按 id 倒序，保证稳定排序
+    -->
+    ORDER BY
+      CASE c.status
+        WHEN 2 THEN 1   <!-- 待审核 -->
+        WHEN 1 THEN 2   <!-- 已发布 -->
+        WHEN 3 THEN 3   <!-- 已拒绝 -->
+        ELSE 4          <!-- 兜底：未知状态 / NULL 排最后 -->
+      END ASC,
+      c.first_pool_time DESC,
+      c.id DESC
   </select>
 
   <select id="getById" resultType="com.xq.entity.Card">

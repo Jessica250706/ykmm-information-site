@@ -2,6 +2,7 @@ package com.xq.service;
 
 import com.xq.dto.DialogueVersionDTO;
 import com.xq.dto.DialogueVersionPageQueryDTO;
+import com.xq.dto.DialogueVersionReviewDTO;
 import com.xq.result.PageResult;
 import com.xq.vo.DialogueVersionOptionVO;
 import com.xq.vo.DialogueVersionVO;
@@ -84,4 +85,21 @@ public interface DialogueVersionService {
      * 分页查询当前用户创建的版本
      */
     PageResult<DialogueVersionVO> pageMyVersions(DialogueVersionPageQueryDTO query);
+
+    /**
+     * 审核对话版本
+     * <p>
+     * 规则：
+     * <ul>
+     *   <li>仅管理员可操作</li>
+     *   <li>仅 PENDING（待审核）状态可审核</li>
+     *   <li>审核结果只允许「通过 1 / 拒绝 3」</li>
+     *   <li>拒绝时必须填写审核备注</li>
+     *   <li>审核完成后向版本创建者推送消息；管理员自审（自己创建自己审）不发消息</li>
+     * </ul>
+     *
+     * @param id  版本ID
+     * @param dto 审核参数
+     */
+    void review(Long id, DialogueVersionReviewDTO dto);
 }

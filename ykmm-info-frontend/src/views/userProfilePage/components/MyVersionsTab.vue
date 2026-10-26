@@ -43,12 +43,13 @@
         <li
           v-for="v in list"
           :key="v.id"
-          class="flex items-center justify-between gap-3 rounded-lg border border-slate-200 px-3 py-2.5"
+          class="grid items-center gap-3 rounded-lg border border-slate-200 px-3 py-2.5"
+          style="grid-template-columns: minmax(0, 1fr) 84px 56px"
         >
-          <div class="min-w-0 shrink-0">
+          <!-- 第一列：内容（可长可短，minmax(0,1fr) 允许收缩并撑满剩余空间） -->
+          <div class="min-w-0">
             <!-- 第一行：来源主标题 + 版本信息 -->
             <div class="flex flex-wrap items-center gap-2 text-sm">
-              <!-- 来源主标题：story=剧情标题；card=卡面名 [系列名] -->
               <span class="font-medium">
                 <template v-if="v.source?.sourceType === SOURCE_TYPE.STORY">
                   {{ v.source.title || '剧情' }}
@@ -69,17 +70,13 @@
 
             <!-- 第二行：话标题（card 类）+ 版本信息 -->
             <div class="mt-0.5 flex flex-wrap items-center gap-2 text-xs text-slate-500">
-              <!-- card 类：第X话 · 话标题 -->
               <span v-if="v.source && v.source.sourceType !== SOURCE_TYPE.STORY">
                 <template v-if="v.source.episodeNo != null">第{{ v.source.episodeNo }}话</template>
                 <template v-if="v.source.episodeTitle">· {{ v.source.episodeTitle }}</template>
               </span>
-              <!-- story 类：分类名 -->
               <span v-if="v.source?.sourceType === SOURCE_TYPE.STORY && v.source.subtitle">
                 {{ v.source.subtitle }}
               </span>
-
-              <!-- 版本信息 -->
               <span class="text-slate-300">|</span>
               <span>
                 {{ v.label || `${v.languageLabel} · ${v.formatLabel} · ${v.scopeLabel}` }}
@@ -97,12 +94,15 @@
             </div>
           </div>
 
-          <el-tag :type="getStatusTagType(v.status)" class="shrink-0" effect="plain">
+          <!-- 第二列：状态（固定宽 84px，居中） -->
+          <el-tag :type="getStatusTagType(v.status)" class="justify-self-center" effect="plain">
             {{ statusLabel(v.status) }}
           </el-tag>
 
+          <!-- 第三列：查看按钮（固定宽 56px，居中） -->
           <el-button
             :disabled="!v.source?.sourceId"
+            class="justify-self-center"
             size="small"
             type="primary"
             link

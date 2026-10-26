@@ -74,6 +74,11 @@ public class DialogueVersionVO implements Serializable {
     private Integer status;
 
     /**
+     * 审批理由
+     */
+    private String reviewRemark;
+
+    /**
      * 文字版本时的句子列表
      */
     private List<DialogueLineVO> lines;

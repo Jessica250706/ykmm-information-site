@@ -121,4 +121,15 @@ public interface DialogueVersionMapper {
      */
     List<DialogueVersion> pageQueryByCreator(@Param("query") DialogueVersionPageQueryDTO query,
                                              @Param("creatorId") Long creatorId);
+
+    /**
+     * 审核对话版本：更新审核相关字段
+     * <p>
+     * 注意：这里用固定 SQL 更新 status / reviewerId / reviewTime / reviewRemark 四个字段，
+     * 而不是复用通用动态 update —— 因为 reviewRemark 在"通过"时可能被显式写成空串以清除旧备注，
+     * 动态 <if test="!= null"> 无法做到"清空"。
+     *
+     * @param version 待更新的审核字段（至少包含 id / status）
+     */
+    void review(DialogueVersion version);
 }

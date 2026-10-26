@@ -121,6 +121,9 @@ export const AdminRouteName = {
 
   // ---------- 消息管理 ----------
   MESSAGE_MANAGE: 'AdminMessageManage',
+
+  // ---------- 版本管理 ----------
+  DIALOGUE_VERSION_MANAGE: 'AdminDialogueVersionManage',
 } as const
 
 /** 用户端路由名称联合类型 */

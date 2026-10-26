@@ -3,6 +3,7 @@ import type { DialogueImageVO } from './dialogueImage'
 import type { DialogueLineVO } from './dialogueLine'
 import type { RcOptionVO } from './card'
 import type { DialogueVersionContributorVO } from './dialogueVersionContributor'
+import type { ReviewStatusValue } from '@/constants'
 
 export interface DialogueVersionPageQueryDTO extends PageRequest {
   /**
@@ -57,6 +58,10 @@ export interface DialogueVersionVO {
    * RC 选项列表
    */
   options?: RcOptionVO[]
+  /**
+   * 审批理由
+   */
+  reviewRemark?: string
   /**
    * 1全部 2节选
    */
@@ -234,5 +239,22 @@ export interface DialogueVersionOptionVO {
    * 版本ID，当前来源下不存在时为 null
    */
   versionId?: number
+  [property: string]: any
+}
+
+/**
+ * 审核参数（通过 / 拒绝 + 备注）
+ */
+export interface DialogueVersionReviewDTO {
+  /**
+   * 审核备注（拒绝时必填，通过时可选）
+   */
+  reviewRemark?: string
+  /**
+   * 审核结果：
+   * 1 - 通过（已发布）
+   * 3 - 拒绝（已拒绝）
+   */
+  status: ReviewStatusValue
   [property: string]: any
 }

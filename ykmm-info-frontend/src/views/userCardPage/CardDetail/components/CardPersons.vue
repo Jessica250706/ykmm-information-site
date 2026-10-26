@@ -9,7 +9,7 @@
         effect="plain"
       >
         <div class="flex items-center justify-center">
-          <el-avatar :size="18" :src="p.avatar" class="mr-2 align-middle">
+          <el-avatar :size="18" :src="p.avatar" class="mr-1 align-middle">
             {{ p.nameCn?.charAt(0) || '?' }}
           </el-avatar>
           <span>{{ p.nameCn }}</span>

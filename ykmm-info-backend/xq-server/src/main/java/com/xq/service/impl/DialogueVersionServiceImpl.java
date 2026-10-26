@@ -7,6 +7,7 @@ import com.xq.context.BaseContext;
 import com.xq.context.RoleContext;
 import com.xq.dto.DialogueVersionDTO;
 import com.xq.dto.DialogueVersionPageQueryDTO;
+import com.xq.dto.DialogueVersionReviewDTO;
 import com.xq.entity.*;
 import com.xq.enums.*;
 import com.xq.exception.ForbiddenException;
@@ -79,6 +80,8 @@ public class DialogueVersionServiceImpl implements DialogueVersionService {
         List<DialogueVersionVO> voList = page.getList().stream()
                 .map(this::toBasicVO)
                 .collect(Collectors.toList());
+
+        fillSourceInfo(voList);
 
         return new PageResult<>(page.getTotal(), voList);
     }
@@ -392,6 +395,90 @@ public class DialogueVersionServiceImpl implements DialogueVersionService {
         fillSourceInfo(voList);
 
         return new PageResult<>(page.getTotal(), voList);
+    }
+
+    /**
+     * 审核对话版本
+     */
+    @Override
+    @Transactional
+    public void review(Long id, DialogueVersionReviewDTO dto) {
+        // 1. 身份校验：仅管理员
+        if (RoleContext.isGuest()) {
+            throw new UnauthorizedException("请先登录");
+        }
+        if (!RoleContext.isAdmin()) {
+            throw new ForbiddenException("只有管理员才能审核对话版本");
+        }
+
+        // 2. 参数校验
+        if (id == null) {
+            throw new RuntimeException("版本ID不能为空");
+        }
+        if (dto == null || dto.getStatus() == null) {
+            throw new RuntimeException("审核状态不能为空");
+        }
+        Integer targetStatus = dto.getStatus();
+        boolean pass = StatusEnum.PUBLISHED.getValue().equals(targetStatus);
+        boolean reject = StatusEnum.REJECTED.getValue().equals(targetStatus);
+        if (!pass && !reject) {
+            throw new RuntimeException("审核状态只能为「已发布」或「已拒绝」");
+        }
+        String remark = dto.getReviewRemark();
+        if (reject && (remark == null || remark.isBlank())) {
+            throw new RuntimeException("拒绝时必须填写审核备注");
+        }
+
+        // 3. 存在性 + 状态检查
+        DialogueVersion exist = dialogueVersionMapper.getById(id);
+        if (exist == null) {
+            throw new RuntimeException("对话版本不存在");
+        }
+        if (!StatusEnum.PENDING.getValue().equals(exist.getStatus())) {
+            throw new RuntimeException("当前对话版本不是待审核状态，无法审核");
+        }
+
+        // 4. 更新审核字段
+        Long currentUserId = BaseContext.getCurrentId();
+        DialogueVersion update = new DialogueVersion();
+        update.setId(id);
+        update.setStatus(targetStatus);
+        update.setReviewerId(currentUserId);
+        update.setReviewTime(LocalDateTime.now());
+        // 通过时若未填备注，显式写空串，避免把上一次「已拒绝」遗留的备注带出来
+        update.setReviewRemark(remark == null ? "" : remark.trim());
+
+        dialogueVersionMapper.review(update);
+
+        // 5. 向创建者推送审核结果消息
+        //    管理员审核自己创建的内容属于异常场景（正常流程下管理员创建即发布，不会走审核），
+        //    但这里仍做防御性判断，避免给自己发消息。
+        Long creatorId = exist.getCreatorId();
+        if (creatorId != null && !Objects.equals(creatorId, currentUserId)) {
+            // 拼上来源提示，让用户能看出是哪一份内容被审核
+            String sourceHint = buildSourceHint(exist.getSourceType(), exist.getSourceId());
+
+            if (pass) {
+                sysMessageService.send(
+                        creatorId,
+                        SysMessageConstant.TYPE_REVIEW_PASSED,
+                        SysMessageConstant.TARGET_DIALOGUE_VERSION,
+                        id,
+                        "对话版本审核通过",
+                        "您提交的对话版本（" + sourceHint + "）已通过审核");
+            } else {
+                sysMessageService.send(
+                        creatorId,
+                        SysMessageConstant.TYPE_REVIEW_REJECTED,
+                        SysMessageConstant.TARGET_DIALOGUE_VERSION,
+                        id,
+                        "对话版本审核未通过",
+                        "您提交的对话版本（" + sourceHint + "）未通过审核，原因：" + remark);
+            }
+        }
+
+        log.info("审核对话版本成功，id={}, status={}, reviewerId={}, remark={}",
+                id, targetStatus, currentUserId, update.getReviewRemark());
     }
 
     /* ============================================================

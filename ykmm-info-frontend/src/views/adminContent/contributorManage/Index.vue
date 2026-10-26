@@ -120,8 +120,7 @@ const query = reactive<{
 
 /* -------- 列配置 -------- */
 const columns: ProTableColumn<DialogueVersionContributorVO>[] = [
-  { prop: 'id', label: 'ID', width: 80, align: 'center', fixed: 'left' },
-  { label: '贡献者', minWidth: 220, align: 'left', slot: 'contributor', fixed: 'left' },
+  { label: '贡献者', minWidth: 280, align: 'left', slot: 'contributor', fixed: 'left' },
   { prop: 'versionId', label: '版本ID', minWidth: 100, align: 'center' },
   { prop: 'userId', label: '用户ID', minWidth: 100, align: 'center' },
   { prop: 'contributorName', label: '贡献者姓名', minWidth: 140, align: 'center' },

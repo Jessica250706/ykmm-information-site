@@ -30,3 +30,23 @@ export function statusLabel(v?: number | null): string {
   if (v == null) return '未知'
   return STATUS_LABEL[v as StatusValue] ?? '未知'
 }
+
+/* -------- 审核结果（仅通过 / 拒绝） -------- */
+export const REVIEW_STATUS = {
+  PUBLISHED: STATUS.PUBLISHED,
+  REJECTED: STATUS.REJECTED,
+} as const
+
+/** 审核结果只能是通过(1)或拒绝(3)，不含待审核(2) */
+export type ReviewStatusValue = (typeof REVIEW_STATUS)[keyof typeof REVIEW_STATUS]
+
+/** 审核弹窗的 radio 选项 */
+export const REVIEW_STATUS_OPTIONS = [
+  { value: REVIEW_STATUS.PUBLISHED, label: STATUS_LABEL[STATUS.PUBLISHED] },
+  { value: REVIEW_STATUS.REJECTED, label: STATUS_LABEL[STATUS.REJECTED] },
+] as const
+
+/** 类型守卫：判断某个值是否是合法的审核结果 */
+export function isReviewStatus(v: unknown): v is ReviewStatusValue {
+  return v === REVIEW_STATUS.PUBLISHED || v === REVIEW_STATUS.REJECTED
+}

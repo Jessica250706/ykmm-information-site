@@ -271,5 +271,12 @@ export const adminRoutes: RouteRecordRaw = {
       component: () => import('@/views/adminContent/messageManage/Index.vue'),
       meta: { title: '消息管理' },
     },
+    // ---------- 对话版本管理 ----------
+    {
+      path: 'content/dialogue-version',
+      name: AdminRouteName.DIALOGUE_VERSION_MANAGE,
+      component: () => import('@/views/adminContent/dialogueVersionManage/Index.vue'),
+      meta: { title: '版本管理' },
+    },
   ],
 }

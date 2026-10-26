@@ -53,6 +53,12 @@
           @keyup.enter="handleSearch"
         />
       </el-form-item>
+
+      <template #actions>
+        <el-button :disabled="unreadCount === 0" plain @click="handleMarkAllRead">
+          全部标为已读
+        </el-button>
+      </template>
     </TableToolbar>
 
     <el-card class="flex-1" shadow="never">
@@ -89,6 +95,15 @@
 
         <template #action="{ row }">
           <el-button size="small" type="primary" link @click="handleDetail(row)">查看</el-button>
+          <el-button
+            v-if="row.isRead === MESSAGE_READ_STATUS.UNREAD"
+            size="small"
+            type="primary"
+            link
+            @click="handleMarkRead(row)"
+          >
+            已读
+          </el-button>
         </template>
       </ProTable>
     </el-card>
@@ -99,7 +114,9 @@
 
 <script setup lang="ts">
 import { reactive, ref } from 'vue'
-import { pageMessagesAPI } from '@/api/message'
+import { ElMessage } from 'element-plus'
+import { storeToRefs } from 'pinia'
+import { markAllReadAPI, markReadAPI, pageMessagesAPI } from '@/api/message'
 import {
   type PageResult,
   ProTable,
@@ -115,11 +132,15 @@ import {
   messageTargetTypeLabel,
   messageTypeLabel,
 } from '@/constants'
+import { useMessageStore } from '@/stores'
 import type { SysMessagePageQueryDTO, SysMessageVO } from '@/types/message'
 import MessageDetailDialog from './components/MessageDetailDialog.vue'
 
 const tableRef = ref<ProTableExpose<SysMessageVO>>()
 const detailDialogRef = ref<InstanceType<typeof MessageDetailDialog> | null>(null)
+
+const messageStore = useMessageStore()
+const { unreadCount } = storeToRefs(messageStore)
 
 /** 用户ID用字符串存，避免输入过程中出现 NaN */
 const userIdInput = ref('')
@@ -137,9 +158,8 @@ const query = reactive<{
 })
 
 const columns: ProTableColumn<SysMessageVO>[] = [
-  { label: 'ID', prop: 'id', width: 90, align: 'center' },
-  { label: '用户ID', prop: 'userId', width: 110, align: 'center' },
-  { label: '标题', minWidth: 220, slot: 'title', showOverflowTooltip: true },
+  { label: '标题', minWidth: 180, slot: 'title', showOverflowTooltip: true },
+  { label: '内容', minWidth: 240, prop: 'content', showOverflowTooltip: true },
   { label: '类型', width: 110, align: 'center', slot: 'type' },
   { label: '关联业务', width: 150, align: 'center', slot: 'targetType' },
   { label: '状态', width: 90, align: 'center', slot: 'isRead' },
@@ -201,5 +221,18 @@ function handleReset() {
 
 function handleDetail(row: SysMessageVO) {
   detailDialogRef.value?.open(row)
+}
+
+async function handleMarkRead(row: SysMessageVO) {
+  if (!row.id) return
+  await markReadAPI(row.id)
+  ElMessage.success('已标记为已读')
+  await Promise.all([tableRef.value?.refresh(), messageStore.loadUnreadCount()])
+}
+
+async function handleMarkAllRead() {
+  await markAllReadAPI()
+  ElMessage.success('全部已标记为已读')
+  await Promise.all([tableRef.value?.refresh(), messageStore.loadUnreadCount()])
 }
 </script>

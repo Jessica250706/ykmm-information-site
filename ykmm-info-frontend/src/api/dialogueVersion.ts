@@ -3,6 +3,7 @@ import type {
   DialogueVersionDTO,
   DialogueVersionOptionVO,
   DialogueVersionPageQueryDTO,
+  DialogueVersionReviewDTO,
   DialogueVersionSourceDTO,
   DialogueVersionVO,
 } from '@/types/dialogueVersion'
@@ -81,4 +82,11 @@ export const pageDialogueVersionsAPI = (params: DialogueVersionPageQueryDTO) => 
  */
 export const deleteDialogueVersionAPI = (id: number) => {
   return request.delete(`/admin/dialogue-version/${id}`)
+}
+
+/**
+ * @description: 审核对话版本
+ */
+export function reviewDialogueVersionAPI(id: number, data: DialogueVersionReviewDTO) {
+  return request.post<void>(`/admin/dialogue-version/${id}/review`, data)
 }

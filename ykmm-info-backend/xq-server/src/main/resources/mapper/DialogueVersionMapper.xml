@@ -51,7 +51,19 @@
         AND (status = 1 OR creator_id = #{viewerId})
       </if>
     </where>
-    ORDER BY id ASC
+    <!--
+      业务排序：待审核(2) → 已发布(1) → 已拒绝(3)
+      管理员可以一眼看到需要处理的队列，用户端自己上传的待审核版本也会置顶。
+      同一状态内按 id 倒序，最新提交的排前面。
+    -->
+    ORDER BY
+      CASE status
+        WHEN 2 THEN 1   <!-- 待审核 -->
+        WHEN 1 THEN 2   <!-- 已发布 -->
+        WHEN 3 THEN 3   <!-- 已拒绝 -->
+        ELSE 4          <!-- 兜底：未知状态排最后 -->
+      END ASC,
+      id DESC
   </select>
 
   <select id="listBySource" resultType="com.xq.entity.DialogueVersion">
@@ -167,5 +179,19 @@
     </where>
     ORDER BY id DESC
   </select>
+
+  <!--
+    审核对话版本：
+    - 固定更新 4 个审核字段，不判断 null
+    - reviewRemark 传空串时会真的把列清空（与动态 update 不同）
+  -->
+  <update id="review" parameterType="com.xq.entity.DialogueVersion">
+    UPDATE dialogue_version
+    SET status        = #{status},
+        reviewer_id   = #{reviewerId},
+        review_time   = #{reviewTime},
+        review_remark = #{reviewRemark}
+    WHERE id = #{id}
+  </update>
 
 </mapper>
