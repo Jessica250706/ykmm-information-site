@@ -73,6 +73,8 @@ public class CardServiceImpl implements CardService {
     private PersonMapper personMapper;
     @Autowired
     private SysMessageService sysMessageService;
+    @Autowired
+    private UserMapper userMapper;
 
     /**
      * 分页查询
@@ -606,6 +608,7 @@ public class CardServiceImpl implements CardService {
         vo.setAttributeLabel(CardAttributeEnum.getLabel(card.getAttribute()));
         vo.setAttachedStoryTypeLabel(DialogueSourceTypeEnum.getLabel(card.getAttachedStoryType()));
         vo.setCostumeTypeLabel(CardCostumeTypeEnum.getLabel(card.getCostumeType()));
+        vo.setStatusLabel(StatusEnum.getLabel(card.getStatus()));
 
         // 保证列表字段非 null
         vo.setImages(new ArrayList<>());
@@ -631,6 +634,17 @@ public class CardServiceImpl implements CardService {
 
             // 人物
             vo.setPersons(cardPersonRelMapper.listPersonsByCardId(card.getId()));
+
+            // 创建者昵称
+            if (card.getCreatorId() != null) {
+                SysUser creator = userMapper.getById(card.getCreatorId());
+                if (creator != null) {
+                    vo.setCreatorName(
+                            creator.getNickname() != null && !creator.getNickname().isBlank()
+                                    ? creator.getNickname()
+                                    : creator.getEmail());
+                }
+            }
         }
         return vo;
     }

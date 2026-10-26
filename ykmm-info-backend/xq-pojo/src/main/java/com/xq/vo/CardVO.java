@@ -95,6 +95,14 @@ public class CardVO implements Serializable {
      */
     private String statusLabel;
     /**
+     * 创建者用户ID
+     */
+    private Long creatorId;
+    /**
+     * 创建者昵称（优先昵称，无则回退邮箱）
+     */
+    private String creatorName;
+    /**
      * 创建时间
      */
     private LocalDateTime createdAt;

@@ -48,6 +48,11 @@
           {{ card.costumeTypeLabel ?? cardCostumeTypeLabel(card.costumeType) }}
         </dd>
       </div>
+
+      <div class="flex justify-between gap-3">
+        <dt class="shrink-0 text-slate-400">贡献者</dt>
+        <dd class="truncate text-right">{{ card.creatorName || '未知' }}</dd>
+      </div>
     </dl>
   </div>
 </template>

@@ -31,8 +31,6 @@ export interface CardPageQueryDTO extends PageRequest {
 
 /**
  * 数据
- *
- * CardVO
  */
 export interface CardVO {
   /**
@@ -79,6 +77,14 @@ export interface CardVO {
    * 创建时间
    */
   createdAt?: string
+  /**
+   * 创建者用户ID
+   */
+  creatorId?: number
+  /**
+   * 创建者昵称（优先昵称，无则回退邮箱）
+   */
+  creatorName?: string
   /**
    * 首次入池时间
    */
