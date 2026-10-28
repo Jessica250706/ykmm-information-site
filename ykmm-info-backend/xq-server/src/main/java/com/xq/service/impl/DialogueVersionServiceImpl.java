@@ -170,8 +170,7 @@ public class DialogueVersionServiceImpl implements DialogueVersionService {
         dialogueVersionMapper.insert(version);
 
         Long versionId = version.getId();
-        log.info("创建对话版本成功，id={}, status={}, creatorId={}",
-                versionId, version.getStatus(), currentUserId);
+        log.info("创建对话版本成功，id={}, status={}, creatorId={}", versionId, version.getStatus(), currentUserId);
 
         // 记录贡献者
         dialogueVersionContributorService.recordCreator(
@@ -183,7 +182,7 @@ public class DialogueVersionServiceImpl implements DialogueVersionService {
 
         // 用户提交对话版本 → 广播给管理员
         if (UserRoleEnum.current() == UserRoleEnum.USER) {
-            // 来源描述用于消息正文，尽量给管理员一个直观的"这是什么"
+            // 来源描述用于消息正文
             String sourceHint = buildSourceHint(dto.getSourceType(), dto.getSourceId());
             sysMessageService.sendToRole(
                     SysMessageConstant.BROADCAST_ROLE_ADMIN,
@@ -191,7 +190,7 @@ public class DialogueVersionServiceImpl implements DialogueVersionService {
                     SysMessageConstant.TARGET_DIALOGUE_VERSION,
                     versionId,
                     "新对话版本待审核",
-                    "用户提交了新的对话版本（" + sourceHint + "），请及时审核");
+                    "用户提交了新的对话版本「" + sourceHint + "」，请及时审核");
         }
 
         return versionId;

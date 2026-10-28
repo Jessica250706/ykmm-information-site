@@ -108,7 +108,7 @@
       </ProTable>
     </el-card>
 
-    <MessageDetailDialog ref="detailDialogRef" />
+    <MessageDetailDialog ref="detailDialogRef" @marked-read="handleMarkedRead" />
   </div>
 </template>
 
@@ -233,6 +233,10 @@ async function handleMarkRead(row: SysMessageVO) {
 async function handleMarkAllRead() {
   await markAllReadAPI()
   ElMessage.success('全部已标记为已读')
+  await Promise.all([tableRef.value?.refresh(), messageStore.loadUnreadCount()])
+}
+
+async function handleMarkedRead() {
   await Promise.all([tableRef.value?.refresh(), messageStore.loadUnreadCount()])
 }
 </script>
