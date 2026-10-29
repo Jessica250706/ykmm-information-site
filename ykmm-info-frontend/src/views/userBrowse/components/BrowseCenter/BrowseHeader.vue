@@ -5,7 +5,13 @@
 
       <!-- 右侧操作区：默认返回按钮，可通过 slot 覆盖 -->
       <slot name="actions">
-        <el-button v-if="showBack" @click="emit('goBack')">← 返回</el-button>
+        <div class="flex items-center gap-1">
+          <el-button v-if="showReview" type="warning" plain @click="emit('review')">
+            <el-icon class="mr-1"><Checked /></el-icon>
+            审核
+          </el-button>
+          <el-button v-if="showBack" @click="emit('goBack')">← 返回</el-button>
+        </div>
       </slot>
     </div>
 
@@ -47,6 +53,8 @@ withDefaults(
     description?: string
     /** 是否显示返回按钮 */
     showBack?: boolean
+    /** 是否显示审核按钮（仅管理员 + 待审核版本时传 true） */
+    showReview?: boolean
   }>(),
   {
     title: '',
@@ -55,10 +63,12 @@ withDefaults(
     subtitle: '',
     description: '',
     showBack: true,
+    showReview: false,
   },
 )
 
 const emit = defineEmits<{
   goBack: []
+  review: []
 }>()
 </script>

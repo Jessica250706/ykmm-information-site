@@ -32,6 +32,7 @@
         :version-options="versionOptions"
         :version-select-items="versionSelectItems"
         @go-back="emit('goBack')"
+        @review-success="emit('review-success')"
         @select-line="(line) => emit('select-line', line)"
       />
 
@@ -65,6 +66,7 @@
         :version-options="versionOptions"
         :version-select-items="versionSelectItems"
         @go-back="emit('goBack')"
+        @review-success="emit('review-success')"
         @select-line="(line) => emit('select-line', line)"
       />
 
@@ -140,6 +142,8 @@ const emit = defineEmits<{
   toggleLeft: []
   /** 切换右侧编辑区 */
   toggleRight: []
+  /** 审核成功后通知上层刷新 */
+  'review-success': []
 }>()
 
 const currentVersionIdComputed = computed({

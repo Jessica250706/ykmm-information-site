@@ -5,14 +5,17 @@
       v-if="sourceType === SOURCE_TYPE.STORY"
       :color="color"
       :description="storyDetail?.description"
+      :show-review="canReview"
       :subtitle="storyDetail?.categoryName"
       :tag="storyDetail?.categoryTypeLabel"
       :title="storyDetail?.title || `剧情 #${storyDetail?.id}`"
       @go-back="emit('goBack')"
+      @review="handleReview"
     />
     <BrowseHeader
       v-else-if="sourceType === SOURCE_TYPE.RC"
       :color="color"
+      :show-review="canReview"
       :subtitle="
         cardDetail?.initiatorRoleName
           ? `${cardName} · 发起人：${cardDetail.initiatorRoleName}`
@@ -24,10 +27,12 @@
         `${SOURCE_TYPE_LABEL[sourceType]} #${cardDetail?.id}`
       "
       @go-back="emit('goBack')"
+      @review="handleReview"
     />
     <BrowseHeader
       v-else-if="sourceType === SOURCE_TYPE.RTV || sourceType === SOURCE_TYPE.RABITTER"
       :color="color"
+      :show-review="canReview"
       :subtitle="cardName"
       :tag="SOURCE_TYPE_LABEL[sourceType]"
       :title="
@@ -35,6 +40,7 @@
         `${SOURCE_TYPE_LABEL[sourceType]} #${cardDetail?.id}`
       "
       @go-back="emit('goBack')"
+      @review="handleReview"
     />
 
     <!-- 版本选择 -->
@@ -98,17 +104,23 @@
 
     <!-- 状态 + 贡献者 -->
     <VersionMetaBar :option="currentOptionVersion" class="mt-3 shrink-0" />
+
+    <!-- 审核弹窗（仅管理员操作时打开） -->
+    <ReviewDialogueVersionDialog ref="reviewDialogRef" @success="handleReviewSuccess" />
   </div>
 </template>
 
 <script setup lang="ts">
 import { computed, nextTick, ref, watch } from 'vue'
+import { storeToRefs } from 'pinia'
 import { useScrollShadow } from '@/composables/useScrollShadow'
-import { SOURCE_TYPE, SOURCE_TYPE_LABEL, VERSION_FORMAT } from '@/constants'
+import { SOURCE_TYPE, SOURCE_TYPE_LABEL, STATUS, VERSION_FORMAT } from '@/constants'
+import { useUserStore } from '@/stores'
 import type { CardEpisodeVO } from '@/types/card'
 import type { DialogueLineVO } from '@/types/dialogueLine'
 import type { DialogueVersionOptionVO, DialogueVersionVO } from '@/types/dialogueVersion'
 import type { StoryDetailVO } from '@/types/story'
+import ReviewDialogueVersionDialog from '@/views/adminContent/dialogueVersionManage/components/ReviewDialogueVersionDialog.vue'
 import type { VersionSelectItem } from '@/views/userBrowse/composables/useVersionSelection'
 import BrowseHeader from './BrowseHeader.vue'
 import DialogueView from './DialogueView.vue'
@@ -141,6 +153,8 @@ const emit = defineEmits<{
   'update:currentVersionId': [id: number | null]
   'update:selectedVersionKey': [key: string]
   'select-line': [line: DialogueLineVO]
+  /** 审核成功后通知父级刷新列表 */
+  'review-success': []
 }>()
 
 /* -------- 从 props 派生 -------- */
@@ -161,6 +175,48 @@ const currentVersion = computed<DialogueVersionVO | null>(() => {
 
 /** 传给 DialogueView 的 versionId，保证与 currentVersion 一致 */
 const resolvedVersionId = computed<number | null>(() => currentVersion.value?.id ?? null)
+
+/* -------- 审核按钮显隐 -------- */
+const userStore = useUserStore()
+const { isAdmin } = storeToRefs(userStore)
+
+/** 只有管理员且当前版本为待审核时显示审核按钮 */
+const canReview = computed(() => isAdmin.value && currentVersion.value?.status === STATUS.PENDING)
+
+/* -------- 审核 -------- */
+const reviewDialogRef = ref<InstanceType<typeof ReviewDialogueVersionDialog> | null>(null)
+
+function handleReview() {
+  const v = currentVersion.value
+  if (!v) return
+
+  // 浏览页拿到的 version 不带 source，需要按当前来源上下文补一份给审核弹窗展示
+  const target: DialogueVersionVO = { ...v }
+  if (props.sourceType === SOURCE_TYPE.STORY && props.storyDetail) {
+    target.source = {
+      sourceType: SOURCE_TYPE.STORY,
+      sourceId: props.storyDetail.id,
+      title: props.storyDetail.title,
+      subtitle: props.storyDetail.categoryName,
+      categoryType: props.storyDetail.categoryType,
+    }
+  } else if (props.cardDetail) {
+    target.source = {
+      sourceType: props.sourceType,
+      sourceId: props.cardDetail.id,
+      cardId: props.cardDetail.cardId,
+      title: props.cardName,
+      episodeNo: props.cardDetail.episodeNo,
+      episodeTitle: props.cardDetail.title,
+    }
+  }
+
+  reviewDialogRef.value?.open(target)
+}
+
+function handleReviewSuccess() {
+  emit('review-success')
+}
 
 /* -------- 阴影 -------- */
 const scrollerRef = ref<HTMLElement | null>(null)

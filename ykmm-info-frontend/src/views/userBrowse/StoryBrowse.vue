@@ -44,6 +44,7 @@
       @go-back="handleGoBack"
       @go-category="(id: number) => goCategory(type, id)"
       @go-story="(id: number) => goStory(type, id)"
+      @review-success="loadCurrent"
       @select-line="handleSelectLine"
       @toggle-left="showLeft = !showLeft"
       @toggle-right="showRight = !showRight"

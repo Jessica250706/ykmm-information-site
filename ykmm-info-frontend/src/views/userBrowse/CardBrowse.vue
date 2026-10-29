@@ -40,6 +40,7 @@
       @go-back="handleBack"
       @go-category="() => {}"
       @go-story="() => {}"
+      @review-success="loadCurrentEpisode"
       @select-line="handleSelectLine"
       @toggle-left="showLeft = !showLeft"
       @toggle-right="showRight = !showRight"
