@@ -28,7 +28,7 @@ export const STATUS_TAG_TYPE: Record<StatusValue, 'success' | 'warning' | 'dange
 
 export function statusLabel(v?: number | null): string {
   if (v == null) return '未知'
-  return STATUS_LABEL[v as StatusValue] ?? '未知'
+  return STATUS_TAG_TYPE[v as StatusValue] ?? '未知'
 }
 
 /* -------- 审核结果（仅通过 / 拒绝） -------- */

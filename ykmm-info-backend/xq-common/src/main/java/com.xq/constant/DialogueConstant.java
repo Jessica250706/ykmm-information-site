@@ -39,4 +39,9 @@ public class DialogueConstant {
      * 选项编号行正则，如 "1." "2."
      */
     public static final String OPTION_NUMBER_PATTERN = "^\\d+\\.$";
+
+    /**
+     * 旁白角色名称（动作、音效等无角色内容统一归到该角色）
+     */
+    public static final String NARRATOR_ROLE_NAME = "旁白";
 }
