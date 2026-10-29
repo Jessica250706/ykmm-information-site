@@ -18,21 +18,40 @@
       <div v-else-if="isRcChat" class="rc-chat">
         <template v-for="block in rcRenderBlocks" :key="block.key">
           <!-- 普通行 -->
-          <div
-            v-if="block.type === 'line'"
-            :ref="(el) => setLineRef(block.line.id, el)"
-            :class="[
-              isRightSide(block.line.side) ? 'rc-row--right' : 'rc-row--left',
-              {
+          <template v-if="block.type === 'line'">
+            <!-- ★ 旁白：居中、无头像、无名字 -->
+            <div
+              v-if="isNarratorLine(block.line)"
+              :ref="(el) => setLineRef(block.line.id, el)"
+              :class="{
+                'narrator-line': true,
                 'dialogue-line--selected': block.line.id === editingLineId,
                 'dialogue-line--editable': editingMode,
-              },
-            ]"
-            class="rc-row"
-            @click="onLineClick(block.line)"
-          >
-            <RcRowInner :line="block.line" />
-          </div>
+              }"
+              @click="onLineClick(block.line)"
+            >
+              <span class="narrator-line__content">
+                <DialogueLineContent :line="block.line" />
+              </span>
+            </div>
+
+            <!-- 普通行：左/右气泡 -->
+            <div
+              v-else
+              :ref="(el) => setLineRef(block.line.id, el)"
+              :class="[
+                isRightSide(block.line.side) ? 'rc-row--right' : 'rc-row--left',
+                {
+                  'dialogue-line--selected': block.line.id === editingLineId,
+                  'dialogue-line--editable': editingMode,
+                },
+              ]"
+              class="rc-row"
+              @click="onLineClick(block.line)"
+            >
+              <RcRowInner :line="block.line" />
+            </div>
+          </template>
 
           <!-- 选项组（问句 + 回答）：整张卡片可高亮 -->
           <div
@@ -70,31 +89,49 @@
 
       <!-- 普通（非 RC）样式 -->
       <div v-else>
-        <div
-          v-for="line in currentVersion.lines"
-          :key="line.id"
-          :ref="(el) => setLineRef(line.id, el)"
-          :class="{
-            'dialogue-line--selected': line.id === editingLineId,
-            'dialogue-line--editable': editingMode,
-          }"
-          class="flex items-start gap-3 rounded-lg p-3 transition"
-          @click="onLineClick(line)"
-        >
-          <el-avatar
-            :size="36"
-            :src="line.personAvatar || undefined"
-            :style="!line.personAvatar ? avatarBubbleStyle(line.personThemeColor) : undefined"
+        <template v-for="line in currentVersion.lines" :key="line.id">
+          <!-- ★ 旁白：居中、无头像、无名字 -->
+          <div
+            v-if="isNarratorLine(line)"
+            :ref="(el) => setLineRef(line.id, el)"
+            :class="{
+              'narrator-line': true,
+              'dialogue-line--selected': line.id === editingLineId,
+              'dialogue-line--editable': editingMode,
+            }"
+            @click="onLineClick(line)"
           >
-            {{ line.speakerName?.slice(-1) || '?' }}
-          </el-avatar>
-          <div class="min-w-0 flex-1">
-            <div class="text-xs font-medium text-slate-500">{{ line.speakerName }}</div>
-            <div class="mt-1 whitespace-pre-line text-sm text-slate-800">
+            <span class="narrator-line__content">
               <DialogueLineContent :line="line" />
+            </span>
+          </div>
+
+          <!-- 普通行：头像 + 名字 + 内容 -->
+          <div
+            v-else
+            :ref="(el) => setLineRef(line.id, el)"
+            :class="{
+              'dialogue-line--selected': line.id === editingLineId,
+              'dialogue-line--editable': editingMode,
+            }"
+            class="flex items-start gap-3 rounded-lg p-3 transition"
+            @click="onLineClick(line)"
+          >
+            <el-avatar
+              :size="36"
+              :src="line.personAvatar || undefined"
+              :style="!line.personAvatar ? avatarBubbleStyle(line.personThemeColor) : undefined"
+            >
+              {{ line.speakerName?.slice(-1) || '?' }}
+            </el-avatar>
+            <div class="min-w-0 flex-1">
+              <div class="text-xs font-medium text-slate-500">{{ line.speakerName }}</div>
+              <div class="mt-1 whitespace-pre-line text-sm text-slate-800">
+                <DialogueLineContent :line="line" />
+              </div>
             </div>
           </div>
-        </div>
+        </template>
       </div>
     </template>
 
@@ -117,8 +154,8 @@ import { SOURCE_TYPE, VERSION_FORMAT } from '@/constants'
 import { DIALOGUE_ROLE, isRightSide } from '@/constants/dialogueLine'
 import type { CardEpisodeVO } from '@/types/card'
 import type { DialogueLineVO } from '@/types/dialogueLine'
-import type { DialogueVersionOptionVO } from '@/types/dialogueVersion'
-import type { DialogueVersionVO, StoryDetailVO } from '@/types/story'
+import type { DialogueVersionOptionVO, DialogueVersionVO } from '@/types/dialogueVersion'
+import type { StoryDetailVO } from '@/types/story'
 import { avatarBubbleStyle } from '@/utils'
 import DialogueLineContent from './DialogueLineContent.vue'
 import RcRowInner from './RcRowInner.vue'
@@ -245,6 +282,17 @@ watch(
 const imageUrls = computed(() =>
   (props.currentVersion?.images ?? []).map((img) => img.url).filter((url): url is string => !!url),
 )
+
+/**
+ * 旁白角色名（与后端 DialogueConstant.NARRATOR_ROLE_NAME 保持一致）。
+ * 建议后续抽到 @/constants 里统一维护，这里为了改动最小先本地定义。
+ */
+const NARRATOR_ROLE_NAME = '旁白'
+
+/** 是否为旁白行（无角色、动作、音效等） */
+function isNarratorLine(line: DialogueLineVO): boolean {
+  return line.speakerName === NARRATOR_ROLE_NAME
+}
 </script>
 
 <style lang="scss" scoped>
@@ -409,6 +457,42 @@ const imageUrls = computed(() =>
 
 .rc-option-card .rc-row.dialogue-line--selected {
   background: var(--el-color-white);
+  box-shadow: inset 0 0 0 2px var(--el-color-primary-light-5);
+}
+
+/* ================= 旁白（舞台提示） ================= */
+.narrator-line {
+  padding: 8px 16px;
+  margin: 4px 0;
+  text-align: center;
+  border-radius: 8px;
+  transition:
+    background-color 0.15s,
+    box-shadow 0.15s;
+}
+
+.narrator-line__content {
+  display: inline-block;
+  max-width: 85%;
+  color: var(--el-text-color-secondary);
+  font-size: 13px;
+  font-style: italic;
+  line-height: 1.6;
+  white-space: pre-line;
+  word-break: break-word;
+  text-align: center;
+}
+
+.narrator-line.dialogue-line--editable {
+  cursor: pointer;
+}
+
+.narrator-line.dialogue-line--editable:hover {
+  background: var(--el-color-primary-light-9);
+}
+
+.narrator-line.dialogue-line--selected {
+  background: var(--el-color-info-light-9);
   box-shadow: inset 0 0 0 2px var(--el-color-primary-light-5);
 }
 </style>
