@@ -110,8 +110,13 @@ const canEditCurrent = computed(() => {
   if (!opt) return false
   return opt.exists ? opt.canOperate === true : isLogin
 })
-/** 右侧编辑区是否渲染：用户手动展开 && 当前版本可编辑 */
-const showEditPanel = computed(() => showRight.value && canEditCurrent.value)
+
+/* -------- 数据加载 gate -------- */
+/** 加载详情 / 版本选项期间为 true，用于阻止编辑区误闪 */
+const dataLoading = ref(false)
+
+/** 右侧编辑区是否渲染：数据就绪 + 用户手动展开 + 当前版本可编辑 */
+const showEditPanel = computed(() => !dataLoading.value && showRight.value && canEditCurrent.value)
 
 /* -------- 路由 -------- */
 const { type, kind, nodeId, typeLabel } = useBrowseRoute()
@@ -194,23 +199,28 @@ const { goCategory, goStory, goBack, handleSwitchType } = useBrowseNavigation()
 
 /* -------- 加载当前视图 -------- */
 async function loadCurrent() {
-  if (kind.value === BROWSE_KIND.STORY && nodeId.value != null) {
-    await fetchStoryDetail(nodeId.value)
-    if (!storyDetail.value) return
+  dataLoading.value = true
+  try {
+    if (kind.value === BROWSE_KIND.STORY && nodeId.value != null) {
+      await fetchStoryDetail(nodeId.value)
+      if (!storyDetail.value) return
 
-    syncVersionSelection()
-    syncEditingLine()
-    await fetchVersionOptions()
-    await applyPendingInsert()
-    return
-  }
+      syncVersionSelection()
+      syncEditingLine()
+      await fetchVersionOptions()
+      await applyPendingInsert()
+      return
+    }
 
-  /* 非 story 分支才清空 */
-  resetStory()
-  resetEditState()
+    /* 非 story 分支才清空 */
+    resetStory()
+    resetEditState()
 
-  if (kind.value === BROWSE_KIND.CATEGORY && nodeId.value != null) {
-    await fetchStories(nodeId.value)
+    if (kind.value === BROWSE_KIND.CATEGORY && nodeId.value != null) {
+      await fetchStories(nodeId.value)
+    }
+  } finally {
+    dataLoading.value = false
   }
 }
 

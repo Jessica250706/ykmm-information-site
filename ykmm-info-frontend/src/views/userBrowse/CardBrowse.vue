@@ -121,8 +121,13 @@ const canEditCurrent = computed(() => {
   if (!opt) return false
   return opt.exists ? opt.canOperate === true : isLogin
 })
-/** 右侧编辑区是否渲染 */
-const showEditPanel = computed(() => showRight.value && canEditCurrent.value)
+
+/* -------- 数据加载 gate -------- */
+/** 加载话数详情 / 版本选项期间为 true，用于阻止编辑区误闪 */
+const dataLoading = ref(false)
+
+/** 右侧编辑区是否渲染：数据就绪 + 用户手动展开 + 当前版本可编辑 */
+const showEditPanel = computed(() => !dataLoading.value && showRight.value && canEditCurrent.value)
 
 /** 左侧话数列表是否展开 */
 const showLeft = ref(true)
@@ -237,14 +242,18 @@ async function loadCurrentEpisode() {
     return
   }
 
-  // resetEpisodeDetail()
-  await fetchEpisodeDetail(props.sourceType, currentEpisodeId.value)
-  if (!episodeDetail.value) return
+  dataLoading.value = true
+  try {
+    await fetchEpisodeDetail(props.sourceType, currentEpisodeId.value)
+    if (!episodeDetail.value) return
 
-  syncVersionSelection()
-  syncEditingLine()
-  await fetchVersionOptions(props.sourceType, currentEpisodeId.value)
-  await applyPendingInsert()
+    syncVersionSelection()
+    syncEditingLine()
+    await fetchVersionOptions(props.sourceType, currentEpisodeId.value)
+    await applyPendingInsert()
+  } finally {
+    dataLoading.value = false
+  }
 }
 
 /** 切换话数：更新状态 + 写回 URL */
