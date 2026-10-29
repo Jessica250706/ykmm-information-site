@@ -44,7 +44,7 @@
       @go-back="handleGoBack"
       @go-category="(id: number) => goCategory(type, id)"
       @go-story="(id: number) => goStory(type, id)"
-      @review-success="loadCurrent"
+      @review-success="reloadCurrent"
       @select-line="handleSelectLine"
       @toggle-left="showLeft = !showLeft"
       @toggle-right="showRight = !showRight"
@@ -67,7 +67,7 @@
       @add-line="handleAddLine"
       @create-version="handleCreateVersion"
       @delete-line="handleDeleteLine"
-      @refresh="loadCurrent"
+      @refresh="reloadCurrent"
       @save-line="handleSaveLine"
       @select-line="handleSelectLine"
     />
@@ -112,7 +112,16 @@ const canEditCurrent = computed(() => {
 })
 
 /* -------- 数据加载 gate -------- */
-/** 加载详情 / 版本选项期间为 true，用于阻止编辑区误闪 */
+/**
+ * 「切换上下文」期间为 true，用于阻止编辑区误闪。
+ * <p>
+ * 只在以下场景设为 true：
+ * <ul>
+ *   <li>首次进入页面</li>
+ *   <li>切换剧情类型 / 分类</li>
+ * </ul>
+ * 保存 / 创建等「原地刷新」不设，避免编辑区被卸载重建造成闪烁。
+ */
 const dataLoading = ref(false)
 
 /** 右侧编辑区是否渲染：数据就绪 + 用户手动展开 + 当前版本可编辑 */
@@ -198,8 +207,15 @@ function handleSelectedVersionKeyChange(key: string) {
 const { goCategory, goStory, goBack, handleSwitchType } = useBrowseNavigation()
 
 /* -------- 加载当前视图 -------- */
-async function loadCurrent() {
-  dataLoading.value = true
+/**
+ * 加载当前视图。
+ *
+ * @param showLoading 是否展示加载状态（隐藏编辑区）。
+ *   - 首次进入 / 切换路由 / 切换分类 → true（防止 canEditCurrent 在数据未就绪时误判）
+ *   - 保存 / 新增 / 删除后刷新 → false（编辑区保持挂载，避免闪烁）
+ */
+async function loadCurrent(showLoading = false) {
+  if (showLoading) dataLoading.value = true
   try {
     if (kind.value === BROWSE_KIND.STORY && nodeId.value != null) {
       await fetchStoryDetail(nodeId.value)
@@ -220,8 +236,13 @@ async function loadCurrent() {
       await fetchStories(nodeId.value)
     }
   } finally {
-    dataLoading.value = false
+    if (showLoading) dataLoading.value = false
   }
+}
+
+/** 事件绑定专用：不传参，走"原地刷新"路径 */
+function reloadCurrent() {
+  void loadCurrent()
 }
 
 /* 路由切换时显式清空 */
@@ -374,7 +395,7 @@ watch(
   () => type.value,
   async () => {
     await loadTree()
-    await loadCurrent()
+    await loadCurrent(true)
   },
   { immediate: true },
 )
@@ -382,7 +403,7 @@ watch(
 watch(
   () => [kind.value, nodeId.value],
   () => {
-    void loadCurrent()
+    void loadCurrent(true)
   },
 )
 

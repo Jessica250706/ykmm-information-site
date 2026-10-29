@@ -495,4 +495,14 @@ function isNarratorLine(line: DialogueLineVO): boolean {
   background: var(--el-color-info-light-9);
   box-shadow: inset 0 0 0 2px var(--el-color-primary-light-5);
 }
+
+.narrator-line__content::before,
+.narrator-line__content::after {
+  content: '◆';
+  margin: 0 8px;
+  font-size: 10px;
+  vertical-align: middle;
+  color: var(--el-text-color-placeholder);
+  font-style: normal;
+}
 </style>

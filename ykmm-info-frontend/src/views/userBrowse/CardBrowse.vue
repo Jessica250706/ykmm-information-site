@@ -40,7 +40,7 @@
       @go-back="handleBack"
       @go-category="() => {}"
       @go-story="() => {}"
-      @review-success="loadCurrentEpisode"
+      @review-success="reloadCurrentEpisode"
       @select-line="handleSelectLine"
       @toggle-left="showLeft = !showLeft"
       @toggle-right="showRight = !showRight"
@@ -64,7 +64,7 @@
       @clear-line="editingLineId = null"
       @create-version="handleCreateVersion"
       @delete-line="handleDeleteLine"
-      @refresh="loadCurrentEpisode"
+      @refresh="reloadCurrentEpisode"
       @save-line="handleSaveLine"
       @select-line="handleSelectLine"
     />
@@ -123,7 +123,16 @@ const canEditCurrent = computed(() => {
 })
 
 /* -------- 数据加载 gate -------- */
-/** 加载话数详情 / 版本选项期间为 true，用于阻止编辑区误闪 */
+/**
+ * 「切换上下文」期间为 true，用于阻止编辑区误闪。
+ * <p>
+ * 只在以下场景设为 true：
+ * <ul>
+ *   <li>首次进入页面</li>
+ *   <li>切换剧情类型 / 分类</li>
+ * </ul>
+ * 保存 / 创建等「原地刷新」不设，避免编辑区被卸载重建造成闪烁。
+ */
 const dataLoading = ref(false)
 
 /** 右侧编辑区是否渲染：数据就绪 + 用户手动展开 + 当前版本可编辑 */
@@ -235,14 +244,20 @@ function handleSelectedVersionKeyChange(key: string) {
   currentVersionId.value = versionItemMap.value.get(key)?.versionId ?? null
 }
 
-/* -------- 加载当前话数对话 -------- */
-async function loadCurrentEpisode() {
+/**
+ * 加载当前话数对话。
+ *
+ * @param showLoading 是否展示加载状态（隐藏编辑区）。
+ *   - 首次进入 / 切换话数 → true（防止 canEditCurrent 在数据未就绪时误判）
+ *   - 保存 / 新增 / 删除后刷新 → false（编辑区保持挂载，避免闪烁）
+ */
+async function loadCurrentEpisode(showLoading = false) {
   if (currentEpisodeId.value == null) {
     resetEpisodeDetail()
     return
   }
 
-  dataLoading.value = true
+  if (showLoading) dataLoading.value = true
   try {
     await fetchEpisodeDetail(props.sourceType, currentEpisodeId.value)
     if (!episodeDetail.value) return
@@ -252,8 +267,13 @@ async function loadCurrentEpisode() {
     await fetchVersionOptions(props.sourceType, currentEpisodeId.value)
     await applyPendingInsert()
   } finally {
-    dataLoading.value = false
+    if (showLoading) dataLoading.value = false
   }
+}
+
+/** 事件绑定专用：不传参，走"原地刷新"路径 */
+function reloadCurrentEpisode() {
+  void loadCurrentEpisode()
 }
 
 /** 切换话数：更新状态 + 写回 URL */
@@ -391,7 +411,7 @@ watch(
   currentEpisodeId,
   () => {
     resetEpisodeDetail()
-    void loadCurrentEpisode()
+    void loadCurrentEpisode(true)
   },
   { immediate: true },
 )
