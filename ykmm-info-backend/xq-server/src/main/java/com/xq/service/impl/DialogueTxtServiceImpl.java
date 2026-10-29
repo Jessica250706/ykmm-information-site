@@ -329,6 +329,13 @@ public class DialogueTxtServiceImpl implements DialogueTxtService {
 
     /**
      * 判定内容是否是"整段被一对括号包裹"，即内心独白。
+     * <p>
+     * 全角括号与半角括号必须"首尾配对"：
+     * <ul>
+     *   <li>{@code （...）} 视为独白</li>
+     *   <li>{@code (...)} 视为独白</li>
+     *   <li>{@code （...)} 或 {@code (...）} 混用不视为独白（避免误判）</li>
+     * </ul>
      */
     private boolean isMonologueContent(String content) {
         if (content == null) return false;
@@ -339,7 +346,46 @@ public class DialogueTxtServiceImpl implements DialogueTxtService {
     }
 
     /**
+     * 去掉整段包裹的最外层括号。
+     * <p>
+     * 前置条件：调用方已通过 {@link #isMonologueContent(String)} 判断过括号配对。
+     * 本方法只做"首尾各去掉一个字符"，中间内容原样保留。
+     * <p>
+     * 例如：
+     * <ul>
+     *   <li>{@code （我的随身项链也带了……好！）} → {@code 我的随身项链也带了……好！}</li>
+     *   <li>{@code （不！不是应该！\n是绝对要找到。）} → {@code 不！不是应该！\n是绝对要找到。}</li>
+     * </ul>
+     * 若去掉后内容为空字符串（例如括号内只有空白），返回原内容，避免产生空对话。
+     */
+    private String stripOuterBrackets(String content) {
+        if (content == null) return null;
+        String t = content.trim();
+        if (t.length() < 2) return content;
+
+        String inner;
+        if (t.startsWith("（") && t.endsWith("）")) {
+            inner = t.substring(1, t.length() - 1).trim();
+        } else if (t.startsWith("(") && t.endsWith(")")) {
+            inner = t.substring(1, t.length() - 1).trim();
+        } else {
+            // 不满足配对（理论上不应进到这里），原样返回
+            return content;
+        }
+
+        // 括号内全为空白（如「（  ）」）时，保留原样，避免生成空对话
+        return inner.isEmpty() ? content : inner;
+    }
+
+    /**
      * 处理一条完整的有角色消息。
+     * <p>
+     * 若整段内容被括号包裹（内心独白），则：
+     * <ul>
+     *   <li>{@code monologue = 1}</li>
+     *   <li>存储的 {@code content} 去掉首尾括号</li>
+     *   <li>片段（segments）也基于去括号后的内容解析</li>
+     * </ul>
      */
     private void flushLine(List<DialogueLineVO> lines,
                            String speakerName,
@@ -357,6 +403,10 @@ public class DialogueTxtServiceImpl implements DialogueTxtService {
         }
         speakers.add(speakerName);
 
+        // 内心独白判定 + 去括号
+        boolean monologue = isMonologueContent(content);
+        String finalContent = monologue ? stripOuterBrackets(content) : content;
+
         // 查不到就建（利用 roleCache 去重）
         Role role = matchOrCreateRole(speakerName, roleCache, errors);
         Long speakerId = role == null ? null : role.getId();
@@ -364,20 +414,18 @@ public class DialogueTxtServiceImpl implements DialogueTxtService {
             unmatchedSpeakers.add(speakerName);
         }
 
-        List<DialogueSegmentVO> segments = parseSegments(content, unmatchedStickers);
-
-        // 整段被括号包裹 → 内心独白
-        int monologue = isMonologueContent(content) ? 1 : 0;
+        // 基于最终内容（去括号后）解析片段
+        List<DialogueSegmentVO> segments = parseSegments(finalContent, unmatchedStickers);
 
         DialogueLineVO vo = DialogueLineVO.builder()
                 .speakerId(speakerId)
                 .speakerName(speakerName)
                 .personId(role == null ? null : role.getPersonId())
-                .content(content)
+                .content(finalContent)
                 .sort(sort)
                 .dialogueRole(dialogueRole)
                 .optionNumber(optionNumber)
-                .monologue(monologue)
+                .monologue(monologue ? 1 : 0)
                 .segments(segments)
                 .build();
         lines.add(vo);
@@ -385,6 +433,9 @@ public class DialogueTxtServiceImpl implements DialogueTxtService {
 
     /**
      * 处理一条旁白消息。
+     * <p>
+     * 注意：旁白保留原有括号（如「（霍普的立绘移动到克斯旁边）」），
+     * 因为括号本身就是旁白内容的一部分，去掉会丢失语义。
      */
     private void flushNarratorLine(List<DialogueLineVO> lines,
                                    String content,
@@ -396,6 +447,7 @@ public class DialogueTxtServiceImpl implements DialogueTxtService {
             return;
         }
 
+        // 旁白保留原括号，不做 stripOuterBrackets
         List<DialogueSegmentVO> segments = parseSegments(content, unmatchedStickers);
 
         DialogueLineVO vo = DialogueLineVO.builder()
