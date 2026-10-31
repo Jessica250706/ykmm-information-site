@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xq.mapper.NoticeMapper">
+
+  <sql id="baseColumns">
+    id,
+    title,
+    category_id     AS categoryId,
+    summary,
+    content,
+    cover_image     AS coverImage,
+    status,
+    min_visibility  AS minVisibility,
+    is_top          AS isTop,
+    publish_at      AS publishAt,
+    expire_at       AS expireAt,
+    creator_id      AS creatorId,
+    view_count      AS viewCount,
+    created_at      AS createdAt,
+    updated_at      AS updatedAt
+  </sql>
+
+  <!--
+    公共端分页：只返回已发布 + 未过期 + 当前访问者可见的公告
+    - status = 1：只返回已发布
+    - min_visibility <= currentVisibility：按可见性过滤
+    - publish_at IS NULL OR <= NOW()：支持定时发布
+    - expire_at IS NULL OR > NOW()：支持过期自动下架
+    - 排序：置顶优先 → 发布时间倒序（未设 publish_at 的用 created_at）
+  -->
+  <select id="pageVisible" resultType="com.xq.entity.SysNotice">
+    SELECT
+    <include refid="baseColumns"/>
+    FROM sys_notice
+    WHERE status = 1
+    AND min_visibility &lt;= #{currentVisibility}
+    AND (publish_at IS NULL OR publish_at &lt;= NOW())
+    AND (expire_at IS NULL OR expire_at &gt; NOW())
+    <if test="query.categoryId != null">
+      AND category_id = #{query.categoryId}
+    </if>
+    <if test="query.keyword != null and query.keyword != ''">
+      AND title LIKE CONCAT('%', #{query.keyword}, '%')
+    </if>
+    ORDER BY is_top DESC, COALESCE(publish_at, created_at) DESC, id DESC
+  </select>
+
+  <!-- 管理端分页：全部公告（含草稿、已下线），按置顶 + 更新时间倒序 -->
+  <select id="pageAdmin" resultType="com.xq.entity.SysNotice">
+    SELECT
+    <include refid="baseColumns"/>
+    FROM sys_notice
+    <where>
+      <if test="query.status != null">AND status = #{query.status}</if>
+      <if test="query.categoryId != null">AND category_id = #{query.categoryId}</if>
+      <if test="query.minVisibility != null">AND min_visibility = #{query.minVisibility}</if>
+      <if test="query.isTop != null">AND is_top = #{query.isTop}</if>
+      <if test="query.keyword != null and query.keyword != ''">
+        AND title LIKE CONCAT('%', #{query.keyword}, '%')
+      </if>
+    </where>
+    ORDER BY is_top DESC, updated_at DESC, id DESC
+  </select>
+
+  <select id="getById" resultType="com.xq.entity.SysNotice">
+    SELECT
+    <include refid="baseColumns"/>
+    FROM sys_notice
+    WHERE id = #{id}
+  </select>
+
+  <insert id="insert" parameterType="com.xq.entity.SysNotice"
+          useGeneratedKeys="true" keyProperty="id">
+    INSERT INTO sys_notice (
+      title, category_id, summary, content, cover_image,
+      status, min_visibility, is_top, publish_at, expire_at,
+      creator_id, view_count
+    ) VALUES (
+               #{title}, #{categoryId}, #{summary}, #{content}, #{coverImage},
+               #{status}, #{minVisibility}, #{isTop}, #{publishAt}, #{expireAt},
+               #{creatorId}, #{viewCount}
+             )
+  </insert>
+
+  <update id="update" parameterType="com.xq.entity.SysNotice">
+    UPDATE sys_notice
+    <set>
+      <if test="title != null">title = #{title},</if>
+      <if test="categoryId != null">category_id = #{categoryId},</if>
+      <if test="summary != null">summary = #{summary},</if>
+      <if test="content != null">content = #{content},</if>
+      <if test="coverImage != null">cover_image = #{coverImage},</if>
+      <if test="status != null">status = #{status},</if>
+      <if test="minVisibility != null">min_visibility = #{minVisibility},</if>
+      <if test="isTop != null">is_top = #{isTop},</if>
+      <if test="publishAt != null">publish_at = #{publishAt},</if>
+      <if test="expireAt != null">expire_at = #{expireAt},</if>
+    </set>
+    WHERE id = #{id}
+  </update>
+
+  <delete id="deleteById">
+    DELETE FROM sys_notice WHERE id = #{id}
+  </delete>
+
+  <update id="incrViewCount">
+    UPDATE sys_notice SET view_count = view_count + 1 WHERE id = #{id}
+  </update>
+
+  <select id="countByCategoryId" resultType="int">
+    SELECT COUNT(*) FROM sys_notice WHERE category_id = #{categoryId}
+  </select>
+
+</mapper>

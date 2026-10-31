@@ -278,5 +278,31 @@ export const adminRoutes: RouteRecordRaw = {
       component: () => import('@/views/adminContent/dialogueVersionManage/Index.vue'),
       meta: { title: '版本管理' },
     },
+    // ---------- 公告管理 ----------
+    {
+      path: 'content/notice',
+      name: AdminRouteName.NOTICE_MANAGE,
+      component: () => import('@/views/adminContent/noticeManage/Index.vue'),
+      meta: { title: '公告管理' },
+    },
+    {
+      path: 'content/notice/create',
+      name: AdminRouteName.NOTICE_CREATE,
+      component: () => import('@/views/adminContent/noticeManage/components/EditNotice.vue'),
+      meta: { title: '新增公告' },
+    },
+    {
+      path: 'content/notice/edit/:id',
+      name: AdminRouteName.NOTICE_EDIT,
+      component: () => import('@/views/adminContent/noticeManage/components/EditNotice.vue'),
+      meta: { title: '编辑公告' },
+    },
+    // ---------- 公告分类管理 ----------
+    {
+      path: 'content/notice-category',
+      name: AdminRouteName.NOTICE_CATEGORY_MANAGE,
+      component: () => import('@/views/adminContent/noticeManage/components/CategoryManage.vue'),
+      meta: { title: '公告分类' },
+    },
   ],
 }

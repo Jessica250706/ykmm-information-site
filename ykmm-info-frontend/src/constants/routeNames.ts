@@ -40,6 +40,10 @@ export const UserRouteName = {
   /** 剧情浏览详情（type + kind + id） */
   STORY_BROWSE_DETAIL: 'UserStoryBrowseDetail',
 
+  // ---------- 公告 ----------
+  /** 公告首页 */
+  NOTICE: 'UserNotice',
+
   // ---------- 个人中心 ----------
   /** 个人中心 */
   PROFILE: 'UserProfile',
@@ -124,6 +128,14 @@ export const AdminRouteName = {
 
   // ---------- 版本管理 ----------
   DIALOGUE_VERSION_MANAGE: 'AdminDialogueVersionManage',
+
+  // ---------- 公告管理 ----------
+  NOTICE_MANAGE: 'AdminNoticeManage',
+  NOTICE_CREATE: 'AdminNoticeCreate',
+  NOTICE_EDIT: 'AdminNoticeEdit',
+
+  // ---------- 公告分类管理 ----------
+  NOTICE_CATEGORY_MANAGE: 'AdminNoticeCategoryManage',
 } as const
 
 /** 用户端路由名称联合类型 */

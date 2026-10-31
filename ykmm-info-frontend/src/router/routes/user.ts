@@ -72,6 +72,14 @@ export const userRoutes: RouteRecordRaw = {
       meta: { title: '剧情浏览' },
     },
 
+    // ---------- 公告 ----------
+    {
+      path: 'notice',
+      name: UserRouteName.NOTICE,
+      component: () => import('@/views/userNoticePage/Index.vue'),
+      meta: { title: '公告' },
+    },
+
     // ---------- 个人中心 ----------
     {
       path: 'profile',
