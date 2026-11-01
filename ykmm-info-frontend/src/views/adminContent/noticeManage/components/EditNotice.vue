@@ -69,22 +69,9 @@
           />
         </el-form-item>
 
+        <!-- 富文本：一行搞定 -->
         <el-form-item label="内容" prop="content">
-          <div style="border: 1px solid var(--el-border-color); width: 100%">
-            <Toolbar
-              :default-config="toolbarConfig"
-              :editor="editorRef"
-              mode="default"
-              style="border-bottom: 1px solid var(--el-border-color)"
-            />
-            <Editor
-              v-model="form.content"
-              :default-config="editorConfig"
-              mode="default"
-              style="height: 400px; overflow-y: hidden"
-              @on-created="handleCreated"
-            />
-          </div>
+          <RichEditor v-model="form.content" placeholder="请输入公告内容..." />
         </el-form-item>
       </el-form>
 
@@ -97,8 +84,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted, reactive, ref, shallowRef } from 'vue'
-import { Editor, Toolbar } from '@wangeditor-next/editor-for-vue'
+import { computed, onMounted, reactive, ref } from 'vue'
 import { ElMessage, type FormInstance, type FormRules } from 'element-plus'
 import { useRoute, useRouter } from 'vue-router'
 import {
@@ -109,8 +95,6 @@ import {
 } from '@/api/notice'
 import { AdminRouteName, NOTICE_VISIBILITY, NOTICE_VISIBILITY_OPTIONS } from '@/constants'
 import type { NoticeCategoryVO, NoticeDTO } from '@/types/notice'
-import '@wangeditor-next/editor/dist/css/style.css'
-import type { IDomEditor, IEditorConfig, IToolbarConfig } from '@wangeditor-next/editor'
 
 const route = useRoute()
 const router = useRouter()
@@ -138,19 +122,6 @@ const rules: FormRules = {
   categoryId: [{ required: true, message: '请选择分类', trigger: 'change' }],
   minVisibility: [{ required: true, message: '请选择可见性', trigger: 'change' }],
 }
-
-/* -------- 富文本 -------- */
-const editorRef = shallowRef<IDomEditor>()
-const toolbarConfig: Partial<IToolbarConfig> = {}
-const editorConfig: Partial<IEditorConfig> = { placeholder: '请输入公告内容...' }
-
-function handleCreated(editor: IDomEditor) {
-  editorRef.value = editor
-}
-
-onBeforeUnmount(() => {
-  editorRef.value?.destroy()
-})
 
 /* -------- 加载 -------- */
 async function loadCategories() {

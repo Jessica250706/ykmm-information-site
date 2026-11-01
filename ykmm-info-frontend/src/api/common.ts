@@ -6,5 +6,5 @@ import request from '@/utils/http'
 export const uploadFileAPI = (file: File) => {
   const formData = new FormData()
   formData.append('file', file)
-  return request.post<string>('/common/upload', formData)
+  return request.post<string>('/common/upload', formData, { timeout: 60000 })
 }
