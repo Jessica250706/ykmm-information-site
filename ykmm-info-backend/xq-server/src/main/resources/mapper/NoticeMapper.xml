@@ -72,15 +72,12 @@
 
   <insert id="insert" parameterType="com.xq.entity.SysNotice"
           useGeneratedKeys="true" keyProperty="id">
-    INSERT INTO sys_notice (
-      title, category_id, summary, content, cover_image,
-      status, min_visibility, is_top, publish_at, expire_at,
-      creator_id, view_count
-    ) VALUES (
-               #{title}, #{categoryId}, #{summary}, #{content}, #{coverImage},
-               #{status}, #{minVisibility}, #{isTop}, #{publishAt}, #{expireAt},
-               #{creatorId}, #{viewCount}
-             )
+    INSERT INTO sys_notice (title, category_id, summary, content, cover_image,
+                            status, min_visibility, is_top, publish_at, expire_at,
+                            creator_id, view_count)
+    VALUES (#{title}, #{categoryId}, #{summary}, #{content}, #{coverImage},
+            #{status}, #{minVisibility}, #{isTop}, #{publishAt}, #{expireAt},
+            #{creatorId}, #{viewCount})
   </insert>
 
   <update id="update" parameterType="com.xq.entity.SysNotice">
@@ -101,15 +98,49 @@
   </update>
 
   <delete id="deleteById">
-    DELETE FROM sys_notice WHERE id = #{id}
+    DELETE
+    FROM sys_notice
+    WHERE id = #{id}
   </delete>
 
   <update id="incrViewCount">
-    UPDATE sys_notice SET view_count = view_count + 1 WHERE id = #{id}
+    UPDATE sys_notice
+    SET view_count = view_count + 1
+    WHERE id = #{id}
   </update>
 
   <select id="countByCategoryId" resultType="int">
-    SELECT COUNT(*) FROM sys_notice WHERE category_id = #{categoryId}
+    SELECT COUNT(*)
+    FROM sys_notice
+    WHERE category_id = #{categoryId}
   </select>
+
+  <!--
+    定时任务用：把到期的"待发布"公告改为"已发布"
+    - status = 3：只处理待发布
+    - publish_at IS NOT NULL AND <= NOW()：时间已到
+    - 不改 publish_at：保留用户设置的发布时间
+  -->
+  <update id="publishScheduledNow">
+    UPDATE sys_notice
+    SET status = 1
+    WHERE status = 3
+      AND publish_at IS NOT NULL
+      AND publish_at &lt;= NOW()
+  </update>
+
+  <!--
+    定时任务用：把已过期的「已发布」公告改为「已下线」
+    - status = 1：只处理已发布
+    - expire_at IS NOT NULL AND <= NOW()：过期时间已到
+    - 不改 expire_at：保留用户设置的过期时间，便于审计
+  -->
+  <update id="expireOutdatedNow">
+    UPDATE sys_notice
+    SET status = 2
+    WHERE status = 1
+      AND expire_at IS NOT NULL
+      AND expire_at &lt;= NOW()
+  </update>
 
 </mapper>

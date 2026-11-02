@@ -152,9 +152,9 @@ public class StoryServiceImpl implements StoryService {
      * <p>
      * - 先校验剧情本身对当前身份是否可见
      * - 再按身份过滤对话版本：
-     *   - 管理员：全部版本
-     *   - 游客：仅已发布版本
-     *   - 用户：已发布 + 自己创建的版本
+     * - 管理员：全部版本
+     * - 游客：仅已发布版本
+     * - 用户：已发布 + 自己创建的版本
      *
      * @param id 剧情主键
      * @return 详情
@@ -229,7 +229,7 @@ public class StoryServiceImpl implements StoryService {
         // 身份决定初始状态
         switch (UserRoleEnum.current()) {
             case ADMIN -> story.setStatus(StatusEnum.PUBLISHED.getValue());
-            case USER  -> story.setStatus(StatusEnum.PENDING.getValue());
+            case USER -> story.setStatus(StatusEnum.PENDING.getValue());
             case GUEST -> throw new UnauthorizedException("请先登录");
         }
         story.setCreatorId(BaseContext.getCurrentId());

@@ -221,7 +221,7 @@ public class CardSeriesServiceImpl implements CardSeriesService {
     /**
      * 实体 → VO
      *
-     * @param series       实体
+     * @param series        实体
      * @param withCardCount 是否统计关联卡面数量
      */
     private CardSeriesVO toVO(CardSeries series, boolean withCardCount) {

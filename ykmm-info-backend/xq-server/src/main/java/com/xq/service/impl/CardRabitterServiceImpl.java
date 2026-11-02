@@ -99,7 +99,7 @@ public class CardRabitterServiceImpl implements CardRabitterService {
     @Override
     @Transactional
     public void update(Long id, CardRabitterDTO dto) {
-        CardRabitter exist  = checkOperable(id);
+        CardRabitter exist = checkOperable(id);
         cardService.assertWritable(exist.getCardId());
 
         CardRabitter rabitter = new CardRabitter();

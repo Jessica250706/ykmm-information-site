@@ -11,7 +11,8 @@ public enum NoticeStatusEnum {
 
     DRAFT(NoticeStatusConstant.DRAFT, "草稿"),
     PUBLISHED(NoticeStatusConstant.PUBLISHED, "已发布"),
-    OFFLINE(NoticeStatusConstant.OFFLINE, "已下线");
+    OFFLINE(NoticeStatusConstant.OFFLINE, "已下线"),
+    SCHEDULED(NoticeStatusConstant.SCHEDULED, "待发布");
 
     private final Integer value;
     private final String label;

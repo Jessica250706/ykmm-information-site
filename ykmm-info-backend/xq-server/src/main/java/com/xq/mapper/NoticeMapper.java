@@ -47,4 +47,28 @@ public interface NoticeMapper {
      * 统计某分类下的公告数量（用于删除分类前的引用校验）
      */
     int countByCategoryId(@Param("categoryId") Integer categoryId);
+
+    /**
+     * 把到期的"待发布"公告批量改为"已发布"
+     * <p>
+     * 条件：status = 3（待发布）且 publish_at 已到达
+     * <p>
+     * 不修改 publish_at 本身——保留用户设置的计划时间作为"发布时间"，
+     * 让用户端看到的发布时间与用户预期一致。
+     *
+     * @return 本次真正被发布的条数（用于日志）
+     */
+    int publishScheduledNow();
+
+    /**
+     * 把已过期的「已发布」公告批量改为「已下线」
+     * <p>
+     * 条件：status = 1（已发布）且 expire_at 不为空且已到达
+     * <p>
+     * 不修改 expire_at 本身——保留用户设置的过期时间作为"原本计划的下架时间"，
+     * 便于后台追溯"这条公告是什么时候到期的"。
+     *
+     * @return 本次真正被下架的条数（用于日志）
+     */
+    int expireOutdatedNow();
 }

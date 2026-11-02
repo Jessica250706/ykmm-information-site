@@ -73,8 +73,27 @@
           <span class="text-xs text-slate-500">{{ row.minVisibilityLabel || '-' }}</span>
         </template>
 
+        <!-- 发布时间列 -->
         <template #publishAt="{ row }">
-          <span class="text-xs text-slate-500">{{ row.publishAt || row.createdAt || '-' }}</span>
+          <div class="text-xs">
+            <!-- publishAt 有值就显示（计划时间或实际发布时间） -->
+            <div v-if="row.publishAt" class="text-slate-600">{{ row.publishAt }}</div>
+            <!-- publishAt 为空：草稿显示"未设置"，其他状态显示 "-" -->
+            <div v-else class="text-slate-300">
+              {{ row.status === NOTICE_STATUS.DRAFT ? '未设置' : '-' }}
+            </div>
+            <!-- 待发布状态额外提示 -->
+            <div v-if="row.status === NOTICE_STATUS.SCHEDULED" class="text-[10px] text-orange-500">
+              定时发布中
+            </div>
+          </div>
+        </template>
+
+        <!-- 过期时间列 -->
+        <template #expireAt="{ row }">
+          <div class="text-xs">
+            {{ row.expireAt || '未设置' }}
+          </div>
         </template>
 
         <template #action="{ row }">
@@ -144,11 +163,12 @@ const query = reactive<NoticePageQueryDTO>({
 })
 
 const columns: ProTableColumn<NoticeVO>[] = [
-  { label: '标题', minWidth: 240, slot: 'title' },
+  { label: '标题', minWidth: 240, slot: 'title', fixed: 'left' },
   { label: '分类', width: 120, align: 'center', slot: 'category' },
   { label: '状态', width: 100, align: 'center', slot: 'status' },
   { label: '可见性', width: 160, align: 'center', slot: 'minVisibility' },
   { label: '发布时间', width: 170, align: 'center', slot: 'publishAt' },
+  { label: '过期时间', width: 170, align: 'center', slot: 'expireAt' },
   { label: '浏览量', prop: 'viewCount', width: 90, align: 'center' },
   { label: '操作', width: 260, align: 'center', fixed: 'right', slot: 'action', displayFlex: true },
 ]

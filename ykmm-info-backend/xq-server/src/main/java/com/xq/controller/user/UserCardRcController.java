@@ -23,13 +23,17 @@ public class UserCardRcController {
     @Autowired
     private CardRcService cardRcService;
 
-    /** 新增 */
+    /**
+     * 新增
+     */
     @PostMapping
     public Result<Long> create(@RequestBody @Validated(CreateGroup.class) CardRcDTO dto) {
         return Result.success(cardRcService.create(dto));
     }
 
-    /** 编辑 */
+    /**
+     * 编辑
+     */
     @PutMapping("/{id}")
     public Result<Void> update(
             @PathVariable @Positive(message = "RC ID不能为空") Long id,

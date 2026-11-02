@@ -10,7 +10,6 @@ import com.xq.service.AuthService;
 import com.xq.service.UserService;
 import com.xq.vo.UserInfo;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,7 +45,7 @@ public class UserUserController {
      */
     @PutMapping("/{id}")
     public Result<UserInfo> update(@PathVariable @NotNull(message = "用户ID不能为空") Long id,
-                               @RequestBody @NotNull(message = "修改内容不能为空") UserEditDTO dto) {
+                                   @RequestBody @NotNull(message = "修改内容不能为空") UserEditDTO dto) {
         return Result.success(userService.update(id, dto));
     }
 

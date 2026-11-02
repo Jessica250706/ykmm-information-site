@@ -33,9 +33,6 @@ public class CommonServiceImpl implements CommonService {
     @Autowired
     private RedisTemplate redisTemplate;
 
-    // ---------------------------------------------------
-    // 卡面类别字典
-    // ---------------------------------------------------
     @Override
     public List<DictItemVO> getCardCategoryDict() {
         String key = RedisConstant.DICT_CARD_CATEGORY;
@@ -63,9 +60,6 @@ public class CommonServiceImpl implements CommonService {
         return result;
     }
 
-    // ---------------------------------------------------
-    // 属性字典（枚举，无缓存）
-    // ---------------------------------------------------
     @Override
     public List<DictItemVO> getAttributeDict() {
         return CardAttributeEnum.listAll().stream()
@@ -73,9 +67,6 @@ public class CommonServiceImpl implements CommonService {
                 .collect(Collectors.toList());
     }
 
-    // ---------------------------------------------------
-    // 稀有度字典（枚举，无缓存）
-    // ---------------------------------------------------
     @Override
     public List<DictItemVO> getRarityDict() {
         return CardMaxRarityEnum.listAll().stream()
@@ -83,9 +74,6 @@ public class CommonServiceImpl implements CommonService {
                 .collect(Collectors.toList());
     }
 
-    // ---------------------------------------------------
-    // 剧情分类类型字典（枚举，无缓存）
-    // ---------------------------------------------------
     @Override
     public List<DictItemVO> getStoryCategoryTypeDict() {
         return StoryCategoryTypeEnum.listAll().stream()
@@ -93,9 +81,6 @@ public class CommonServiceImpl implements CommonService {
                 .collect(Collectors.toList());
     }
 
-    // ---------------------------------------------------
-    // 表情包列表
-    // ---------------------------------------------------
     @Override
     public List<Sticker> listStickers(String keyword, Integer stickerType) {
         String cacheKey = buildStickerListKey(keyword, stickerType);
@@ -120,9 +105,6 @@ public class CommonServiceImpl implements CommonService {
         return list;
     }
 
-    // ---------------------------------------------------
-    // 表情包详情
-    // ---------------------------------------------------
     @Override
     public Sticker getStickerById(Long id) {
         String cacheKey = RedisConstant.DICT_STICKER_DETAIL_PREFIX + id;
@@ -148,9 +130,6 @@ public class CommonServiceImpl implements CommonService {
         return sticker;
     }
 
-    // ---------------------------------------------------
-    // 构建表情包列表缓存 key
-    // ---------------------------------------------------
     private String buildStickerListKey(String keyword, Integer stickerType) {
         String kw = (keyword == null ? "" : keyword.trim());
         String type = (stickerType == null ? "all" : String.valueOf(stickerType));

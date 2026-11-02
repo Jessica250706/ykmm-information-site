@@ -175,20 +175,28 @@ public class NoticeServiceImpl implements NoticeService {
         SysNotice exist = noticeMapper.getById(id);
         if (exist == null) throw new RuntimeException("公告不存在");
 
-        if (NoticeStatusEnum.PUBLISHED.getValue().equals(exist.getStatus())) {
-            throw new RuntimeException("公告已是发布状态");
+        Integer status = exist.getStatus();
+        if (NoticeStatusEnum.PUBLISHED.getValue().equals(status)
+                || NoticeStatusEnum.SCHEDULED.getValue().equals(status)) {
+            throw new RuntimeException("公告已是发布或待发布状态，无需重复操作");
         }
 
+        LocalDateTime now = LocalDateTime.now();
         SysNotice update = new SysNotice();
         update.setId(id);
-        update.setStatus(NoticeStatusEnum.PUBLISHED.getValue());
-        // publishAt 为空时置为当前时间（保留用户预设的未来时间为定时发布）
-        if (exist.getPublishAt() == null) {
-            update.setPublishAt(LocalDateTime.now());
+
+        if (exist.getPublishAt() != null && exist.getPublishAt().isAfter(now)) {
+            // 计划发布时间在未来 → 进入"待发布"，由定时任务到点变"已发布"
+            update.setStatus(NoticeStatusEnum.SCHEDULED.getValue());
+        } else {
+            // 立即发布：publish_at 为空或已过时，统一改为当前时间
+            update.setStatus(NoticeStatusEnum.PUBLISHED.getValue());
+            update.setPublishAt(now);
         }
 
         noticeMapper.update(update);
-        log.info("发布公告成功，id={}", id);
+        log.info("发布公告成功，id={}, status={}, publishAt={}",
+                id, update.getStatus(), update.getPublishAt());
     }
 
     @Override

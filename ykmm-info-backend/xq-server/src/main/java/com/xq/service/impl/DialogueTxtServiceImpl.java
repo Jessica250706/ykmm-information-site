@@ -44,7 +44,9 @@ public class DialogueTxtServiceImpl implements DialogueTxtService {
     private static final Pattern OPTION_NUMBER_PATTERN =
             Pattern.compile(DialogueConstant.OPTION_NUMBER_PATTERN);
 
-    /** 纯省略号行（…… 或 ... ） */
+    /**
+     * 纯省略号行（…… 或 ... ）
+     */
     private static final Pattern ELLIPSIS_ONLY_PATTERN =
             Pattern.compile("^(…+|\\.{3,})$");
 

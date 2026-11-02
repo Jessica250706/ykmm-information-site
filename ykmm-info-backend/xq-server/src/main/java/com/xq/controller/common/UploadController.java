@@ -22,15 +22,17 @@ import java.util.UUID;
 @Slf4j
 public class UploadController {
 
-    @Autowired
-    private AliOssUtil aliOssUtil;
-
-    /** 允许上传的图片后缀 */
+    /**
+     * 允许上传的图片后缀
+     */
     private static final List<String> ALLOWED_EXT =
             Arrays.asList(".jpg", ".jpeg", ".png", ".webp", ".gif");
-
-    /** 文件大小上限：10MB */
+    /**
+     * 文件大小上限：10MB
+     */
     private static final long MAX_SIZE = 10 * 1024 * 1024L;
+    @Autowired
+    private AliOssUtil aliOssUtil;
 
     /**
      * 上传图片/文件，返回 URL

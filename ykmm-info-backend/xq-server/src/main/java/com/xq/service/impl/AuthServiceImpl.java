@@ -31,11 +31,11 @@ public class AuthServiceImpl implements AuthService {
 
     private static final SecureRandom RANDOM = new SecureRandom();
 
+    private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+
     private final SysUserMapper sysUserMapper;
     private final StringRedisTemplate stringRedisTemplate;
     private final MailService mailService;
-
-    private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
     /**
      * 发送注册验证码

@@ -7,7 +7,10 @@ import jakarta.validation.constraints.NotNull;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
@@ -23,13 +26,17 @@ public class PublicCardRcController {
     @Autowired
     private CardRcService cardRcService;
 
-    /** 查询卡面下的 RC 列表 */
+    /**
+     * 查询卡面下的 RC 列表
+     */
     @GetMapping("/card/{cardId}")
     public Result<List<CardRcVO>> listByCardId(@PathVariable @NotNull(message = "卡面ID不能为空") Long cardId) {
         return Result.success(cardRcService.listByCardId(cardId));
     }
 
-    /** 查询详情 */
+    /**
+     * 查询详情
+     */
     @GetMapping("/{id}")
     public Result<CardRcVO> detail(@PathVariable @NotNull(message = "RC ID不能为空") Long id) {
         return Result.success(cardRcService.getById(id));

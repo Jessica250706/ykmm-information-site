@@ -1,5 +1,7 @@
 package com.xq.service.impl;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import com.xq.constant.PersonConstant;
@@ -15,8 +17,6 @@ import com.xq.vo.AgencyVO;
 import com.xq.vo.PersonIdolGroupVO;
 import com.xq.vo.PersonOptionVO;
 import com.xq.vo.PersonVO;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,6 +37,28 @@ public class PersonServiceImpl implements PersonService {
 
     @Autowired
     private ObjectMapper objectMapper;
+
+    /**
+     * 基础校验
+     *
+     * @param dto
+     */
+    private static void judgeLegality(PersonDTO dto) {
+        if (dto.getNameCn() != null && dto.getNameCn().isBlank()) {
+            throw new RuntimeException("中文名不能为空");
+        }
+        if (dto.getPersonType() != null && !PersonTypeEnum.isValid(dto.getPersonType())) {
+            throw new RuntimeException("人物类型不合法");
+        }
+        if (dto.getBloodType() != null && !BloodTypeEnum.isValid(dto.getBloodType())) {
+            throw new RuntimeException("血型不合法");
+        }
+        if (dto.getSymbol() != null
+                && dto.getSymbol().length() > PersonConstant.SYMBOL_MAX_LENGTH) {
+            throw new RuntimeException("代表符号长度不能超过 "
+                    + PersonConstant.SYMBOL_MAX_LENGTH);
+        }
+    }
 
     // ---------------------------------------------------
     // 分页查询
@@ -135,28 +157,6 @@ public class PersonServiceImpl implements PersonService {
         }
 
         log.info("编辑人物成功，id={}", id);
-    }
-
-    /**
-     * 基础校验
-     *
-     * @param dto
-     */
-    private static void judgeLegality(PersonDTO dto) {
-        if (dto.getNameCn() != null && dto.getNameCn().isBlank()) {
-            throw new RuntimeException("中文名不能为空");
-        }
-        if (dto.getPersonType() != null && !PersonTypeEnum.isValid(dto.getPersonType())) {
-            throw new RuntimeException("人物类型不合法");
-        }
-        if (dto.getBloodType() != null && !BloodTypeEnum.isValid(dto.getBloodType())) {
-            throw new RuntimeException("血型不合法");
-        }
-        if (dto.getSymbol() != null
-                && dto.getSymbol().length() > PersonConstant.SYMBOL_MAX_LENGTH) {
-            throw new RuntimeException("代表符号长度不能超过 "
-                    + PersonConstant.SYMBOL_MAX_LENGTH);
-        }
     }
 
     // ---------------------------------------------------

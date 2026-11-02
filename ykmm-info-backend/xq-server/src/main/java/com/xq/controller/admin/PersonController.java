@@ -7,13 +7,10 @@ import com.xq.dto.PersonPageQueryDTO;
 import com.xq.result.PageResult;
 import com.xq.result.Result;
 import com.xq.service.PersonService;
-import com.xq.vo.PersonOptionVO;
 import com.xq.vo.PersonVO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 /**
  * 人物管理

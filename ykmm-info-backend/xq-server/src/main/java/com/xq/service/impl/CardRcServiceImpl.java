@@ -144,7 +144,7 @@ public class CardRcServiceImpl implements CardRcService {
      * 校验当前用户是否有权操作指定 RC，并返回其实体
      *
      * @param id RC 主键
-     * @throws RuntimeException 资源不存在
+     * @throws RuntimeException   资源不存在
      * @throws ForbiddenException 无权操作
      */
     private CardRc checkOperable(Long id) {

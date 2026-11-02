@@ -146,7 +146,7 @@ public class CardRtvServiceImpl implements CardRtvService {
      * 校验当前用户是否有权操作指定 RTV，并返回其实体
      *
      * @param id RTV 主键
-     * @throws RuntimeException 资源不存在
+     * @throws RuntimeException   资源不存在
      * @throws ForbiddenException 无权操作
      */
     private CardRtv checkOperable(Long id) {

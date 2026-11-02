@@ -27,7 +27,7 @@
             >
               {{ notice.categoryName }}
             </el-tag>
-            <span>发布于 {{ notice.publishAt || notice.createdAt || '-' }}</span>
+            <span>发布于 {{ notice.publishAt || '暂未发布' }}</span>
             <span>浏览 {{ notice.viewCount ?? 0 }}</span>
             <el-tag v-if="notice.isTop === 1" effect="plain" size="small" type="danger">
               置顶
