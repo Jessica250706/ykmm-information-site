@@ -35,15 +35,31 @@
           </div>
         </header>
 
-        <!-- 富文本内容：DOMPurify 清洗后渲染 -->
-        <div class="rich-content mt-6" v-html="safeContent" />
+        <!-- 富文本内容：DOMPurify 清洗 + 点击图片打开预览 -->
+        <div
+          ref="contentRef"
+          class="rich-content mt-6"
+          @click="handleContentClick"
+          v-html="safeContent"
+        />
       </article>
     </el-scrollbar>
+
+    <!-- 图片预览 -->
+    <el-image-viewer
+      v-if="viewerVisible"
+      :initial-index="previewIndex"
+      :url-list="previewList"
+      hide-on-click-modal
+      lazy
+      teleported
+      @close="viewerVisible = false"
+    />
   </el-card>
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import DOMPurify from 'dompurify'
 import type { NoticeVO } from '@/types/notice'
 
@@ -52,24 +68,92 @@ const props = defineProps<{
   loading: boolean
 }>()
 
+const contentRef = ref<HTMLElement | null>(null)
+
+/* -------- 图片预览状态 -------- */
+const viewerVisible = ref(false)
+const previewList = ref<string[]>([])
+const previewIndex = ref(0)
+
 /**
- * 富文本内容安全清洗：
- * content 是管理员可控 HTML，即使管理员账号被盗或误粘贴，
- * DOMPurify 也能拦住 <script>、onerror 等 XSS 攻击向量。
+ * 富文本内容安全清洗 + 拆掉「包图片的 a 标签」。
+ *
+ * 为什么拆 a 标签：
+ * - wangEditor 插入图片时可能生成 <a href="原图URL"><img src="..."/></a>
+ * - 点击图片 → 浏览器跳转到 href → 新标签页请求原图，
+ *   但 OSS 私有读需要 token → 新标签页无 token → 403/404
+ * - 拆掉 a 后 img 独立存在，点击不会跳转
+ *
+ * 为什么只拆「包图片的 a」：
+ * - 富文本里可能有正常的超链接（外链、站内跳转），这些要保留
+ * - 只处理 a 下有 img 的情况，正常的 <a>文本</a> 不动
  */
-const safeContent = computed(() =>
-  DOMPurify.sanitize(props.notice?.content ?? '', {
-    // 允许的标签：默认已足够宽；如需禁 img 等再收紧
+const safeContent = computed(() => {
+  const sanitized = DOMPurify.sanitize(props.notice?.content ?? '', {
     FORBID_TAGS: ['style'],
-  }),
-)
+  })
+
+  // SSR 环境下没有 document，跳过 DOM 处理（本项目是纯 CSR，不会走到这里）
+  if (typeof document === 'undefined') return sanitized
+
+  const temp = document.createElement('div')
+  temp.innerHTML = sanitized
+
+  // 把 <a> 里的 <img> 提出来放到 a 前面，然后删掉 a
+  temp.querySelectorAll('a').forEach((a) => {
+    if (!a.querySelector('img')) return
+    const parent = a.parentNode
+    if (!parent) return
+    // 把 a 的所有子节点（含 img）挪到 a 前面
+    while (a.firstChild) {
+      parent.insertBefore(a.firstChild, a)
+    }
+    parent.removeChild(a)
+  })
+
+  return temp.innerHTML
+})
+
+/**
+ * 点击富文本内容：拦截图片点击，打开 el-image-viewer 预览。
+ *
+ * 为什么用事件委托：
+ * - v-html 渲染的内容无法绑定 Vue 事件处理器
+ * - 在容器上监听 click，判断 e.target 是不是 img
+ *
+ * 为什么收集所有 img 的 src 而不是只传当前图片：
+ * - 让用户能在预览里左右切换，看同一篇文章里的其他图片
+ * - 这是 Element Plus 的 el-image-viewer 的标准用法
+ */
+function handleContentClick(e: MouseEvent) {
+  const target = e.target as HTMLElement
+  if (target.tagName !== 'IMG') return
+
+  e.preventDefault()
+  e.stopPropagation()
+
+  // 收集当前富文本里所有 img 的 src
+  const imgs = contentRef.value?.querySelectorAll('img') ?? []
+  const urls: string[] = []
+  let clickedIndex = 0
+
+  imgs.forEach((img) => {
+    const src = img.getAttribute('src')
+    if (!src) return
+    // 在 push 之前记录索引，正好是当前图片即将被 push 到的位置
+    if (img === target) clickedIndex = urls.length
+    urls.push(src)
+  })
+
+  if (urls.length === 0) return
+
+  previewList.value = urls
+  previewIndex.value = clickedIndex
+  viewerVisible.value = true
+}
 </script>
 
 <style lang="scss" scoped>
-/**
- * 富文本内容样式：使用 :deep 覆盖 v-html 生成的内容
- * 避免管理员随意写 h1/h2 打乱页面层级
- */
 .rich-content {
   font-size: 15px;
   line-height: 1.8;
@@ -81,6 +165,8 @@ const safeContent = computed(() =>
     height: auto;
     border-radius: 6px;
     margin: 8px 0;
+    /* ★ 提示可点击放大 */
+    cursor: zoom-in;
   }
 
   :deep(h1),
