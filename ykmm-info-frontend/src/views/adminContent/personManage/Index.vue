@@ -330,13 +330,14 @@ watch(
 
 /* -------- 新增 / 编辑 -------- */
 function handleCreate() {
-  router.push({ name: AdminRouteName.PERSON_CREATE })
+  router.push({ name: AdminRouteName.PERSON_CREATE, query: { redirect: route.fullPath } })
 }
 
 function handleEdit(row: PersonVO) {
   router.push({
     name: AdminRouteName.PERSON_EDIT,
     params: { id: String(row.id) },
+    query: { redirect: route.fullPath },
   })
 }
 
