@@ -79,6 +79,7 @@
 import { computed, defineComponent, type PropType, ref, watch } from 'vue'
 import { useTable } from './useTable'
 import type {
+  PageChangePayload,
   ProTableColumn,
   ProTableExpose,
   ProTableProps,
@@ -120,21 +121,34 @@ const props = withDefaults(defineProps<ProTableProps<T, P>>(), {
   paginationLayout: 'total, sizes, prev, pager, next, jumper',
   immediate: true,
   displayFlex: false,
+  initialParams: undefined,
 })
 
 const emit = defineEmits<{
   (e: 'selection-change', val: T[]): void
   (e: 'sort-change', val: { prop: string; order: string | null }): void
+  (e: 'page-change', payload: PageChangePayload): void
 }>()
 
 /* -------- 数据逻辑 -------- */
-const { loading, tableData, total, currentPage, pageSize, refresh, search, reset, setData } =
-  useTable<T, P>({
-    request: props.request,
-    data: () => props.data,
-    defaultPageSize: props.defaultPageSize,
-    defaultPageNum: props.defaultPageNum,
-  })
+const {
+  loading,
+  tableData,
+  total,
+  currentPage,
+  pageSize,
+  refresh,
+  search,
+  reset,
+  setData,
+  goToPage,
+} = useTable<T, P>({
+  request: props.request,
+  data: () => props.data,
+  defaultParams: (props.initialParams ?? {}) as P,
+  defaultPageSize: props.defaultPageSize,
+  defaultPageNum: props.defaultPageNum,
+})
 
 const tableRef = ref<TableInstance>()
 
@@ -170,6 +184,11 @@ function handleSizeChange() {
   void refresh()
 }
 
+/* -------- 分页变化事件：用户翻页 / 切每页条数 / search 重置 / reset 重置 都会触发 -------- */
+watch([currentPage, pageSize], ([page, size]) => {
+  emit('page-change', { pageNum: page, pageSize: size })
+})
+
 /* -------- 请求参数变化时重新搜索 -------- */
 watch(
   () => props.params,
@@ -194,5 +213,6 @@ defineExpose<ProTableExpose<T>>({
   loading,
   tableData,
   total,
+  goToPage,
 })
 </script>

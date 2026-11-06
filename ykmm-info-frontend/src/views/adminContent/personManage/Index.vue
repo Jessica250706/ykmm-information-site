@@ -45,7 +45,16 @@
 
     <!-- 表格区 -->
     <el-card class="flex-1" shadow="never">
-      <ProTable ref="tableRef" :columns="columns" :request="fetchList" row-key="id">
+      <ProTable
+        ref="tableRef"
+        :columns="columns"
+        :default-page-num="initialPageNum"
+        :default-page-size="initialPageSize"
+        :initial-params="initialParams"
+        :request="fetchList"
+        row-key="id"
+        @page-change="handlePageChange"
+      >
         <!-- 头像 -->
         <template #avatar="{ row }">
           <el-avatar :size="40" :src="row.avatar">
@@ -123,12 +132,17 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, reactive, ref } from 'vue'
+import { nextTick, onMounted, reactive, ref, watch } from 'vue'
 import { Plus } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { deletePersonAPI, listPersonAPI } from '@/api/person'
-import { type PageResult, type ProTableColumn, type ProTableExpose } from '@/components/ProTable'
+import {
+  type PageChangePayload,
+  type PageResult,
+  type ProTableColumn,
+  type ProTableExpose,
+} from '@/components/ProTable'
 import {
   AdminRouteName,
   PERSON_TYPE,
@@ -140,6 +154,7 @@ import {} from '@/constants'
 import { useAgencyStore } from '@/stores'
 import type { PersonPageQueryDTO, PersonVO } from '@/types/person'
 
+const route = useRoute()
 const router = useRouter()
 const agencyStore = useAgencyStore()
 
@@ -147,16 +162,78 @@ const agencyStore = useAgencyStore()
 type TableInstance = ProTableExpose<PersonVO>
 const tableRef = ref<TableInstance>()
 
-/* -------- 搜索参数 -------- */
+/* -------- 从 URL 解析初始值 -------- */
+/** 解析正整数，非法时回退到 fallback */
+function parsePositiveInt(raw: unknown, fallback: number): number {
+  const n = Number(raw)
+  return Number.isFinite(n) && n > 0 ? Math.floor(n) : fallback
+}
+
+const initialPageNum = parsePositiveInt(route.query.pageNum, 1)
+const initialPageSize = parsePositiveInt(route.query.pageSize, 20)
+
+const initialParams: PersonPageQueryDTO = {
+  keyword: typeof route.query.keyword === 'string' ? route.query.keyword : undefined,
+  personType: route.query.personType
+    ? (Number(route.query.personType) as PersonTypeValue)
+    : undefined,
+  agencyId: route.query.agencyId ? Number(route.query.agencyId) : undefined,
+}
+
+/* -------- 搜索参数（从 URL 恢复） -------- */
 const query = reactive<{
   keyword?: string
   personType?: PersonTypeValue
   agencyId?: number
 }>({
-  keyword: '',
-  personType: undefined,
-  agencyId: undefined,
+  keyword: initialParams.keyword ?? '',
+  personType: initialParams.personType as PersonTypeValue,
+  agencyId: initialParams.agencyId,
 })
+
+/* -------- 当前分页状态（跟随 ProTable） -------- */
+const currentPageNum = ref(initialPageNum)
+const currentPageSize = ref(initialPageSize)
+
+/* -------- URL 同步 -------- */
+/**
+ * 防循环标志：
+ * 页面自己写 URL 时置为 true，route.query 的 watch 检测到就跳过，
+ * 只有"外部驱动"的 URL 变化（浏览器前进/后退）才进入反向同步分支。
+ */
+let isSelfUpdating = false
+
+/**
+ * 根据当前状态生成 query 对象。
+ * pageNum/pageSize 始终写入（符合"刷新后保持分页"需求）。
+ */
+function buildQuery(
+  pageNum: number,
+  pageSize: number,
+  includeSearch = true,
+): Record<string, string> {
+  const q: Record<string, string> = {
+    pageNum: String(pageNum),
+    pageSize: String(pageSize),
+  }
+  if (includeSearch) {
+    if (query.keyword) q.keyword = query.keyword
+    if (query.personType != null) q.personType = String(query.personType)
+    if (query.agencyId != null) q.agencyId = String(query.agencyId)
+  }
+  return q
+}
+
+/** 写 URL（用 replace 避免污染历史，配合 flag 防循环） */
+function syncUrl(pageNum: number, pageSize: number, includeSearch = true) {
+  isSelfUpdating = true
+  void router.replace({ query: buildQuery(pageNum, pageSize, includeSearch) }).finally(() => {
+    // nextTick 后重置，保证本轮触发的 route.query watch 已完成
+    void nextTick(() => {
+      isSelfUpdating = false
+    })
+  })
+}
 
 /* -------- 列配置 -------- */
 const columns: ProTableColumn<PersonVO>[] = [
@@ -175,12 +252,11 @@ const columns: ProTableColumn<PersonVO>[] = [
   { label: '操作', minWidth: 140, align: 'center', fixed: 'right', slot: 'action' },
 ]
 
-/* -------- 请求适配 -------- */
+/* -------- 列表请求 -------- */
 async function fetchList(
   params: PersonPageQueryDTO & { pageNum: number; pageSize: number },
 ): Promise<PageResult<PersonVO>> {
   const res = await listPersonAPI(params)
-
   return {
     records: res.data.records ?? [],
     total: res.data.total ?? 0,
@@ -194,14 +270,63 @@ function handleSearch() {
     personType: query.personType ?? undefined,
     agencyId: query.agencyId ?? undefined,
   })
+  // search 会重置 pageNum=1（可能触发 page-change，但也可能不触发——比如原来就在第 1 页），
+  // 这里主动写一次 URL 兜底，确保搜索条件一定进 URL。
+  syncUrl(1, currentPageSize.value)
 }
 
 function handleReset() {
+  // 1. 清空本地搜索条件
   query.keyword = ''
   query.personType = undefined
   query.agencyId = undefined
+  // 2. ProTable 重置（pageNum → defaultPageNum=初始值，pageSize → defaultPageSize=初始值）
   tableRef.value?.reset()
+  // 3. 写 URL：保留 pageNum / pageSize，清空搜索参数
+  //    重置后 pageSize 是"初始值"（initialPageSize），非当前值
+  currentPageNum.value = initialPageNum
+  currentPageSize.value = initialPageSize
+  syncUrl(initialPageNum, initialPageSize, false)
 }
+
+/* -------- 分页变化（ProTable 内部变化时回调） -------- */
+function handlePageChange({ pageNum, pageSize }: PageChangePayload) {
+  currentPageNum.value = pageNum
+  currentPageSize.value = pageSize
+  syncUrl(pageNum, pageSize)
+}
+
+/* -------- 浏览器前进 / 后退：URL → 页面恢复 -------- */
+watch(
+  () => route.query,
+  (newQuery) => {
+    if (isSelfUpdating) return
+
+    // 从 URL 解析参数
+    const pageNum = parsePositiveInt(newQuery.pageNum, 1)
+    const pageSize = parsePositiveInt(newQuery.pageSize, 20)
+    const keyword = typeof newQuery.keyword === 'string' ? newQuery.keyword : ''
+    const personType = newQuery.personType
+      ? (Number(newQuery.personType) as PersonTypeValue)
+      : undefined
+    const agencyId = newQuery.agencyId ? Number(newQuery.agencyId) : undefined
+
+    // 同步本地状态
+    query.keyword = keyword
+    query.personType = personType
+    query.agencyId = agencyId
+    currentPageNum.value = pageNum
+    currentPageSize.value = pageSize
+
+    // 一次请求恢复（合并搜索参数 + 分页）
+    void tableRef.value?.goToPage(pageNum, pageSize, {
+      keyword: keyword || undefined,
+      personType,
+      agencyId,
+    })
+  },
+  { deep: true },
+)
 
 /* -------- 新增 / 编辑 -------- */
 function handleCreate() {

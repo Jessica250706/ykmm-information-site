@@ -108,6 +108,17 @@ export function useTable<T extends AnyRow, P extends AnyRow = AnyRow>(
     await fetchData()
   }
 
+  async function goToPage(pageNum: number, pageSizeToSet?: number, params?: AnyRow) {
+    if (params) {
+      extraParams.value = { ...extraParams.value, ...params }
+    }
+    currentPage.value = Math.max(1, pageNum)
+    if (pageSizeToSet != null) {
+      pageSize.value = Math.max(1, pageSizeToSet)
+    }
+    await fetchData()
+  }
+
   /** 手动设置数据（用于某些特殊场景） */
   function setData(list: T[], t?: number) {
     tableData.value = list
@@ -134,6 +145,7 @@ export function useTable<T extends AnyRow, P extends AnyRow = AnyRow>(
     refresh,
     search,
     reset,
+    goToPage,
     setData,
   }
 }

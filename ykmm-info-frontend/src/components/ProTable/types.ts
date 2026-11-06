@@ -84,6 +84,12 @@ export interface PageResult<T> {
   total: number
 }
 
+/** 分页变化事件载荷 */
+export interface PageChangePayload {
+  pageNum: number
+  pageSize: number
+}
+
 /** ProTable 的 props */
 export interface ProTableProps<T extends AnyRow = AnyRow, P extends AnyRow = AnyRow> {
   /** 列配置 */
@@ -106,6 +112,12 @@ export interface ProTableProps<T extends AnyRow = AnyRow, P extends AnyRow = Any
   paginationLayout?: string
   /** 挂载即请求 */
   immediate?: boolean
+  /**
+   * 初始请求参数：仅用于挂载时的首次请求，不参与 watch，
+   * 适合"从 URL 恢复搜索条件"这类"只在初始化时使用"的场景。
+   * 后续变化请用 ref.search() 或 ref.goToPage()。
+   */
+  initialParams?: P
 }
 
 /** useTable 的返回 */
@@ -119,6 +131,8 @@ export interface UseTableReturn<T extends AnyRow = AnyRow> {
   search: (params?: AnyRow) => Promise<void>
   reset: () => Promise<void>
   setData: (list: T[], total?: number) => void
+  /** 允许外部合并参数后跳页（一次请求） */
+  goToPage: (pageNum: number, pageSize?: number, params?: AnyRow) => Promise<void>
 }
 
 export interface ProTableExpose<T extends AnyRow = AnyRow> {
@@ -138,4 +152,12 @@ export interface ProTableExpose<T extends AnyRow = AnyRow> {
   tableData: Ref<T[]>
   /** 总条数 */
   total: Ref<number>
+  /**
+   * 跳转到指定分页并刷新。
+   *
+   * @param pageNum  目标页码（>= 1）
+   * @param pageSize 目标每页条数，不传则保持当前值
+   * @param params   可选的搜索参数，与现有 extraParams 合并后一起请求
+   */
+  goToPage: (pageNum: number, pageSize?: number, params?: AnyRow) => Promise<void>
 }
