@@ -72,6 +72,11 @@ public class SysUser implements Serializable {
     private Integer role;
 
     /**
+     * 答题是否通过：0-未通过 1-已通过
+     */
+    private Integer quizPassed;
+
+    /**
      * 创建时间
      */
     private LocalDateTime createdAt;

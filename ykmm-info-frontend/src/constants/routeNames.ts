@@ -10,6 +10,8 @@ export const CommonRouteName = {
   FORBIDDEN: 'Forbidden',
   /** 页面不存在 */
   NOT_FOUND: 'NotFound',
+  /** 答题 */
+  QUIZ: 'UserQuiz',
 } as const
 
 /**
@@ -136,6 +138,12 @@ export const AdminRouteName = {
 
   // ---------- 公告分类管理 ----------
   NOTICE_CATEGORY_MANAGE: 'AdminNoticeCategoryManage',
+
+  // ---------- 题库 ----------
+  QUESTION_MANAGE: 'AdminQuestionManage',
+  QUESTION_CREATE: 'AdminQuestionCreate',
+  QUESTION_EDIT: 'AdminQuestionEdit',
+  QUIZ_CONFIG_MANAGE: 'AdminQuizConfigManage',
 } as const
 
 /** 用户端路由名称联合类型 */

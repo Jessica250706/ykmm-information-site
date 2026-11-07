@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xq.mapper.UserQuizQuestionMapper">
+
+  <sql id="baseColumns">
+    id,
+    attempt_id       AS attemptId,
+    question_id      AS questionId,
+    question_content AS questionContent,
+    question_type    AS questionType,
+    is_fixed         AS isFixed,
+    options_snapshot AS optionsSnapshot,
+    option_order     AS optionOrder,
+    user_answer      AS userAnswer,
+    is_correct       AS isCorrect,
+    sort,
+    created_at       AS createdAt
+  </sql>
+
+  <insert id="insertBatch" useGeneratedKeys="true" keyProperty="id">
+    INSERT INTO sys_user_quiz_question
+    (attempt_id, question_id, question_content, question_type, is_fixed,
+    options_snapshot, option_order, sort)
+    VALUES
+    <foreach collection="list" item="q" separator=",">
+      (#{q.attemptId}, #{q.questionId}, #{q.questionContent}, #{q.questionType}, #{q.isFixed},
+      #{q.optionsSnapshot}, #{q.optionOrder}, #{q.sort})
+    </foreach>
+  </insert>
+
+  <select id="listByAttemptId" resultType="com.xq.entity.SysUserQuizQuestion">
+    SELECT
+    <include refid="baseColumns"/>
+    FROM sys_user_quiz_question
+    WHERE attempt_id = #{attemptId}
+    ORDER BY sort ASC, id ASC
+  </select>
+
+  <select id="getByAttemptAndQuestion" resultType="com.xq.entity.SysUserQuizQuestion">
+    SELECT
+    <include refid="baseColumns"/>
+    FROM sys_user_quiz_question
+    WHERE attempt_id = #{attemptId} AND question_id = #{questionId}
+    LIMIT 1
+  </select>
+
+  <update id="update" parameterType="com.xq.entity.SysUserQuizQuestion">
+    UPDATE sys_user_quiz_question
+    <set>
+      <if test="userAnswer != null">user_answer = #{userAnswer},</if>
+      <if test="isCorrect != null">is_correct = #{isCorrect},</if>
+    </set>
+    WHERE id = #{id}
+  </update>
+
+</mapper>

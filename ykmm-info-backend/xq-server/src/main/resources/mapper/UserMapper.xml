@@ -13,6 +13,7 @@
     ip_address AS ipAddress,
     last_login_time AS lastLoginTime,
     status,
+    quiz_passed AS quizPassed,
     role,
     created_at AS createdAt,
     updated_at AS updatedAt
@@ -89,5 +90,11 @@
     FROM sys_user
     WHERE id = #{id}
   </delete>
+
+  <update id="updateQuizPassed">
+    UPDATE sys_user
+    SET quiz_passed = #{quizPassed}
+    WHERE id = #{id}
+  </update>
 
 </mapper>

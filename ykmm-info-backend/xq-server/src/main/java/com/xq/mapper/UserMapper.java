@@ -43,4 +43,12 @@ public interface UserMapper {
      * 物理删除
      */
     int deleteById(@Param("id") Long id);
+
+    /**
+     * 更新用户的答题通过标记
+     *
+     * @param id         用户ID
+     * @param quizPassed 0-未通过 1-已通过
+     */
+    int updateQuizPassed(@Param("id") Long id, @Param("quizPassed") Integer quizPassed);
 }

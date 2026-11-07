@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xq.mapper.UserQuizAttemptMapper">
+
+  <sql id="baseColumns">
+    id,
+    user_id       AS userId,
+    status,
+    total_count   AS totalCount,
+    pass_count    AS passCount,
+    correct_count AS correctCount,
+    started_at    AS startedAt,
+    submitted_at  AS submittedAt,
+    created_at    AS createdAt
+  </sql>
+
+  <insert id="insert" parameterType="com.xq.entity.SysUserQuizAttempt"
+          useGeneratedKeys="true" keyProperty="id">
+    INSERT INTO sys_user_quiz_attempt
+      (user_id, status, total_count, pass_count, correct_count, started_at)
+    VALUES (#{userId}, #{status}, #{totalCount}, #{passCount}, #{correctCount}, #{startedAt})
+  </insert>
+
+  <select id="getById" resultType="com.xq.entity.SysUserQuizAttempt">
+    SELECT
+    <include refid="baseColumns"/>
+    FROM sys_user_quiz_attempt
+    WHERE id = #{id}
+  </select>
+
+  <select id="getInProgressByUserId" resultType="com.xq.entity.SysUserQuizAttempt">
+    SELECT
+    <include refid="baseColumns"/>
+    FROM sys_user_quiz_attempt
+    WHERE user_id = #{userId} AND status = 0
+    ORDER BY id DESC
+    LIMIT 1
+  </select>
+
+  <select id="countSubmittedByUserId" resultType="int">
+    SELECT COUNT(*)
+    FROM sys_user_quiz_attempt
+    WHERE user_id = #{userId}
+      AND status IN (1, 2)
+  </select>
+
+  <select id="countAllByUserId" resultType="int">
+    SELECT COUNT(*)
+    FROM sys_user_quiz_attempt
+    WHERE user_id = #{userId}
+  </select>
+
+  <update id="update" parameterType="com.xq.entity.SysUserQuizAttempt">
+    UPDATE sys_user_quiz_attempt
+    <set>
+      <if test="status != null">status = #{status},</if>
+      <if test="correctCount != null">correct_count = #{correctCount},</if>
+      <if test="submittedAt != null">submitted_at = #{submittedAt},</if>
+    </set>
+    WHERE id = #{id}
+  </update>
+
+</mapper>

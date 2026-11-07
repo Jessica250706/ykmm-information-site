@@ -304,5 +304,31 @@ export const adminRoutes: RouteRecordRaw = {
       component: () => import('@/views/adminContent/noticeManage/components/CategoryManage.vue'),
       meta: { title: '公告分类' },
     },
+    // ---------- 题库-题目管理 ----------
+    {
+      path: 'content/question',
+      name: AdminRouteName.QUESTION_MANAGE,
+      component: () => import('@/views/adminContent/questionManage/Index.vue'),
+      meta: { title: '题目管理' },
+    },
+    {
+      path: 'content/question/create',
+      name: AdminRouteName.QUESTION_CREATE,
+      component: () => import('@/views/adminContent/questionManage/components/EditQuestion.vue'),
+      meta: { title: '新增题目' },
+    },
+    {
+      path: 'content/question/edit/:id',
+      name: AdminRouteName.QUESTION_EDIT,
+      component: () => import('@/views/adminContent/questionManage/components/EditQuestion.vue'),
+      meta: { title: '编辑题目' },
+    },
+    // ---------- 题库-答题配置 ----------
+    {
+      path: 'content/quiz-config',
+      name: AdminRouteName.QUIZ_CONFIG_MANAGE,
+      component: () => import('@/views/adminContent/quizConfigManage/Index.vue'),
+      meta: { title: '答题配置' },
+    },
   ],
 }

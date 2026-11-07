@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xq.mapper.QuestionMapper">
+
+  <sql id="baseColumns">
+    id,
+    content,
+    question_type AS questionType,
+    is_fixed      AS isFixed,
+    explanation,
+    status,
+    sort,
+    creator_id    AS creatorId,
+    created_at    AS createdAt,
+    updated_at    AS updatedAt
+  </sql>
+
+  <select id="pageQuery" resultType="com.xq.entity.SysQuestion">
+    SELECT
+    <include refid="baseColumns"/>
+    FROM sys_question
+    <where>
+      <if test="query.keyword != null and query.keyword != ''">
+        AND content LIKE CONCAT('%', #{query.keyword}, '%')
+      </if>
+      <if test="query.questionType != null">
+        AND question_type = #{query.questionType}
+      </if>
+      <if test="query.isFixed != null">
+        AND is_fixed = #{query.isFixed}
+      </if>
+      <if test="query.status != null">
+        AND status = #{query.status}
+      </if>
+    </where>
+    ORDER BY sort ASC, id DESC
+  </select>
+
+  <select id="getById" resultType="com.xq.entity.SysQuestion">
+    SELECT
+    <include refid="baseColumns"/>
+    FROM sys_question
+    WHERE id = #{id}
+  </select>
+
+  <insert id="insert" parameterType="com.xq.entity.SysQuestion"
+          useGeneratedKeys="true" keyProperty="id">
+    INSERT INTO sys_question
+    (content, question_type, is_fixed, explanation, status, sort, creator_id)
+    VALUES (#{content}, #{questionType}, #{isFixed}, #{explanation}, #{status}, #{sort}, #{creatorId})
+  </insert>
+
+  <update id="update" parameterType="com.xq.entity.SysQuestion">
+    UPDATE sys_question
+    <set>
+      <if test="content != null">content = #{content},</if>
+      <if test="questionType != null">question_type = #{questionType},</if>
+      <if test="isFixed != null">is_fixed = #{isFixed},</if>
+      <if test="explanation != null">explanation = #{explanation},</if>
+      <if test="status != null">status = #{status},</if>
+      <if test="sort != null">sort = #{sort},</if>
+    </set>
+    WHERE id = #{id}
+  </update>
+
+  <delete id="deleteById">
+    DELETE
+    FROM sys_question
+    WHERE id = #{id}
+  </delete>
+
+  <select id="listFixedEnabled" resultType="com.xq.entity.SysQuestion">
+    SELECT
+    <include refid="baseColumns"/>
+    FROM sys_question
+    WHERE is_fixed = 1 AND status = 1
+    ORDER BY sort ASC, id ASC
+  </select>
+
+  <select id="listRandomEnabled" resultType="com.xq.entity.SysQuestion">
+    SELECT
+    <include refid="baseColumns"/>
+    FROM sys_question
+    WHERE is_fixed = 0 AND status = 1
+    ORDER BY sort ASC, id ASC
+  </select>
+
+  <select id="countFixedEnabled" resultType="int">
+    SELECT COUNT(*)
+    FROM sys_question
+    WHERE is_fixed = 1
+      AND status = 1
+  </select>
+
+  <select id="countRandomEnabled" resultType="int">
+    SELECT COUNT(*)
+    FROM sys_question
+    WHERE is_fixed = 0
+      AND status = 1
+  </select>
+
+  <select id="countOptionsByQuestionId" resultType="int">
+    SELECT COUNT(*)
+    FROM sys_question_option
+    WHERE question_id = #{questionId}
+  </select>
+
+</mapper>

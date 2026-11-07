@@ -102,7 +102,8 @@ import { Lock, Message, User } from '@element-plus/icons-vue'
 import { ElMessage, type FormInstance, type FormRules } from 'element-plus'
 import { useRouter } from 'vue-router'
 import { registerAPI, sendRegisterCodeAPI } from '@/api/auth'
-import { CommonRouteName, ROLE } from '@/constants'
+import { isQuizRequiredAPI } from '@/api/quiz'
+import { CommonRouteName, ROLE, UserRouteName } from '@/constants'
 import { useUserStore } from '@/stores/userStore'
 import type { RegisterRequest } from '@/types/auth'
 
@@ -255,7 +256,24 @@ async function handleSubmit() {
     if (data?.token && data?.user) {
       setAuth(data.token, data.user)
       ElMessage.success('注册成功')
-      await router.replace(data.user.role === ROLE.ADMIN ? '/admin' : '/card')
+
+      // ★ 修改：管理员直接进管理端；普通用户判断是否需要答题
+      if (data.user.role === ROLE.ADMIN) {
+        await router.replace('/admin')
+        return
+      }
+
+      // 检查答题门槛（若后端开启则进答题页）
+      try {
+        const required = await isQuizRequiredAPI()
+        if (required.data === true) {
+          await router.replace({ name: CommonRouteName.QUIZ })
+          return
+        }
+      } catch {
+        // 检查失败不阻塞注册流程，直接进用户端
+      }
+      await router.replace({ name: UserRouteName.CARD_LIST })
       return
     }
 

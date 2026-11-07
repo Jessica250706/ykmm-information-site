@@ -18,6 +18,13 @@ const routes: RouteRecordRaw[] = [
     component: () => import('@/views/register/Index.vue'),
     meta: { title: '注册', requiresAuth: false },
   },
+  // ---------- 答题页（全屏，脱离 UserLayout） ----------
+  {
+    path: '/quiz',
+    name: CommonRouteName.QUIZ,
+    component: () => import('@/views/userQuizPage/Index.vue'),
+    meta: { title: '答题', requiresAuth: true },
+  },
   adminRoutes,
   userRoutes,
   {

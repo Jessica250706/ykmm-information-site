@@ -473,7 +473,7 @@ function isNarratorLine(line: DialogueLineVO): boolean {
 
 .narrator-line__content {
   display: inline-block;
-  max-width: 85%;
+  max-width: 95%;
   color: var(--el-text-color-secondary);
   font-size: 13px;
   font-style: italic;
