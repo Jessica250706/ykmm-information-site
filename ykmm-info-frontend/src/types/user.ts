@@ -32,6 +32,7 @@ export interface UserInfo {
   role?: RoleValue
   status?: UserStatusValue
   uid?: string
+  quizPassed?: number
   [property: string]: any
 }
 

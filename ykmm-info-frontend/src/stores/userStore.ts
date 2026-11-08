@@ -13,6 +13,7 @@ export const useUserStore = defineStore(
     const userInfo = ref<UserInfo | null>(null)
 
     const isLogin = computed(() => !!token.value)
+    const isPassedUser = computed(() => !!token.value && !!userInfo.value?.quizPassed)
     const role = computed(() => userInfo.value?.role)
     const isAdmin = computed(() => role.value === ROLE.ADMIN)
 
@@ -53,6 +54,7 @@ export const useUserStore = defineStore(
       token,
       userInfo,
       isLogin,
+      isPassedUser,
       role,
       isAdmin,
       login,

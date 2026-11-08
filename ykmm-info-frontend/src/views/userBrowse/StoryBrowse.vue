@@ -77,6 +77,7 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
 import { ElMessage } from 'element-plus'
+import { storeToRefs } from 'pinia'
 import { createDialogueVersionAPI } from '@/api/dialogueVersion'
 import { BROWSE_KIND, SOURCE_TYPE } from '@/constants'
 import { useStoryCategoryTypeStore, useUserStore } from '@/stores'
@@ -95,20 +96,17 @@ import { useVersionSelection } from './composables/useVersionSelection.ts'
 
 const storyCategoryTypeStore = useStoryCategoryTypeStore()
 
-const { isLogin } = useUserStore()
-/**
- * 当前选中版本是否可编辑：
- * - 版本已存在：完全以后端返回的 canOperate 为准
- *     · 管理员 → true
- *     · 自己创建的 / 作为内容作者或协作者的 → true
- *     · 其他用户的版本 → false
- * - 版本不存在：登录用户视为「可创建」，游客不可
- *     （后端此时 canOperate 恒为 false，只能由前端补这一层）
- */
+const userStore = useUserStore()
+const { isLogin, isAdmin, isPassedUser } = storeToRefs(userStore)
+/** 当前选中版本是否可编辑 */
 const canEditCurrent = computed(() => {
   const opt = currentOptionVersion.value
   if (!opt) return false
-  return opt.exists ? opt.canOperate === true : isLogin
+
+  // 普通用户必须先通过答题；管理员不受答题门槛限制
+  if (!isAdmin.value && !isPassedUser.value) return false
+
+  return opt.exists ? opt.canOperate === true : isLogin.value
 })
 
 /* -------- 数据加载 gate -------- */

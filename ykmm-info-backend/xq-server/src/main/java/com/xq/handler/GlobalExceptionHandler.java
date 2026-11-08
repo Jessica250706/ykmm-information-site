@@ -3,6 +3,7 @@ package com.xq.handler;
 import com.xq.constant.MessageConstant;
 import com.xq.exception.BaseException;
 import com.xq.exception.ForbiddenException;
+import com.xq.exception.QuizRequiredException;
 import com.xq.exception.UnauthorizedException;
 import com.xq.result.Result;
 import lombok.extern.slf4j.Slf4j;
@@ -51,6 +52,20 @@ public class GlobalExceptionHandler {
     public Result<Void> handleBase(BaseException ex) {
         log.warn("业务异常：{}", ex.getMessage());
         return Result.error(ex.getMessage());
+    }
+
+    /**
+     * 答题未通过 → 403 + 业务 code 423
+     * <p>
+     * 前端 axios 拦截器读到 code=423 时跳转答题页。
+     * HTTP 状态码用 403：语义上是"有身份但没资格"，符合 RESTful 习惯；
+     * 和普通 ForbiddenException 区分靠 body 里的 code。
+     */
+    @ExceptionHandler(QuizRequiredException.class)
+    @ResponseStatus(HttpStatus.FORBIDDEN)
+    public Result<Void> handleQuizRequired(QuizRequiredException e) {
+        log.warn("答题未通过：{}", e.getMessage());
+        return Result.error(QuizRequiredException.CODE, e.getMessage());
     }
 
     /**

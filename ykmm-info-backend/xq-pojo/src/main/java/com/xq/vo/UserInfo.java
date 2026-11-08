@@ -58,6 +58,11 @@ public class UserInfo {
     private Integer role;
 
     /**
+     * 答题是否通过：0-未通过 1-已通过
+     */
+    private Integer quizPassed;
+
+    /**
      * 创建时间
      */
     private LocalDateTime createdAt;
@@ -78,6 +83,7 @@ public class UserInfo {
                 .lastLoginTime(user.getLastLoginTime())
                 .status(user.getStatus())
                 .role(user.getRole())
+                .quizPassed(user.getQuizPassed())
                 .createdAt(user.getCreatedAt())
                 .build();
     }

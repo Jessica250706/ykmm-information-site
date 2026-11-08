@@ -47,4 +47,12 @@ public class Result<T> implements Serializable {
         return result;
     }
 
+    // 自定义业务 code
+    public static <T> Result<T> error(Integer code, String msg) {
+        Result<T> result = new Result<>();
+        result.setCode(code);
+        result.setMsg(msg);
+        return result;
+    }
+
 }

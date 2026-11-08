@@ -26,7 +26,7 @@
         @clear="handleSearch"
         @keyup.enter="handleSearch"
       />
-      <el-button v-if="isLogin" type="primary" @click="handleCreate">
+      <el-button v-if="isPassedUser" type="primary" @click="handleCreate">
         <el-icon class="mr-1"><Plus /></el-icon>
         新增卡面
       </el-button>
@@ -209,7 +209,7 @@ const filter = reactive<{
 })
 
 const personStore = usePersonStore()
-const { isLogin } = useUserStore()
+const { isPassedUser } = useUserStore()
 
 /* -------- 卡片大小 -------- */
 type CardSize = 'small' | 'normal' | 'big'

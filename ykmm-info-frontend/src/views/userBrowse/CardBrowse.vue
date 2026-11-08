@@ -74,6 +74,7 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
 import { ElMessage } from 'element-plus'
+import { storeToRefs } from 'pinia'
 import { useRoute, useRouter } from 'vue-router'
 import { getCardDetailAPI } from '@/api/card'
 import { createDialogueVersionAPI } from '@/api/dialogueVersion'
@@ -114,12 +115,17 @@ const emit = defineEmits<{
 const route = useRoute()
 const router = useRouter()
 
-const { isLogin } = useUserStore()
-/** 当前选中版本是否可编辑（逻辑同上） */
+const userStore = useUserStore()
+const { isLogin, isAdmin, isPassedUser } = storeToRefs(userStore)
+/** 当前选中版本是否可编辑 */
 const canEditCurrent = computed(() => {
   const opt = currentOptionVersion.value
   if (!opt) return false
-  return opt.exists ? opt.canOperate === true : isLogin
+
+  // 普通用户必须先通过答题；管理员不受答题门槛限制
+  if (!isAdmin.value && !isPassedUser.value) return false
+
+  return opt.exists ? opt.canOperate === true : isLogin.value
 })
 
 /* -------- 数据加载 gate -------- */

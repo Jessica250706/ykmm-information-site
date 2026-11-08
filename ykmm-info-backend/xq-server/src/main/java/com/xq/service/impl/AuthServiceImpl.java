@@ -1,9 +1,6 @@
 package com.xq.service.impl;
 
-import com.xq.constant.MessageConstant;
-import com.xq.constant.RedisConstant;
-import com.xq.constant.UserRoleConstant;
-import com.xq.constant.UserStatusConstant;
+import com.xq.constant.*;
 import com.xq.entity.SysUser;
 import com.xq.exception.AccountLockedException;
 import com.xq.exception.AccountNotFoundException;
@@ -117,6 +114,7 @@ public class AuthServiceImpl implements AuthService {
                 .nickname(nickname)
                 .status(UserStatusConstant.ENABLED)
                 .role(UserRoleConstant.USER)
+                .quizPassed(QuizPassedConstant.NOT_PASSED)
                 .build();
 
         sysUserMapper.insert(user);

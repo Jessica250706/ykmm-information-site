@@ -125,6 +125,10 @@ httpInstance.interceptors.response.use(
     if (body.code !== 200) {
       if (body.code === 401) {
         handleUnauthorized(res.config.url, body.msg || '未登录')
+      } else if (body.code === 423) {
+        ElMessage.warning(body.msg || '请先完成答题')
+        void router.replace({ name: CommonRouteName.QUIZ })
+        return Promise.reject(new Error('QUIZ_REQUIRED'))
       } else {
         showErrorOnce(body.msg || '请求失败')
       }

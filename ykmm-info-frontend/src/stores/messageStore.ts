@@ -19,7 +19,7 @@ export const useMessageStore = defineStore('message', () => {
    */
   async function loadUnreadCount() {
     const userStore = useUserStore()
-    if (!userStore.isLogin) {
+    if (!userStore.isPassedUser) {
       unreadCount.value = 0
       return
     }

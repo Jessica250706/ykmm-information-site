@@ -42,4 +42,33 @@ public interface UserService {
      * 启用/禁用
      */
     void updateStatus(Long id, Integer status);
+
+    /**
+     * 判断用户是否可以使用需要答题门槛的接口。
+     * <p>
+     * 判定逻辑：
+     * <ol>
+     *   <li>答题功能未开启 → 返回 true（无需答题）</li>
+     *   <li>用户已通过答题 → 返回 true</li>
+     *   <li>用户不存在或未通过 → 返回 false</li>
+     * </ol>
+     * <p>
+     * 说明：管理员不经过此方法判断，由调用方（拦截器）独立豁免。
+     *
+     * @param userId 用户ID
+     * @return true 表示可以使用需要答题门槛的接口
+     */
+    boolean canUseUserFeature(Long userId);
+
+    /**
+     * 清除用户的答题通过状态缓存。
+     * <p>答题通过 / 被管理员重置时调用。
+     */
+    void refreshQuizPassedCache(Long userId);
+
+    /**
+     * 清除答题开关缓存。
+     * <p>管理员修改答题配置时调用。
+     */
+    void refreshQuizEnabledCache();
 }

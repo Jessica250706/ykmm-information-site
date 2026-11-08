@@ -4,6 +4,8 @@ import com.xq.annotation.RequireRole;
 import com.xq.constant.JwtClaimsConstant;
 import com.xq.context.BaseContext;
 import com.xq.enums.UserRoleEnum;
+import com.xq.exception.QuizRequiredException;
+import com.xq.service.UserService;
 import com.xq.exception.ForbiddenException;
 import com.xq.exception.UnauthorizedException;
 import com.xq.properties.JwtProperties;
@@ -32,8 +34,19 @@ public class JwtTokenInterceptor implements HandlerInterceptor {
     private static final List<String> SKIP_PREFIXES = List.of(
             "/auth/login", "/auth/register"
     );
+    /**
+     * 答题门槛豁免路径：
+     * - /user/quiz/**  ：答题接口本身，未通过的用户必须能访问
+     * - /user/user/**  ：个人信息（改密码、换绑邮箱、查看 status），
+     *                    未通过答题也要能改资料
+     */
+    private static final List<String> QUIZ_EXEMPT_PREFIXES = List.of(
+            "/user/quiz",
+            "/user/user"
+    );
 
     private final JwtProperties jwtProperties;
+    private final UserService userService;
 
     /** Spring 的工具类：自动剥离 contextPath 与 servletPath */
     private final UrlPathHelper urlPathHelper = new UrlPathHelper();
@@ -76,6 +89,10 @@ public class JwtTokenInterceptor implements HandlerInterceptor {
 
         // 7. 权限校验
         checkPermission(path, handlerMethod, BaseContext.getCurrentRole());
+
+        // 答题门槛校验
+        checkQuizRequirement(path);
+
         return true;
     }
 
@@ -150,5 +167,47 @@ public class JwtTokenInterceptor implements HandlerInterceptor {
             }
         }
         return false;
+    }
+
+    /**
+     * 答题门槛校验：
+     * <p>
+     * 规则：
+     * <ul>
+     *   <li>仅对 /user/** 路径生效（/admin 由 checkPermission 已强制管理员，无需再判断）</li>
+     *   <li>豁免路径（答题接口、个人信息）跳过</li>
+     *   <li>管理员豁免</li>
+     *   <li>其他用户：必须通过答题，否则 403</li>
+     * </ul>
+     *
+     * @param path 请求路径
+     */
+    private void checkQuizRequirement(String path) {
+        // 非 /user 路径不管
+        if (!("/user".equals(path) || path.startsWith("/user/"))) {
+            return;
+        }
+
+        // 豁免路径跳过
+        if (matchAny(path, QUIZ_EXEMPT_PREFIXES)) {
+            return;
+        }
+
+        // 管理员豁免
+        Integer role = BaseContext.getCurrentRole();
+        if (UserRoleEnum.ADMIN.getValue().equals(role)) {
+            return;
+        }
+
+        // 用户必须已通过答题
+        Long userId = BaseContext.getCurrentId();
+        if (userId == null) {
+            // 理论上不会到这，前置已校验过登录
+            throw new UnauthorizedException("未登录");
+        }
+        if (!userService.canUseUserFeature(userId)) {
+            log.warn("用户未通过答题，拒绝访问：userId={}, path={}", userId, path);
+            throw new QuizRequiredException();
+        }
     }
 }

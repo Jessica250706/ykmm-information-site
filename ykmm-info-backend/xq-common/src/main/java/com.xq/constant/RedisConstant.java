@@ -32,6 +32,11 @@ public class RedisConstant {
     public static final String PASSWORD_RESET_CODE_KEY_PREFIX = "auth:password:reset:code:";
     public static final String PASSWORD_RESET_CODE_LIMIT_KEY_PREFIX = "auth:password:reset:code:limit:";
 
+    /** 用户答题通过状态的缓存 key 前缀 */
+    public static final String QUIZ_PASSED_KEY_PREFIX = "quiz:passed:";
+    /** 答题开关的缓存 key */
+    public static final String QUIZ_ENABLED_KEY = "quiz:config:enabled";
+
     /**
      * 字典缓存过期时间（小时）
      */
@@ -39,4 +44,8 @@ public class RedisConstant {
 
     public static final Duration REGISTER_CODE_TTL = Duration.ofMinutes(5);
     public static final Duration REGISTER_CODE_SEND_LIMIT = Duration.ofSeconds(60);
+
+    /** 缓存 TTL：7 天兜底（正常会有主动更新，TTL 只是防脏数据） */
+    public static final Duration QUIZ_PASSED_TTL = Duration.ofDays(7);
+    public static final Duration QUIZ_ENABLED_TTL = Duration.ofMinutes(5);
 }

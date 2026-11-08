@@ -6,7 +6,7 @@
         <!-- 进度 -->
         <div class="mb-3 flex items-center justify-between text-sm">
           <span class="text-slate-500">答题进度</span>
-          <span class="font-medium text-[var(--el-color-primary)]">
+          <span class="font-medium text-(--el-color-primary)">
             {{ answeredCount }} / {{ totalCount }}
           </span>
         </div>
@@ -34,7 +34,7 @@
         <!-- 图例 -->
         <div class="mb-4 flex flex-wrap gap-3 text-xs text-slate-500">
           <span class="inline-flex items-center gap-1">
-            <span class="h-2.5 w-2.5 rounded-full bg-[var(--el-color-primary)]" />
+            <span class="h-2.5 w-2.5 rounded-full bg-(--el-color-primary)" />
             已答
           </span>
           <span class="inline-flex items-center gap-1">
@@ -43,12 +43,16 @@
           </span>
         </div>
 
-        <el-button :loading="submitting" class="w-full" type="primary" @click="emit('submit')">
-          提交答卷
-        </el-button>
-        <el-button class="mt-2 w-full" size="small" text @click="emit('go-home')">
-          暂时跳过，前往用户端 →
-        </el-button>
+        <div class="flex flex-col">
+          <el-button :loading="submitting" class="w-full" type="primary" @click="emit('submit')">
+            提交答卷
+          </el-button>
+          <div>
+            <el-button class="mt-2 w-full" size="small" text @click="emit('go-home')">
+              暂时跳过，前往用户端 →
+            </el-button>
+          </div>
+        </div>
       </div>
     </aside>
 
@@ -59,17 +63,15 @@
         :key="q.questionId ?? idx"
         :ref="(el) => setQuestionRef(idx, el)"
         :class="[
-          'rounded-xl border bg-white p-6 transition-all',
-          currentScrollIndex === idx
-            ? 'border-[var(--el-color-primary)] shadow-sm'
-            : 'border-slate-200',
+          'scroll-mt-4 rounded-xl border bg-white p-6 transition-all',
+          currentScrollIndex === idx ? 'border-(--el-color-primary) shadow-sm' : 'border-slate-200',
         ]"
         :data-idx="idx"
       >
         <!-- 题号 + 标签 -->
         <div class="mb-3 flex flex-wrap items-center gap-2">
           <span
-            class="flex h-7 w-7 items-center justify-center rounded-md bg-[var(--el-color-primary-light-9)] text-sm font-semibold text-[var(--el-color-primary)]"
+            class="flex h-7 w-7 items-center justify-center rounded-md bg-(--el-color-primary-light-9) text-sm font-semibold text-(--el-color-primary)"
           >
             {{ idx + 1 }}
           </span>
@@ -96,7 +98,7 @@
             :class="[
               'flex cursor-pointer items-center gap-3 rounded-lg border p-3 transition',
               isSelected(q.questionId, opt.id)
-                ? 'border-[var(--el-color-primary)] bg-[var(--el-color-primary-light-9)]'
+                ? 'border-(--el-color-primary) bg-(--el-color-primary-light-9)'
                 : 'border-slate-200 hover:border-slate-300 hover:bg-slate-50',
             ]"
             @click="handleToggleOption(q, opt.id)"
@@ -106,7 +108,7 @@
                 'flex h-7 w-7 shrink-0 items-center justify-center text-xs font-semibold transition',
                 q.questionType === QUESTION_TYPE.MULTI ? 'rounded' : 'rounded-full',
                 isSelected(q.questionId, opt.id)
-                  ? 'bg-[var(--el-color-primary)] text-white'
+                  ? 'bg-(--el-color-primary) text-white'
                   : 'bg-slate-100 text-slate-500',
               ]"
             >
@@ -128,8 +130,9 @@
 </template>
 
 <script setup lang="ts">
-import { computed, nextTick, onBeforeUnmount, onMounted, ref } from 'vue'
+import { computed, onBeforeUnmount, ref } from 'vue'
 import type { ComponentPublicInstance } from 'vue'
+import { useIntersectionObserver } from '@vueuse/core'
 import { QUESTION_TYPE } from '@/constants'
 import type { QuizAttemptVO, QuizQuestionVO } from '@/types/quiz'
 
@@ -160,13 +163,13 @@ function getOptionLabel(idx: number): string {
   return String.fromCharCode(65 + idx)
 }
 
-function isSelected(questionId: number | undefined, optionId: number): boolean {
-  if (questionId == null) return false
+function isSelected(questionId: number | undefined, optionId: number | undefined): boolean {
+  if (questionId == null || optionId == null) return false
   return (props.answers[questionId] ?? []).includes(optionId)
 }
 
-function handleToggleOption(q: QuizQuestionVO, optionId: number) {
-  if (q.questionId == null) return
+function handleToggleOption(q: QuizQuestionVO, optionId: number | undefined) {
+  if (q.questionId == null || optionId == null) return
 
   const questionId = q.questionId
   const current = props.answers[questionId] ?? []
@@ -191,63 +194,60 @@ function dotClass(idx: number, questionId?: number) {
   return [
     'flex h-9 items-center justify-center rounded-md text-sm font-medium transition cursor-pointer',
     answered
-      ? 'bg-[var(--el-color-primary)] text-white'
+      ? 'bg-(--el-color-primary) text-white'
       : 'bg-slate-100 text-slate-600 hover:bg-slate-200',
     isCurrent ? 'shadow-[0_0_0_2px_var(--el-color-primary)]' : '',
   ]
 }
 
-/* -------- 滚动定位 -------- */
+/* -------- 使用 VueUse 的 useIntersectionObserver 追踪可见性 -------- */
 const currentScrollIndex = ref(0)
 
-const questionEls = new Map<number, HTMLElement>()
-let observer: IntersectionObserver | null = null
+/** 存储每个题目元素对应的 IntersectionObserver 的停止函数 */
+const stopFns: (() => void)[] = []
 
+/** 题目元素的 ref 回调，用于在渲染后启动观察 */
 function setQuestionRef(idx: number, el: Element | ComponentPublicInstance | null) {
-  const old = questionEls.get(idx)
-  if (old) observer?.unobserve(old)
-
-  if (el instanceof HTMLElement) {
-    questionEls.set(idx, el)
-    observer?.observe(el)
-  } else {
-    questionEls.delete(idx)
+  // 清理旧的观察者
+  const oldStop = stopFns[idx]
+  if (oldStop) {
+    oldStop()
+    stopFns[idx] = () => {}
   }
+
+  if (!(el instanceof HTMLElement)) return
+
+  // 使用 VueUse 的 useIntersectionObserver 观察单个元素
+  const { stop } = useIntersectionObserver(
+    el,
+    ([entry]) => {
+      // 当题目进入视口时，更新当前高亮题号
+      if (entry?.isIntersecting) {
+        currentScrollIndex.value = idx
+      }
+    },
+    {
+      // 调整 rootMargin，使得判断"当前题目"更符合用户视觉预期
+      // 顶部留出 150px，底部留出 55% 视口高度，即"顶部进入视口下半部分"才算当前题
+      rootMargin: '-150px 0px -55% 0px',
+      threshold: 0,
+    },
+  )
+
+  stopFns[idx] = stop
 }
 
+/** 点击题号滚动到对应题目 */
 function scrollToQuestion(idx: number) {
-  const el = questionEls.get(idx)
+  const el = document.querySelector(`[data-idx="${idx}"]`)
   if (el) {
     el.scrollIntoView({ behavior: 'smooth', block: 'start' })
   }
 }
 
-onMounted(async () => {
-  observer = new IntersectionObserver(
-    (entries) => {
-      // 找出可见条目里最靠上的那个
-      const visible = entries
-        .filter((e) => e.isIntersecting)
-        .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top)
-
-      if (visible.length > 0) {
-        const target = visible[0]!.target as HTMLElement
-        const idx = Number(target.dataset.idx)
-        if (!Number.isNaN(idx)) {
-          currentScrollIndex.value = idx
-        }
-      }
-    },
-    { rootMargin: '-80px 0px -55% 0px', threshold: 0 },
-  )
-
-  // 首次渲染后再观察一次（此时 ref 已就绪）
-  await nextTick()
-  questionEls.forEach((el) => observer!.observe(el))
-})
-
+// 组件卸载时清理所有观察者
 onBeforeUnmount(() => {
-  observer?.disconnect()
-  observer = null
+  stopFns.forEach((stop) => stop())
+  stopFns.length = 0
 })
 </script>
