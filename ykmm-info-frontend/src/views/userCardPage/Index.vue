@@ -44,7 +44,6 @@
         collapse-tags-tooltip
         filterable
         multiple
-        @change="handleFilterChange"
       >
         <el-option
           v-for="p in personStore.persons"
@@ -54,24 +53,11 @@
         />
       </el-select>
 
-      <el-select
-        v-model="filter.seriesId"
-        class="w-48"
-        placeholder="系列"
-        clearable
-        filterable
-        @change="handleFilterChange"
-      >
+      <el-select v-model="filter.seriesId" class="w-48" placeholder="系列" clearable filterable>
         <el-option v-for="s in seriesOptions" :key="s.id" :label="s.name" :value="s.id!" />
       </el-select>
 
-      <el-select
-        v-model="filter.maxRarity"
-        class="w-32"
-        placeholder="最高等级"
-        clearable
-        @change="handleFilterChange"
-      >
+      <el-select v-model="filter.maxRarity" class="w-32" placeholder="最高等级" clearable>
         <el-option
           v-for="opt in CARD_MAX_RARITY_OPTIONS"
           :key="opt.value"
@@ -80,13 +66,7 @@
         />
       </el-select>
 
-      <el-select
-        v-model="filter.attribute"
-        class="w-32"
-        placeholder="属性"
-        clearable
-        @change="handleFilterChange"
-      >
+      <el-select v-model="filter.attribute" class="w-32" placeholder="属性" clearable>
         <el-option
           v-for="opt in CARD_ATTRIBUTE_OPTIONS"
           :key="opt.value"
@@ -174,7 +154,7 @@
 <script setup lang="ts">
 import { computed, onMounted, reactive, ref, watch } from 'vue'
 import { FullScreen, Grid, Menu, Plus, Search } from '@element-plus/icons-vue'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { pageCardAPI } from '@/api/card'
 import { listCardSeriesOptionsAPI } from '@/api/cardSeries'
 import {
@@ -193,25 +173,15 @@ import type { CardVO } from '@/types/card'
 import type { CardSeriesVO } from '@/types/cardSeries'
 import { getAttributeTagStyle, getCoverImage } from '@/utils'
 
+const route = useRoute()
 const router = useRouter()
-
-const keyword = ref('')
-const filter = reactive<{
-  seriesId?: number
-  maxRarity?: number
-  attribute?: number
-  personIds: number[]
-}>({
-  seriesId: undefined,
-  maxRarity: undefined,
-  attribute: undefined,
-  personIds: [11, 12], // 默认百和千
-})
 
 const personStore = usePersonStore()
 const { isPassedUser } = useUserStore()
 
-/* -------- 卡片大小 -------- */
+/* ============================================================
+ *  卡片大小（本地偏好，不进 URL）
+ * ============================================================ */
 type CardSize = 'small' | 'normal' | 'big'
 
 const CARD_SIZE_STORAGE_KEY = 'user-card-size'
@@ -220,12 +190,10 @@ const cardSize = ref<CardSize>(
   (localStorage.getItem(CARD_SIZE_STORAGE_KEY) as CardSize) || 'normal',
 )
 
-/** 记住用户选择 */
 watch(cardSize, (v) => {
   localStorage.setItem(CARD_SIZE_STORAGE_KEY, v)
 })
 
-/** 不同档位对应的 grid 列数 */
 const gridClass = computed(() => {
   switch (cardSize.value) {
     case 'small':
@@ -238,16 +206,135 @@ const gridClass = computed(() => {
   }
 })
 
-/* -------- 无限滚动状态 -------- */
-const loading = ref(false) // 加载锁
-const disabled = ref(false) // 没有更多了
+/* ============================================================
+ *  筛选条件 <-> URL query 双向同步
+ * ============================================================ */
+
+function readStr(v: unknown): string {
+  return typeof v === 'string' ? v : ''
+}
+
+function readNum(v: unknown): number | undefined {
+  if (v === undefined || v === null || v === '') return undefined
+  const n = Number(v)
+  return Number.isFinite(n) && n > 0 ? n : undefined
+}
+
+/** 返回 undefined：URL 没传该参数；返回 []：用户主动清空 */
+function readIds(v: unknown): number[] | undefined {
+  if (v === undefined) return undefined
+  if (Array.isArray(v)) {
+    return v.map((x) => Number(x)).filter((n) => Number.isFinite(n))
+  }
+  if (typeof v === 'string') {
+    if (v === '') return []
+    return v
+      .split(',')
+      .map((s) => Number(s.trim()))
+      .filter((n) => Number.isFinite(n))
+  }
+  return undefined
+}
+
+const initialPersonIds = readIds(route.query.personIds)
+
+const keyword = ref(readStr(route.query.keyword))
+const filter = reactive<{
+  seriesId?: number
+  maxRarity?: number
+  attribute?: number
+  personIds: number[]
+}>({
+  seriesId: readNum(route.query.seriesId),
+  maxRarity: readNum(route.query.maxRarity),
+  attribute: readNum(route.query.attribute),
+  personIds: initialPersonIds ?? [],
+})
+
+/** 标记 query 是否由本组件主动 replace，避免 route watch 重复同步 */
+let selfPushing = false
+
+/**
+ * 把当前筛选条件写回 URL。
+ * @returns 是否真的产生了变化（true 表示已 replace）
+ */
+function writeToUrl(): boolean {
+  const query: Record<string, string> = {}
+  const kw = keyword.value.trim()
+  if (kw) query.keyword = kw
+  if (filter.seriesId !== undefined) query.seriesId = String(filter.seriesId)
+  if (filter.maxRarity !== undefined) query.maxRarity = String(filter.maxRarity)
+  if (filter.attribute !== undefined) query.attribute = String(filter.attribute)
+  if (filter.personIds.length) query.personIds = filter.personIds.join(',')
+
+  // 与当前 URL 比较
+  const current = route.query as Record<string, unknown>
+  const keys = new Set([...Object.keys(query), ...Object.keys(current)])
+  for (const k of keys) {
+    const a = query[k]
+    const b = current[k]
+    const aStr = a === undefined ? '' : String(a)
+    const bStr = b === undefined ? '' : String(b)
+    if (aStr !== bStr) {
+      selfPushing = true
+      router.replace({ query })
+      return true
+    }
+  }
+  return false
+}
+
+function readFromQuery(q: Record<string, unknown>) {
+  return {
+    keyword: readStr(q.keyword),
+    seriesId: readNum(q.seriesId),
+    maxRarity: readNum(q.maxRarity),
+    attribute: readNum(q.attribute),
+    personIds: readIds(q.personIds) ?? [],
+  }
+}
+
+// URL 变化 → 同步 UI（前进/后退时）+ 统一触发加载
+watch(
+  () => route.query,
+  (q) => {
+    const fromSelf = selfPushing
+    selfPushing = false
+
+    if (!fromSelf) {
+      // 外部变化（前进/后退）→ 把 URL 回填到 UI
+      const parsed = readFromQuery(q as Record<string, unknown>)
+      keyword.value = parsed.keyword
+      filter.seriesId = parsed.seriesId
+      filter.maxRarity = parsed.maxRarity
+      filter.attribute = parsed.attribute
+      filter.personIds = parsed.personIds
+    }
+
+    resetAndLoad()
+  },
+)
+
+// filter 变化 → 只写 URL，加载由 route watch 统一触发
+watch(
+  filter,
+  () => {
+    writeToUrl()
+  },
+  { deep: true },
+)
+
+/* ============================================================
+ *  列表 / 无限滚动
+ * ============================================================ */
+const loading = ref(false)
+const disabled = ref(false)
 const list = ref<CardVO[]>([])
 const pageNum = ref(1)
 const pageSize = ref(20)
 
 const seriesOptions = ref<CardSeriesVO[]>([])
 
-/* -------- 首次加载 / 重置后加载 -------- */
 async function loadList() {
   loading.value = true
   try {
@@ -262,7 +349,6 @@ async function loadList() {
     })
     const records = res.data.records ?? []
     list.value = records
-    // 首页数据不足 pageSize → 没有更多
     disabled.value = records.length < pageSize.value
   } catch {
     list.value = []
@@ -272,7 +358,6 @@ async function loadList() {
   }
 }
 
-/* -------- 无限滚动触发 -------- */
 async function load() {
   if (loading.value || disabled.value) return
 
@@ -298,7 +383,6 @@ async function load() {
 
     list.value.push(...records)
 
-    // 本次返回不足 pageSize → 没有更多
     if (records.length < pageSize.value) {
       disabled.value = true
     }
@@ -309,7 +393,6 @@ async function load() {
   }
 }
 
-/* -------- 条件变化：重置并重新加载 -------- */
 function resetAndLoad() {
   pageNum.value = 1
   list.value = []
@@ -318,12 +401,15 @@ function resetAndLoad() {
   void loadList()
 }
 
-function handleSearch() {
-  resetAndLoad()
-}
+/* ============================================================
+ *  事件
+ * ============================================================ */
 
-function handleFilterChange() {
-  resetAndLoad()
+function handleSearch() {
+  // keyword 变了 → URL 会被 replace，route watch 会自动加载
+  // keyword 没变 → 手动强制刷新
+  const changed = writeToUrl()
+  if (!changed) resetAndLoad()
 }
 
 function handleCreate() {

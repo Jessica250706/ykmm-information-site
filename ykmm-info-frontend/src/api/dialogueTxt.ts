@@ -29,11 +29,6 @@ export const importDialogueTxtAPI = (versionId: number, data: DialogueTxtImportD
 /**
  * @description: 导出为 txt 文本（走浏览器下载）
  * @param versionId 版本ID
- * @param filename  下载文件名（可选，默认由后端 Content-Disposition 决定）
- */
-/**
- * @description: 导出为 txt 文本（走浏览器下载）
- * @param versionId 版本ID
  * @param fallback  兜底文件名（后端未返回 Content-Disposition 时使用）
  */
 export const exportDialogueTxtAPI = async (versionId: number, fallback?: string) => {
