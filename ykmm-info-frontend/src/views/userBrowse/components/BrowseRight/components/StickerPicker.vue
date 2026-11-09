@@ -8,7 +8,7 @@
   >
     <template #reference>
       <slot name="reference">
-        <el-button size="small" plain>
+        <el-button :class="{ 'is-pressed': visible }" size="small" plain>
           <div class="flex items-center gap-1">
             <SvgIcon iconName="icon-emoji" />
             表情
@@ -353,5 +353,11 @@ function handlePick(s: StickerVO) {
 .sticker-picker__emoji {
   font-size: 22px;
   line-height: 1;
+}
+
+.el-button.is-pressed {
+  background: var(--el-color-primary-light-9);
+  border-color: var(--el-color-primary);
+  color: var(--el-color-primary);
 }
 </style>
