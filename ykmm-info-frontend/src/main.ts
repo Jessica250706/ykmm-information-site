@@ -19,6 +19,7 @@ import {
 } from '@/stores'
 import App from './App.vue'
 import '@/styles/style.css'
+import '@/assets/iconfont/iconfont.js'
 
 const app = createApp(App)
 const pinia = createPinia()

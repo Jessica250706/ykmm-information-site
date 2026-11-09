@@ -157,7 +157,7 @@ const {
 /* -------- 数据加载 gate（从 useBrowseLayout 移到组件） -------- */
 const dataLoading = ref(false)
 
-/* -------- ★ 权限 + 布局 + 版本同步 -------- */
+/* -------- 权限 + 布局 + 版本同步 -------- */
 const { effectiveCanEdit } = useBrowseEditPermission(currentOptionVersion, dataLoading)
 const { showLeft, showRight, showEditPanel } = useBrowseLayout(effectiveCanEdit)
 const { handleSelectedVersionKeyChange } = useVersionSelectionSync({
@@ -168,12 +168,12 @@ const { handleSelectedVersionKeyChange } = useVersionSelectionSync({
   editingMode,
 })
 
-/* -------- ★ 话数加载（composable） -------- */
+/* -------- 话数加载（composable） -------- */
 const { loadCurrentEpisode, reloadCurrentEpisode } = useEpisodeLoader({
   sourceType: () => props.sourceType,
   currentEpisodeId,
   episodeDetail,
-  dataLoading, // ← 组件定义的，传给 loader
+  dataLoading,
   resetEpisodeDetail,
   fetchEpisodeDetail,
   fetchVersionOptions,

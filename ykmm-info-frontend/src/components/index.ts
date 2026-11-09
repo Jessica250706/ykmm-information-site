@@ -4,6 +4,7 @@ import ImageUpload from './ImageUpload/Index.vue'
 import ImageView from './ImageView/Index.vue'
 import { ProTable } from './ProTable/index.ts'
 import RichEditor from './RichEditor/Index.vue'
+import SvgIcon from './SvgIcon/Index.vue'
 import TableToolbar from './TableToolbar/Index.vue'
 
 export const componentPlugin = {
@@ -14,5 +15,6 @@ export const componentPlugin = {
     app.component('ImageUpload', ImageUpload)
     app.component('TableToolbar', TableToolbar)
     app.component('RichEditor', RichEditor)
+    app.component('SvgIcon', SvgIcon)
   },
 }

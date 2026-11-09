@@ -8,7 +8,12 @@
   >
     <template #reference>
       <slot name="reference">
-        <el-button size="small" plain>😀 表情</el-button>
+        <el-button size="small" plain>
+          <div class="flex items-center gap-1">
+            <SvgIcon iconName="icon-emoji" />
+            表情
+          </div>
+        </el-button>
       </slot>
     </template>
 
