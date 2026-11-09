@@ -18,7 +18,7 @@
     <!-- 中间：对话内容 -->
     <BrowseCenter
       v-model:current-version-id="currentVersionId"
-      :can-edit="canEditCurrent"
+      :can-edit="effectiveCanEdit"
       :card-detail="episodeDetail"
       :card-name="cardName"
       :class="showEditPanel ? 'flex-1 max-w-1/2' : 'flex-1 max-w-3/7'"
@@ -73,6 +73,7 @@
 
 <script setup lang="ts">
 import { watch } from 'vue'
+import { ref } from 'vue'
 import { ElMessage } from 'element-plus'
 import { createDialogueVersionAPI } from '@/api/dialogueVersion'
 import { type SourceTypeValue } from '@/constants'
@@ -153,9 +154,12 @@ const {
   selectByVersionId,
 } = useVersionSelection(episodeDetail, versionOptions)
 
+/* -------- 数据加载 gate（从 useBrowseLayout 移到组件） -------- */
+const dataLoading = ref(false)
+
 /* -------- ★ 权限 + 布局 + 版本同步 -------- */
-const { canEditCurrent } = useBrowseEditPermission(currentOptionVersion)
-const { showLeft, showRight, dataLoading, showEditPanel } = useBrowseLayout(canEditCurrent)
+const { effectiveCanEdit } = useBrowseEditPermission(currentOptionVersion, dataLoading)
+const { showLeft, showRight, showEditPanel } = useBrowseLayout(effectiveCanEdit)
 const { handleSelectedVersionKeyChange } = useVersionSelectionSync({
   currentVersionId,
   selectedVersionKey,
@@ -169,7 +173,7 @@ const { loadCurrentEpisode, reloadCurrentEpisode } = useEpisodeLoader({
   sourceType: () => props.sourceType,
   currentEpisodeId,
   episodeDetail,
-  dataLoading,
+  dataLoading, // ← 组件定义的，传给 loader
   resetEpisodeDetail,
   fetchEpisodeDetail,
   fetchVersionOptions,

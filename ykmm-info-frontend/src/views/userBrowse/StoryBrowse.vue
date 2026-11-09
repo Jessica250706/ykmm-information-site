@@ -19,7 +19,7 @@
     <!-- 中间：内容 -->
     <BrowseCenter
       v-model:current-version-id="currentVersionId"
-      :can-edit="canEditCurrent"
+      :can-edit="effectiveCanEdit"
       :class="showEditPanel ? 'flex-1 max-w-1/2' : 'flex-1 max-w-3xl'"
       :color="
         storyCategoryTypeStore.getTypeColor(
@@ -75,7 +75,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { ElMessage } from 'element-plus'
 import { createDialogueVersionAPI } from '@/api/dialogueVersion'
 import { SOURCE_TYPE } from '@/constants'
@@ -148,9 +148,12 @@ const {
   selectByVersionId,
 } = useVersionSelection(storyDetail, versionOptions)
 
+/* -------- 数据加载 gate（从 useBrowseLayout 移到组件） -------- */
+const dataLoading = ref(false)
+
 /* -------- ★ 权限 + 布局 + 版本同步 -------- */
-const { canEditCurrent } = useBrowseEditPermission(currentOptionVersion)
-const { showLeft, showRight, dataLoading, showEditPanel } = useBrowseLayout(canEditCurrent)
+const { effectiveCanEdit } = useBrowseEditPermission(currentOptionVersion, dataLoading)
+const { showLeft, showRight, showEditPanel } = useBrowseLayout(effectiveCanEdit)
 const { handleSelectedVersionKeyChange } = useVersionSelectionSync({
   currentVersionId,
   selectedVersionKey,
