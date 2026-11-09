@@ -2,6 +2,14 @@ import type { DialogueTxtImportDTO } from '@/types/dialogueLine'
 import type { DialogueTxtParseVO } from '@/types/dialogueTxt'
 import request from '@/utils/http'
 
+/** 从响应头读取 Content-Disposition 的最小接口，避免用 any */
+interface HeadersLike {
+  get?: (name: string) => string | null | undefined
+  [key: string]: unknown
+}
+
+type BlobWithHeaders = Blob & { headers?: HeadersLike }
+
 /**
  * @description: 解析 txt，返回预览
  */
@@ -23,36 +31,37 @@ export const importDialogueTxtAPI = (versionId: number, data: DialogueTxtImportD
  * @param versionId 版本ID
  * @param filename  下载文件名（可选，默认由后端 Content-Disposition 决定）
  */
-export const exportDialogueTxtAPI = async (versionId: number, filename?: string) => {
+/**
+ * @description: 导出为 txt 文本（走浏览器下载）
+ * @param versionId 版本ID
+ * @param fallback  兜底文件名（后端未返回 Content-Disposition 时使用）
+ */
+export const exportDialogueTxtAPI = async (versionId: number, fallback?: string) => {
   const blob = (await request.get(`/user/dialogue-txt/export/${versionId}`, {
     responseType: 'blob',
-  })) as unknown as Blob
+  })) as unknown as BlobWithHeaders
 
-  // 兜底 1：空文件
-  if (!blob || blob.size === 0) {
-    throw new Error('导出文件为空')
-  }
+  if (!blob?.size) throw new Error('导出文件为空')
 
-  // 兜底 2：万一拦截器没识别出 JSON 错误（例如后端错误也用 text/plain 返回）
-  const contentType = blob.type || ''
-  if (contentType.includes('application/json')) {
+  if (blob.type?.includes('application/json')) {
     const text = await blob.text()
     try {
-      const json = JSON.parse(text)
-      throw new Error(json.msg || json.message || '导出失败')
-    } catch (err) {
-      if (err instanceof Error) throw err
-      throw new Error(text || '导出失败')
+      throw new Error(JSON.parse(text).msg || '导出失败')
+    } catch (e) {
+      throw e instanceof Error ? e : new Error(text)
     }
   }
 
+  // 从 Content-Disposition 取文件名
+  const cd = (blob.headers?.get?.('content-disposition') ?? '') as string
+  const m = /filename\*=UTF-8''([^;]+)/i.exec(cd) || /filename="?([^";]+)"?/i.exec(cd)
+  // ⭐ m?.[1] 保证不为 undefined，decodeURIComponent 只接受 string
+  const name = m?.[1] ? decodeURIComponent(m[1]) : fallback || `dialogue-${versionId}.txt`
+
   const url = URL.createObjectURL(blob)
-  const a = document.createElement('a')
-  a.href = url
-  a.download = filename || `dialogue-${versionId}.txt`
+  const a = Object.assign(document.createElement('a'), { href: url, download: name })
   document.body.appendChild(a)
   a.click()
   a.remove()
-  // 延迟 revoke，避免部分浏览器（Safari/Firefox）下载被中断
   setTimeout(() => URL.revokeObjectURL(url), 1000)
 }

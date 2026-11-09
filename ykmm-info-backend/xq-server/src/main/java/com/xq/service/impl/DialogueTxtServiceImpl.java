@@ -10,6 +10,7 @@ import com.xq.enums.DialogueSourceTypeEnum;
 import com.xq.mapper.*;
 import com.xq.service.DialogueLineService;
 import com.xq.service.DialogueTxtService;
+import com.xq.vo.CardSourceVO;
 import com.xq.vo.DialogueLineVO;
 import com.xq.vo.DialogueSegmentVO;
 import com.xq.vo.DialogueTxtParseVO;
@@ -68,6 +69,20 @@ public class DialogueTxtServiceImpl implements DialogueTxtService {
     private DialogueLineMapper dialogueLineMapper;
     @Autowired
     private RcOptionMapper rcOptionMapper;
+    @Autowired
+    private CardRcMapper cardRcMapper;
+    @Autowired
+    private CardRtvMapper cardRtvMapper;
+    @Autowired
+    private CardRabitterMapper cardRabitterMapper;
+    @Autowired
+    private CardMapper cardMapper;
+    @Autowired
+    private StoryMapper storyMapper;
+    @Autowired
+    private StoryCategoryMapper storyCategoryMapper;
+    @Autowired
+    private StoryCategoryTypeMapper storyCategoryTypeMapper;
 
     @Override
     public DialogueTxtParseVO parseTxt(Long versionId, MultipartFile file) {
@@ -173,11 +188,22 @@ public class DialogueTxtServiceImpl implements DialogueTxtService {
         String text = buildTxtText(lineVOs);
 
         // 7. 写入响应（下载）
-        String filename = "dialogue-" + versionId + ".txt";
+        String filename = buildExportFilename(version);
+        if (filename == null || filename.isBlank()) {
+            filename = "dialogue-" + versionId;
+        }
+        filename = sanitizeFilename(filename);
+        if (!filename.toLowerCase().endsWith(".txt")) {
+            filename += ".txt";
+        }
+
         response.setContentType("text/plain;charset=UTF-8");
+        // RFC 5987：同时给 filename 和 filename*，中文名兼容性最好
+        String encoded = URLEncoder.encode(filename, StandardCharsets.UTF_8)
+                .replace("+", "%20");
         response.setHeader("Content-Disposition",
-                "attachment; filename=\"" +
-                        URLEncoder.encode(filename, StandardCharsets.UTF_8) + "\"");
+                "attachment; filename=\"" + encoded + "\"; filename*=UTF-8''" + encoded);
+
         try (PrintWriter writer = response.getWriter()) {
             writer.write(text);
             writer.flush();
@@ -757,7 +783,7 @@ public class DialogueTxtServiceImpl implements DialogueTxtService {
                 boolean lastIsOption = lastBlock.type == TxtBlockType.OPTION;
                 boolean curIsOption = block.type == TxtBlockType.OPTION;
                 if (lastIsOption || curIsOption) {
-                    // ★ 选项块前是普通/旁白块 → 先补一个空行，再输出 ——
+                    // 选项块前是普通/旁白块 → 先补一个空行，再输出 ——
                     if (curIsOption && !lastIsOption) sb.append("\n");
                     sb.append("——\n");
                     // 选项块后接普通/旁白块，额外空行隔开
@@ -907,5 +933,134 @@ public class DialogueTxtServiceImpl implements DialogueTxtService {
 
     private String nullToEmpty(String s) {
         return s == null ? "" : s;
+    }
+
+    // ---------------------------------------------------
+    // 导出文件名
+    // ---------------------------------------------------
+
+    /**
+     * 根据版本来源生成导出文件名（不带 .txt 后缀）。
+     * 生成失败或找不到来源时返回 null，调用方回退为默认名。
+     */
+    private String buildExportFilename(DialogueVersion version) {
+        if (version == null) return null;
+        Integer sourceType = version.getSourceType();
+        Long sourceId = version.getSourceId();
+        if (sourceType == null || sourceId == null) return null;
+
+        try {
+            if (Objects.equals(sourceType, DialogueSourceTypeEnum.RC.getValue())) {
+                CardRc rc = cardRcMapper.getById(sourceId);
+                if (rc == null) return null;
+                return buildCardFilename("RC", rc.getCardId(), rc.getEpisodeNo(), rc.getTitle());
+            }
+            if (Objects.equals(sourceType, DialogueSourceTypeEnum.RTV.getValue())) {
+                CardRtv rtv = cardRtvMapper.getById(sourceId);
+                if (rtv == null) return null;
+                return buildCardFilename("RTV", rtv.getCardId(), rtv.getEpisodeNo(), rtv.getTitle());
+            }
+            if (Objects.equals(sourceType, DialogueSourceTypeEnum.RABITTER.getValue())) {
+                CardRabitter rab = cardRabitterMapper.getById(sourceId);
+                if (rab == null) return null;
+                return buildCardFilename("Rabitter", rab.getCardId(), rab.getEpisodeNo(), rab.getTitle());
+            }
+            if (Objects.equals(sourceType, DialogueSourceTypeEnum.STORY.getValue())) {
+                return buildStoryFilename(sourceId);
+            }
+        } catch (Exception e) {
+            log.warn("[exportTxt] 生成导出文件名失败，versionId={}, sourceType={}, sourceId={}",
+                    version.getId(), sourceType, sourceId, e);
+        }
+        return null;
+    }
+
+    /**
+     * 卡面类来源（RC / RTV / Rabitter）拼名：
+     * {@code {typeLabel}-{card.name}[{series.name}]-第{n}话 {title}}
+     * <p>缺少 series 时不输出中括号；缺少 episodeNo 时只输出 title。
+     */
+    private String buildCardFilename(String typeLabel, Long cardId, Integer episodeNo, String episodeTitle) {
+        if (cardId == null) return null;
+        CardSourceVO card = cardMapper.getWithSeriesById(cardId);
+        if (card == null || card.getName() == null) return null;
+
+        StringBuilder sb = new StringBuilder();
+        sb.append(typeLabel).append("-").append(card.getName());
+        if (card.getSeriesName() != null && !card.getSeriesName().isBlank()) {
+            sb.append("[").append(card.getSeriesName()).append("]");
+        }
+        sb.append("-");
+        if (episodeNo != null) {
+            sb.append("第").append(episodeNo).append("话");
+            if (episodeTitle != null && !episodeTitle.isBlank()) {
+                sb.append(" ").append(episodeTitle);
+            }
+        } else if (episodeTitle != null) {
+            sb.append(episodeTitle);
+        }
+        return sb.toString();
+    }
+
+    /**
+     * 剧情来源拼名：
+     * {@code {categoryTypeName}-{根分类}-{子分类}-...-{story.title}}
+     * <p>分类链从根到叶，用 "-" 分隔；缺少某一段时自动跳过。
+     */
+    private String buildStoryFilename(Long storyId) {
+        if (storyId == null) return null;
+        Story story = storyMapper.getById(storyId);
+        if (story == null) return null;
+
+        // 1. 沿 parentId 向上收集分类链（头插形成 根 → 叶），同时记录叶子节点上的 categoryType
+        List<String> categoryNames = new ArrayList<>();
+        Integer categoryType = null;
+        Long categoryId = story.getCategoryId();
+        Set<Long> visited = new HashSet<>();
+        while (categoryId != null && categoryId > 0 && visited.add(categoryId)) {
+            StoryCategory cat = storyCategoryMapper.getById(categoryId);
+            if (cat == null) break;
+            categoryNames.add(0, cat.getName());
+            if (categoryType == null) categoryType = cat.getCategoryType();
+            Long parentId = cat.getParentId();
+            if (parentId == null || parentId == 0) break;
+            categoryId = parentId;
+        }
+
+        // 2. 类型名（戏剧篇 / 主线 / ...）
+        String typeName = null;
+        if (categoryType != null) {
+            StoryCategoryType type = storyCategoryTypeMapper.getById(categoryType);
+            if (type != null) typeName = type.getName();
+        }
+
+        // 3. 拼装
+        StringBuilder sb = new StringBuilder();
+        if (typeName != null && !typeName.isBlank()) {
+            sb.append(typeName).append("-");
+        }
+        for (String name : categoryNames) {
+            if (name != null && !name.isBlank()) {
+                sb.append(name).append("-");
+            }
+        }
+        if (story.getTitle() != null) {
+            sb.append(story.getTitle());
+        }
+        return sb.toString();
+    }
+
+    /**
+     * 去掉文件名中 Windows/Linux 不允许的字符，避免下载失败。
+     * 替换为下划线，保留中文、全角标点、空格、`-` 等安全字符。
+     */
+    private String sanitizeFilename(String name) {
+        if (name == null) return null;
+        String cleaned = name.replaceAll("[\\\\/:*?\"<>|\\r\\n\\t]", "_").trim();
+        // 防止空名 / 全是点
+        if (cleaned.isEmpty() || cleaned.matches("^\\.+$")) {
+            return null;
+        }
+        return cleaned;
     }
 }

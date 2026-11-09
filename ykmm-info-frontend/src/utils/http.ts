@@ -132,7 +132,7 @@ httpInstance.interceptors.request.use(
 )
 
 httpInstance.interceptors.response.use(
-  // ⭐ 改成 async，因为 blob 错误需要异步读内容
+  // 改成 async，因为 blob 错误需要异步读内容
   async (res) => {
     /* ---------- 1. 文件流（blob）响应：直接放行 ---------- */
     if (res.config?.responseType === 'blob' || res.data instanceof Blob) {
@@ -148,7 +148,7 @@ httpInstance.interceptors.response.use(
 
       // 正常文件流：原样返回 Blob，交给调用方处理（下载 / 预览）
       // 注意：这里返回的是 res.data 而不是 body，保持和调用方 as unknown as Blob 的约定一致
-      return blob as unknown as typeof res
+      return Object.assign(blob, { headers: res.headers }) as unknown as typeof res
     }
 
     /* ---------- 2. 普通 JSON 响应 ---------- */
@@ -170,7 +170,7 @@ httpInstance.interceptors.response.use(
     return body as unknown as typeof res
   },
 
-  // ⭐ error 分支改成 async，以支持读取 blob 错误体
+  // error 分支改成 async，以支持读取 blob 错误体
   async (e) => {
     const status = e?.response?.status
     const url = e?.config?.url as string | undefined

@@ -3,6 +3,7 @@ package com.xq.config;
 import com.xq.interceptor.JwtTokenInterceptor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
@@ -17,15 +18,24 @@ public class WebMvcConfiguration implements WebMvcConfigurer {
         registry.addInterceptor(jwtTokenInterceptor)
                 .addPathPatterns("/**")
                 .excludePathPatterns(
-                        // 认证：登录、注册（游客可访问）
                         "/auth/login",
                         "/auth/register",
                         "/auth/register/code",
-                        // Swagger / Knife4j
                         "/doc.html",
                         "/webjars/**",
                         "/v3/api-docs/**",
-                        // 错误页
                         "/error");
+    }
+
+    // =全局 CORS
+    @Override
+    public void addCorsMappings(CorsRegistry registry) {
+        registry.addMapping("/**")
+                .allowedOriginPatterns("*")
+                .allowedMethods("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS")
+                .allowedHeaders("*")
+                .exposedHeaders("Content-Disposition")
+                .allowCredentials(true)
+                .maxAge(3600);
     }
 }
