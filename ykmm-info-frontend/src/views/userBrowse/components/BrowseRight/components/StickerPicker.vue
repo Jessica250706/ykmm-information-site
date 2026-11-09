@@ -27,17 +27,41 @@
       <el-empty v-else-if="!groups.length" :image-size="60" description="暂无表情包" />
 
       <template v-else>
-        <!-- 分组切换 -->
-        <div class="sticker-picker__tabs">
+        <!-- 分组切换：横向滚动 + 左右箭头 -->
+        <div class="sticker-picker__tabs-wrap">
+          <!-- 左箭头 -->
           <button
-            v-for="g in groups"
-            :key="g.id"
-            :class="{ 'is-active': activeGroupId === g.id }"
-            class="sticker-picker__tab"
+            v-show="canScrollLeft"
+            class="sticker-picker__tabs-nav sticker-picker__tabs-nav--prev"
             type="button"
-            @click="activeGroupId = g.id ?? null"
+            @click="scrollTabs(-1)"
           >
-            {{ g.name }}
+            <el-icon><ArrowLeft /></el-icon>
+          </button>
+
+          <!-- 分组列表 -->
+          <div ref="tabsRef" class="sticker-picker__tabs">
+            <button
+              v-for="g in groups"
+              :key="g.id"
+              :ref="(el) => setTabRef(el, g.id)"
+              :class="{ 'is-active': activeGroupId === g.id }"
+              class="sticker-picker__tab"
+              type="button"
+              @click="activeGroupId = g.id ?? null"
+            >
+              {{ g.name }}
+            </button>
+          </div>
+
+          <!-- 右箭头 -->
+          <button
+            v-show="canScrollRight"
+            class="sticker-picker__tabs-nav sticker-picker__tabs-nav--next"
+            type="button"
+            @click="scrollTabs(1)"
+          >
+            <el-icon><ArrowRight /></el-icon>
           </button>
         </div>
 
@@ -75,8 +99,9 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
-import { Loading } from '@element-plus/icons-vue'
+import { type ComponentPublicInstance, computed, nextTick, ref, watch } from 'vue'
+import { ArrowLeft, ArrowRight, Loading } from '@element-plus/icons-vue'
+import { useScroll } from '@vueuse/core'
 import { listStickerGroupWithStickersAPI } from '@/api/stickerGroup'
 import { STICKER_TYPE } from '@/constants'
 import type { StickerGroupWithStickersVO, StickerVO } from '@/types/sticker'
@@ -86,6 +111,61 @@ const loading = ref(false)
 const groups = ref<StickerGroupWithStickersVO[]>([])
 const activeGroupId = ref<number | null>(null)
 
+/* -------- 分组横向滚动（参考 ImageView 缩略图滚动） -------- */
+const tabsRef = ref<HTMLElement | null>(null)
+const { arrivedState } = useScroll(tabsRef)
+const canScrollLeft = computed(() => !arrivedState.left)
+const canScrollRight = computed(() => !arrivedState.right)
+
+/** 点击箭头：滚动一屏的 80% */
+function scrollTabs(direction: -1 | 1) {
+  const el = tabsRef.value
+  if (!el) return
+  const step = el.clientWidth * 0.8
+  el.scrollBy({ left: direction * step, behavior: 'smooth' })
+}
+
+/** 分组 DOM 引用，用于切分组时确保激活 tab 可见 */
+const tabRefs = ref<Map<number, HTMLElement>>(new Map())
+
+function setTabRef(el: Element | ComponentPublicInstance | null, id?: number) {
+  if (id == null) return
+  if (el instanceof HTMLElement) {
+    tabRefs.value.set(id, el)
+  } else {
+    tabRefs.value.delete(id)
+  }
+}
+
+/**
+ * 保证指定分组的 tab 在可视范围内。
+ * 靠近边缘时多留一点 padding，避免刚好"露头"就停止。
+ */
+async function ensureTabVisible(id: number | null) {
+  if (id == null) return
+  await nextTick()
+  const container = tabsRef.value
+  const tab = tabRefs.value.get(id)
+  if (!container || !tab) return
+
+  const padding = 24
+  const containerRect = container.getBoundingClientRect()
+  const tabRect = tab.getBoundingClientRect()
+
+  const tabLeftRel = tabRect.left - containerRect.left
+  const tabRightRel = tabRect.right - containerRect.left
+
+  if (tabLeftRel < padding) {
+    container.scrollBy({ left: tabLeftRel - padding, behavior: 'smooth' })
+  } else if (tabRightRel > containerRect.width - padding) {
+    container.scrollBy({
+      left: tabRightRel - (containerRect.width - padding),
+      behavior: 'smooth',
+    })
+  }
+}
+
+/* -------- 表情列表 -------- */
 const emit = defineEmits<{
   /**
    * 选中表情包
@@ -120,6 +200,11 @@ watch(visible, (val) => {
   if (val) void ensureLoaded()
 })
 
+/** 激活分组变化时，滚动 tab 到可视区域 */
+watch(activeGroupId, (id) => {
+  void ensureTabVisible(id)
+})
+
 function handlePick(s: StickerVO) {
   if (!s.label) return
   emit('pick', `[${s.label}]`, s)
@@ -134,16 +219,34 @@ function handlePick(s: StickerVO) {
   min-height: 180px;
 }
 
-.sticker-picker__tabs {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px;
+/* ============ 分组切换（横向滚动 + 箭头） ============ */
+.sticker-picker__tabs-wrap {
+  position: relative; /* 为绝对定位的箭头做参照 */
   padding-bottom: 8px;
   margin-bottom: 8px;
   border-bottom: 1px solid var(--el-border-color-lighter);
 }
 
+/* 分组列表：一行、不换行、横向滚动、隐藏滚动条 */
+.sticker-picker__tabs {
+  display: flex;
+  flex-wrap: nowrap; /* 强制一行 */
+  gap: 4px;
+  padding: 2px 0; /* 上下留一点，给箭头渐变的呼吸感 */
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-behavior: smooth;
+
+  /* 隐藏滚动条（三种写法兼容） */
+  &::-webkit-scrollbar {
+    display: none;
+  }
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
 .sticker-picker__tab {
+  flex: 0 0 auto; /* 不收缩，宽度由内容决定 */
   padding: 4px 10px;
   border-radius: 12px;
   border: none;
@@ -151,6 +254,7 @@ function handlePick(s: StickerVO) {
   color: var(--el-text-color-regular);
   font-size: 12px;
   cursor: pointer;
+  white-space: nowrap; /* 分组名过长时不换行，让滚动处理 */
   transition:
     background-color 0.15s,
     color 0.15s;
@@ -166,6 +270,50 @@ function handlePick(s: StickerVO) {
   }
 }
 
+/* 左右箭头：绝对定位覆盖在分组列表两侧，配渐变背景 */
+.sticker-picker__tabs-nav {
+  position: absolute;
+  top: 0;
+  bottom: 8px; /* 和 tabs-wrap 的 padding-bottom 对齐 */
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  width: 28px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  color: var(--el-text-color-primary);
+  transition: color 0.2s;
+
+  &:hover {
+    color: var(--el-color-primary);
+  }
+}
+
+.sticker-picker__tabs-nav--prev {
+  left: 0;
+  justify-content: flex-start;
+  background: linear-gradient(
+    to right,
+    var(--el-bg-color) 0%,
+    var(--el-bg-color) 50%,
+    transparent 100%
+  );
+}
+
+.sticker-picker__tabs-nav--next {
+  right: 0;
+  justify-content: flex-end;
+  background: linear-gradient(
+    to left,
+    var(--el-bg-color) 0%,
+    var(--el-bg-color) 50%,
+    transparent 100%
+  );
+}
+
+/* ============ 表情网格 ============ */
 .sticker-picker__grid-wrap {
   max-height: 260px;
   overflow-y: auto;
