@@ -75,63 +75,32 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
+import { computed } from 'vue'
 import { ElMessage } from 'element-plus'
-import { storeToRefs } from 'pinia'
 import { createDialogueVersionAPI } from '@/api/dialogueVersion'
-import { BROWSE_KIND, SOURCE_TYPE } from '@/constants'
-import { useStoryCategoryTypeStore, useUserStore } from '@/stores'
+import { SOURCE_TYPE } from '@/constants'
+import { useStoryCategoryTypeStore } from '@/stores'
 import type { DialogueLineVO } from '@/types/dialogueLine'
 import type { DialogueVersionOptionVO } from '@/types/dialogueVersion'
 import type { StoryCategoryVO } from '@/types/storyCategory'
 import BrowseCenter from './components/BrowseCenter/Index.vue'
 import BrowseLeft from './components/BrowseLeft/BrowseLeft.vue'
 import BrowseRight from './components/BrowseRight/Index.vue'
+import { useBrowseEditPermission } from './composables/useBrowseEditPermission.ts'
+import { useBrowseLayout } from './composables/useBrowseLayout.ts'
 import { useBrowseNavigation } from './composables/useBrowseNavigation.ts'
 import { useBrowseRoute } from './composables/useBrowseRoute.ts'
 import { useCategoryTree } from './composables/useCategoryTree.ts'
 import { useDialogueEdit } from './composables/useDialogueEdit.ts'
 import { useStoryDetail } from './composables/useStoryDetail.ts'
+import { useStoryLoader } from './composables/useStoryLoader.ts'
 import { useVersionSelection } from './composables/useVersionSelection.ts'
+import { useVersionSelectionSync } from './composables/useVersionSelectionSync.ts'
 
 const storyCategoryTypeStore = useStoryCategoryTypeStore()
 
-const userStore = useUserStore()
-const { isLogin, isAdmin, isPassedUser } = storeToRefs(userStore)
-/** 当前选中版本是否可编辑 */
-const canEditCurrent = computed(() => {
-  const opt = currentOptionVersion.value
-  if (!opt) return false
-
-  // 普通用户必须先通过答题；管理员不受答题门槛限制
-  if (!isAdmin.value && !isPassedUser.value) return false
-
-  return opt.exists ? opt.canOperate === true : isLogin.value
-})
-
-/* -------- 数据加载 gate -------- */
-/**
- * 「切换上下文」期间为 true，用于阻止编辑区误闪。
- * <p>
- * 只在以下场景设为 true：
- * <ul>
- *   <li>首次进入页面</li>
- *   <li>切换剧情类型 / 分类</li>
- * </ul>
- * 保存 / 创建等「原地刷新」不设，避免编辑区被卸载重建造成闪烁。
- */
-const dataLoading = ref(false)
-
-/** 右侧编辑区是否渲染：数据就绪 + 用户手动展开 + 当前版本可编辑 */
-const showEditPanel = computed(() => !dataLoading.value && showRight.value && canEditCurrent.value)
-
 /* -------- 路由 -------- */
 const { type, kind, nodeId, typeLabel } = useBrowseRoute()
-
-/** 左侧目录是否展开 */
-const showLeft = ref(true)
-/** 右侧编辑区是否展开 */
-const showRight = ref(true)
 
 /* -------- 详情 / 列表 -------- */
 const {
@@ -179,78 +148,37 @@ const {
   selectByVersionId,
 } = useVersionSelection(storyDetail, versionOptions)
 
-/**
- * 外部 currentVersionId 变化时同步本地 key。
- * 若本地已选中同一 option，跳过，避免来回覆盖造成循环。
- */
-watch(
+/* -------- ★ 权限 + 布局 + 版本同步 -------- */
+const { canEditCurrent } = useBrowseEditPermission(currentOptionVersion)
+const { showLeft, showRight, dataLoading, showEditPanel } = useBrowseLayout(canEditCurrent)
+const { handleSelectedVersionKeyChange } = useVersionSelectionSync({
   currentVersionId,
-  (id) => {
-    const cur = versionItemMap.value.get(selectedVersionKey.value)
-    if (cur && cur.versionId === (id ?? null)) return
-    selectedVersionKey.value = id == null ? '' : `id:${id}`
-  },
-  { immediate: true },
-)
+  selectedVersionKey,
+  versionItemMap,
+  editingLineId,
+  editingMode,
+})
 
-/**
- * 用户在下拉里切换：更新 key，并把 versionId（可能为 null）同步给 currentVersionId。
- */
-function handleSelectedVersionKeyChange(key: string) {
-  selectedVersionKey.value = key
-  currentVersionId.value = versionItemMap.value.get(key)?.versionId ?? null
-}
+/* -------- 当前视图加载（composable） -------- */
+const { loadCurrent, reloadCurrent } = useStoryLoader({
+  type,
+  kind,
+  nodeId,
+  dataLoading,
+  storyDetail,
+  resetStory,
+  fetchStoryDetail,
+  fetchStories,
+  fetchVersionOptions,
+  loadTree,
+  resetEditState,
+  syncVersionSelection,
+  syncEditingLine,
+  applyPendingInsert,
+})
 
 /* -------- 导航 -------- */
 const { goCategory, goStory, goBack, handleSwitchType } = useBrowseNavigation()
-
-/* -------- 加载当前视图 -------- */
-/**
- * 加载当前视图。
- *
- * @param showLoading 是否展示加载状态（隐藏编辑区）。
- *   - 首次进入 / 切换路由 / 切换分类 → true（防止 canEditCurrent 在数据未就绪时误判）
- *   - 保存 / 新增 / 删除后刷新 → false（编辑区保持挂载，避免闪烁）
- */
-async function loadCurrent(showLoading = false) {
-  if (showLoading) dataLoading.value = true
-  try {
-    if (kind.value === BROWSE_KIND.STORY && nodeId.value != null) {
-      await fetchStoryDetail(nodeId.value)
-      if (!storyDetail.value) return
-
-      syncVersionSelection()
-      syncEditingLine()
-      await fetchVersionOptions()
-      await applyPendingInsert()
-      return
-    }
-
-    /* 非 story 分支才清空 */
-    resetStory()
-    resetEditState()
-
-    if (kind.value === BROWSE_KIND.CATEGORY && nodeId.value != null) {
-      await fetchStories(nodeId.value)
-    }
-  } finally {
-    if (showLoading) dataLoading.value = false
-  }
-}
-
-/** 事件绑定专用：不传参，走"原地刷新"路径 */
-function reloadCurrent() {
-  void loadCurrent()
-}
-
-/* 路由切换时显式清空 */
-watch(
-  () => [kind.value, nodeId.value],
-  () => {
-    resetStory()
-    void loadCurrent()
-  },
-)
 
 /* -------- 交互 -------- */
 function handleNodeClick(data: StoryCategoryVO) {
@@ -275,20 +203,17 @@ function handleSaveLine() {
  * 3. 刷新完成后自动选中新行
  */
 async function handleAddLine(payload: { afterId: number | null; atStart: boolean }) {
-  // 1. 记录插入目标
   pendingInsertAtStart.value = payload.atStart
   pendingInsertAfterId.value = payload.atStart ? null : payload.afterId
 
-  // 2. 刷新（applyPendingInsert 会按需重排）
   await loadCurrent()
 
-  // 3. 定位新行
   const lines = currentVersion.value?.lines ?? []
   if (lines.length === 0) return
 
   let newLineId: number | null = null
   if (payload.atStart) {
-    newLineId = lines[0]?.id ?? null // 重排后新行在第一行
+    newLineId = lines[0]?.id ?? null
   } else if (payload.afterId == null) {
     newLineId = lines[lines.length - 1]?.id ?? null
   } else {
@@ -305,7 +230,6 @@ async function handleAddLine(payload: { afterId: number | null; atStart: boolean
 
 /**
  * 为「选中但还没有内容」的版本创建内容。
- * 调用创建版本接口 → 重新拉详情 → 把新版本设为选中。
  */
 async function handleCreateVersion(payload: {
   option: DialogueVersionOptionVO
@@ -340,13 +264,9 @@ async function handleCreateVersion(payload: {
 
     ElMessage.success('创建成功')
 
-    // 1. 关键：先刷新 storyDetail，让 versions 里有新版本
     await fetchStoryDetail(storyId)
-
-    // 2. versionOptions 能刷新更好，刷不了也不影响（第二遍会补上）
     await fetchVersionOptions().catch(() => {})
 
-    // 3. 数据源就绪后，再切选中
     currentVersionId.value = newId
     selectByVersionId(newId)
   } catch (err) {
@@ -360,12 +280,10 @@ async function handleDeleteLine(payload: {
   prevId: number | null
   nextId: number | null
 }) {
-  // 先清掉当前选中，避免刷新期间引用已删除行
   editingLineId.value = null
 
   await loadCurrent()
 
-  // 优先选中上一条，其次下一条
   const lines = currentVersion.value?.lines ?? []
   if (lines.length === 0) return
 
@@ -387,31 +305,4 @@ function handleGoBack() {
     goBack(type.value, currentCategory.value.parentId)
   }
 }
-
-/* -------- 生命周期 -------- */
-watch(
-  () => type.value,
-  async () => {
-    await loadTree()
-    await loadCurrent(true)
-  },
-  { immediate: true },
-)
-
-watch(
-  () => [kind.value, nodeId.value],
-  () => {
-    void loadCurrent(true)
-  },
-)
-
-/** 版本切换时，清空编辑高亮 */
-watch(currentVersionId, () => {
-  editingLineId.value = null
-})
-
-/** 退出编辑模式时，清空高亮 */
-watch(editingMode, (val) => {
-  if (!val) editingLineId.value = null
-})
 </script>

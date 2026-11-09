@@ -23,7 +23,7 @@ public class StickerGroupDTO implements Serializable {
      * - 新增：忽略（由数据库自增生成）
      * - 编辑：必填（Service 里也会 set，但加个注解兜底）
      */
-    @NotNull(message = "分组ID不能为空", groups = UpdateGroup.class)
+//    @NotNull(message = "分组ID不能为空", groups = UpdateGroup.class)
     private Long id;
 
     /**

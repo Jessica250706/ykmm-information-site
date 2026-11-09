@@ -142,10 +142,17 @@ public class DialogueLineServiceImpl implements DialogueLineService {
         }
         validateLineDTO(dto, version);
 
+        // RC 场景下获取发起人角色ID，用于自动计算 side
+        Long initiatorRoleId = resolveInitiatorRoleId(version);
+
         // 更新句子
         DialogueLine line = new DialogueLine();
         BeanUtils.copyProperties(dto, line);
         line.setId(lineId);
+        // 重新计算 side：
+        //   RC 场景 → 由 speakerId 是否等于发起人自动判定（发起人=右侧 2，其他人=左侧 1）
+        //   非 RC 场景 → 沿用前端传入的 side
+        line.setSide(resolveSide(dto.getSpeakerId(), dto.getSide(), initiatorRoleId));
         dialogueLineMapper.update(line);
 
         // 重建片段
@@ -157,10 +164,10 @@ public class DialogueLineServiceImpl implements DialogueLineService {
             }
         }
 
-        // 用户新增句子后，版本回到待审核
+        // 用户编辑句子后，版本回到待审核
         dialogueVersionService.markPendingIfNeeded(exist.getVersionId());
 
-        log.info("编辑对话句子成功，id={}", lineId);
+        log.info("编辑对话句子成功，id={}, side={}", lineId, line.getSide());
     }
 
     /**
@@ -248,18 +255,6 @@ public class DialogueLineServiceImpl implements DialogueLineService {
         log.info("清空版本对话成功，versionId={}, lineCount={}", versionId, lineIds.size());
     }
 
-    /**
-     * 批量更新对话句子
-     * <p>
-     * 语义：覆盖式更新。
-     * - 校验所有 lineId 属于该版本
-     * - 逐行更新
-     * - 重建这些行的片段
-     * - RC 场景：重建涉及这些行的 rc_option
-     *
-     * @param versionId 版本ID
-     * @param lines     句子列表
-     */
     @Override
     @Transactional
     public void updateBatch(Long versionId, List<DialogueLineDTO> lines) {
@@ -268,6 +263,9 @@ public class DialogueLineServiceImpl implements DialogueLineService {
         if (version == null) {
             throw new RuntimeException("对话版本不存在");
         }
+
+        // RC 场景下获取发起人角色ID（循环外查一次，避免 N 次重复查询）
+        Long initiatorRoleId = resolveInitiatorRoleId(version);
 
         // 收集本次要更新的 lineId，用于后续清 rc_option
         List<Long> lineIds = lines.stream()
@@ -295,12 +293,13 @@ public class DialogueLineServiceImpl implements DialogueLineService {
             DialogueLine line = new DialogueLine();
             BeanUtils.copyProperties(dto, line);
             line.setId(dto.getId());
+            // 重新计算 side（同 update 逻辑）
+            line.setSide(resolveSide(dto.getSpeakerId(), dto.getSide(), initiatorRoleId));
             dialogueLineMapper.update(line);
 
             if (dto.getContent() != null) {
                 dialogueSegmentMapper.deleteByLineId(dto.getId());
-                List<DialogueSegment> segments =
-                        parseSegments(dto.getId(), dto.getContent());
+                List<DialogueSegment> segments = parseSegments(dto.getId(), dto.getContent());
                 if (!segments.isEmpty()) {
                     dialogueSegmentMapper.insertBatch(segments);
                 }
@@ -310,7 +309,6 @@ public class DialogueLineServiceImpl implements DialogueLineService {
         // RC 场景：先删涉及这些行的 rc_option，再按本次提交重新配对写入
         if (Objects.equals(DialogueSourceTypeEnum.RC.getValue(), version.getSourceType()) && !lineIds.isEmpty()) {
             rcOptionMapper.deleteByLineIds(lineIds);
-            // 复用 saveRcOptions 的配对逻辑（DTO + 已存在实体）
             List<DialogueLine> updatedEntities = new ArrayList<>();
             for (DialogueLineDTO dto : lines) {
                 DialogueLine l = new DialogueLine();

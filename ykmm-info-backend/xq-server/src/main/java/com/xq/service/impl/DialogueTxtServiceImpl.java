@@ -122,21 +122,31 @@ public class DialogueTxtServiceImpl implements DialogueTxtService {
     }
 
     /**
-     * 按「空行」和「——分隔线」切块。
+     * 按「——分隔线」和「N. 选项编号」切块。
      * <p>
-     * 空行也是切分点：这样「……」「【音效】」「（动作）」这类独立成段的旁白
-     * 才能从上一个说话人的内容里剥离出来，成为独立块。
-     * <p>
-     * 「——」分隔符只匹配"整行就是 ——/---"，避免误删以破折号开头的内容行（如「——克斯！」）。
+     * 规则：
+     * <ul>
+     *   <li>—— / ---：切块分隔符</li>
+     *   <li>N. 开头（如 1. / 2. / 3.）：新选项块开始</li>
+     *   <li>空行：普通块内切块（保留旁白识别）；选项块内不切（保持问句和回答连在一起）</li>
+     * </ul>
      */
     private List<List<String>> splitIntoBlocks(String text) {
         List<List<String>> blocks = new ArrayList<>();
         List<String> current = new ArrayList<>();
+        boolean inOptionBlock = false;
+
         String[] rawLines = text.split("\n");
         for (String raw : rawLines) {
             String line = raw.replace("\r", "").trim();
 
+            // 1. 空行
             if (line.isEmpty()) {
+                if (inOptionBlock) {
+                    // 选项块内：空行不切块，问句和回答保持同一块
+                    continue;
+                }
+                // 普通块：空行切块（旁白识别依赖此逻辑）
                 if (!current.isEmpty()) {
                     blocks.add(current);
                     current = new ArrayList<>();
@@ -144,14 +154,28 @@ public class DialogueTxtServiceImpl implements DialogueTxtService {
                 continue;
             }
 
+            // 2. 分隔线 —— / ---
             if (line.equals("——") || line.matches("^-{3,}$")) {
                 if (!current.isEmpty()) {
                     blocks.add(current);
                     current = new ArrayList<>();
                 }
+                inOptionBlock = false;
                 continue;
             }
 
+            // 3. N. 选项编号 → 新选项块开始
+            if (OPTION_NUMBER_PATTERN.matcher(line).matches()) {
+                if (!current.isEmpty()) {
+                    blocks.add(current);
+                    current = new ArrayList<>();
+                }
+                inOptionBlock = true;
+                current.add(line);
+                continue;
+            }
+
+            // 4. 普通内容行
             current.add(line);
         }
         if (!current.isEmpty()) {
@@ -250,13 +274,20 @@ public class DialogueTxtServiceImpl implements DialogueTxtService {
             Matcher m = SPEAKER_PATTERN.matcher(line);
             if (m.matches()) {
                 if (currentSpeaker != null && !buffer.isEmpty()) {
-                    DialogueRoleEnum role = isOption
-                            ? (stage == 0 ? DialogueRoleEnum.QUESTION : DialogueRoleEnum.ANSWER)
-                            : DialogueRoleEnum.NORMAL;
+                    // ★ 只有 stage 0/1 才归到当前选项；stage >= 2 视为普通行
+                    boolean actualOption = isOption && stage < 2;
+                    DialogueRoleEnum role;
+                    if (actualOption && stage == 0) {
+                        role = DialogueRoleEnum.QUESTION;
+                    } else if (actualOption && stage == 1) {
+                        role = DialogueRoleEnum.ANSWER;
+                    } else {
+                        role = DialogueRoleEnum.NORMAL;
+                    }
                     flushLine(lines, currentSpeaker, buffer.toString(), sort++,
-                            role.getValue(), isOption ? optionNumber : null,
+                            role.getValue(), actualOption ? optionNumber : null,
                             roleCache, speakers, unmatchedSpeakers, unmatchedStickers, errors);
-                    if (isOption) {
+                    if (actualOption) {
                         stage++;
                     }
                     buffer.setLength(0);
@@ -291,11 +322,17 @@ public class DialogueTxtServiceImpl implements DialogueTxtService {
 
         // 块末尾
         if (currentSpeaker != null && !buffer.isEmpty()) {
-            DialogueRoleEnum role = isOption
-                    ? (stage == 0 ? DialogueRoleEnum.QUESTION : DialogueRoleEnum.ANSWER)
-                    : DialogueRoleEnum.NORMAL;
+            boolean actualOption = isOption && stage < 2;
+            DialogueRoleEnum role;
+            if (actualOption && stage == 0) {
+                role = DialogueRoleEnum.QUESTION;
+            } else if (actualOption && stage == 1) {
+                role = DialogueRoleEnum.ANSWER;
+            } else {
+                role = DialogueRoleEnum.NORMAL;
+            }
             flushLine(lines, currentSpeaker, buffer.toString(), sort++,
-                    role.getValue(), isOption ? optionNumber : null,
+                    role.getValue(), actualOption ? optionNumber : null,
                     roleCache, speakers, unmatchedSpeakers, unmatchedStickers, errors);
         }
 

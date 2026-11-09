@@ -72,23 +72,24 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
+import { watch } from 'vue'
 import { ElMessage } from 'element-plus'
-import { storeToRefs } from 'pinia'
-import { useRoute, useRouter } from 'vue-router'
-import { getCardDetailAPI } from '@/api/card'
 import { createDialogueVersionAPI } from '@/api/dialogueVersion'
 import { type SourceTypeValue } from '@/constants'
-import { useUserStore } from '@/stores'
-import type { CardVO } from '@/types/card'
 import type { DialogueLineVO } from '@/types/dialogueLine'
 import type { DialogueVersionOptionVO } from '@/types/dialogueVersion'
+import { useBrowseEditPermission } from '@/views/userBrowse/composables/useBrowseEditPermission.ts'
+import { useBrowseLayout } from '@/views/userBrowse/composables/useBrowseLayout.ts'
 import { useDialogueEdit } from '@/views/userBrowse/composables/useDialogueEdit.ts'
 import { useVersionSelection } from '@/views/userBrowse/composables/useVersionSelection.ts'
+import { useVersionSelectionSync } from '@/views/userBrowse/composables/useVersionSelectionSync.ts'
 import BrowseCenter from './components/BrowseCenter/Index.vue'
 import CardEpisodeList from './components/BrowseLeft/CardEpisodeList.vue'
 import BrowseRight from './components/BrowseRight/Index.vue'
 import { useCardEpisodeDetail } from './composables/useCardEpisodeDetail.ts'
+import { useCardInfo } from './composables/useCardInfo.ts'
+import { useEpisodeLoader } from './composables/useEpisodeLoader.ts'
+import { useEpisodeRoute } from './composables/useEpisodeRoute.ts'
 
 interface EpisodeItem {
   id?: number
@@ -112,91 +113,11 @@ const emit = defineEmits<{
   back: []
 }>()
 
-const route = useRoute()
-const router = useRouter()
+/* -------- ★ 卡面信息（composable） -------- */
+const { color, cardInfo, cardName, loadCardInfo } = useCardInfo(() => props.cardId)
 
-const userStore = useUserStore()
-const { isLogin, isAdmin, isPassedUser } = storeToRefs(userStore)
-/** 当前选中版本是否可编辑 */
-const canEditCurrent = computed(() => {
-  const opt = currentOptionVersion.value
-  if (!opt) return false
-
-  // 普通用户必须先通过答题；管理员不受答题门槛限制
-  if (!isAdmin.value && !isPassedUser.value) return false
-
-  return opt.exists ? opt.canOperate === true : isLogin.value
-})
-
-/* -------- 数据加载 gate -------- */
-/**
- * 「切换上下文」期间为 true，用于阻止编辑区误闪。
- * <p>
- * 只在以下场景设为 true：
- * <ul>
- *   <li>首次进入页面</li>
- *   <li>切换剧情类型 / 分类</li>
- * </ul>
- * 保存 / 创建等「原地刷新」不设，避免编辑区被卸载重建造成闪烁。
- */
-const dataLoading = ref(false)
-
-/** 右侧编辑区是否渲染：数据就绪 + 用户手动展开 + 当前版本可编辑 */
-const showEditPanel = computed(() => !dataLoading.value && showRight.value && canEditCurrent.value)
-
-/** 左侧话数列表是否展开 */
-const showLeft = ref(true)
-/** 右侧编辑区是否展开 */
-const showRight = ref(true)
-
-/* -------- 卡面信息 -------- */
-const color = ref('blue')
-const cardInfo = ref<CardVO>({})
-const cardName = computed(() => cardInfo.value.name + '[' + cardInfo.value.seriesName + ']')
-
-async function loadCardInfo() {
-  if (!props.cardId) return
-  try {
-    const res = await getCardDetailAPI(props.cardId)
-    cardInfo.value = res.data ?? {}
-    const attrColorMap: Record<number, string> = { 1: 'red', 2: 'lime', 3: 'blue' }
-    color.value = cardInfo.value.attribute
-      ? (attrColorMap[cardInfo.value.attribute] ?? 'blue')
-      : 'blue'
-  } catch {}
-}
-
-/* -------- 当前话数 -------- */
-/**
- * 从 URL 读取初始话数。
- * 若 query.sourceId 非法或不存在，返回 null。
- */
-function resolveInitialEpisodeId(): number | null {
-  const raw = route.query.sourceId
-  if (typeof raw !== 'string' || !raw) return null
-  const n = Number(raw)
-  return Number.isFinite(n) && n > 0 ? n : null
-}
-
-const currentEpisodeId = ref<number | null>(resolveInitialEpisodeId())
-
-/**
- * 把当前话数写回 URL query。
- * 使用 replace 避免污染浏览器历史；保留其他 query 参数。
- */
-function syncEpisodeToUrl(id: number | null) {
-  const cur = route.query.sourceId
-  const target = id == null ? undefined : String(id)
-  if ((cur ?? undefined) === target) return
-
-  const query = { ...route.query }
-  if (target == null) {
-    delete query.sourceId
-  } else {
-    query.sourceId = target
-  }
-  void router.replace({ query })
-}
+/* -------- ★ 当前话数 + URL 同步（composable） -------- */
+const { currentEpisodeId, syncEpisodeToUrl } = useEpisodeRoute()
 
 /* -------- 话数对话详情 -------- */
 const {
@@ -208,7 +129,7 @@ const {
   fetchVersionOptions,
 } = useCardEpisodeDetail()
 
-/* -------- 编辑态（复用 Browse 的 composables） -------- */
+/* -------- 编辑态 -------- */
 const {
   editingMode,
   currentVersionId,
@@ -232,57 +153,32 @@ const {
   selectByVersionId,
 } = useVersionSelection(episodeDetail, versionOptions)
 
-/**
- * 外部 currentVersionId 变化时同步本地 key
- */
-watch(
+/* -------- ★ 权限 + 布局 + 版本同步 -------- */
+const { canEditCurrent } = useBrowseEditPermission(currentOptionVersion)
+const { showLeft, showRight, dataLoading, showEditPanel } = useBrowseLayout(canEditCurrent)
+const { handleSelectedVersionKeyChange } = useVersionSelectionSync({
   currentVersionId,
-  (id) => {
-    const cur = versionItemMap.value.get(selectedVersionKey.value)
-    if (cur && cur.versionId === (id ?? null)) return
-    selectedVersionKey.value = id == null ? '' : `id:${id}`
-  },
-  { immediate: true },
-)
+  selectedVersionKey,
+  versionItemMap,
+  editingLineId,
+  editingMode,
+})
 
-function handleSelectedVersionKeyChange(key: string) {
-  selectedVersionKey.value = key
-  currentVersionId.value = versionItemMap.value.get(key)?.versionId ?? null
-}
+/* -------- ★ 话数加载（composable） -------- */
+const { loadCurrentEpisode, reloadCurrentEpisode } = useEpisodeLoader({
+  sourceType: () => props.sourceType,
+  currentEpisodeId,
+  episodeDetail,
+  dataLoading,
+  resetEpisodeDetail,
+  fetchEpisodeDetail,
+  fetchVersionOptions,
+  syncVersionSelection,
+  syncEditingLine,
+  applyPendingInsert,
+})
 
-/**
- * 加载当前话数对话。
- *
- * @param showLoading 是否展示加载状态（隐藏编辑区）。
- *   - 首次进入 / 切换话数 → true（防止 canEditCurrent 在数据未就绪时误判）
- *   - 保存 / 新增 / 删除后刷新 → false（编辑区保持挂载，避免闪烁）
- */
-async function loadCurrentEpisode(showLoading = false) {
-  if (currentEpisodeId.value == null) {
-    resetEpisodeDetail()
-    return
-  }
-
-  if (showLoading) dataLoading.value = true
-  try {
-    await fetchEpisodeDetail(props.sourceType, currentEpisodeId.value)
-    if (!episodeDetail.value) return
-
-    syncVersionSelection()
-    syncEditingLine()
-    await fetchVersionOptions(props.sourceType, currentEpisodeId.value)
-    await applyPendingInsert()
-  } finally {
-    if (showLoading) dataLoading.value = false
-  }
-}
-
-/** 事件绑定专用：不传参，走"原地刷新"路径 */
-function reloadCurrentEpisode() {
-  void loadCurrentEpisode()
-}
-
-/** 切换话数：更新状态 + 写回 URL */
+/* -------- 切换话数 -------- */
 function handleSelectEpisode(id: number) {
   if (currentEpisodeId.value === id) return
   currentEpisodeId.value = id
@@ -374,13 +270,7 @@ async function handleCreateVersion(payload: {
   }
 }
 
-/**
- * 保存成功后的回调：
- * 1. 清空当前选中行，让编辑区回到"未选中"状态
- * 2. 重新加载当前话数对话
- */
 function handleSaveLine() {
-  // editingLineId.value = null
   void loadCurrentEpisode()
 }
 
@@ -396,12 +286,9 @@ watch(
   () => props.episodes,
   (list) => {
     if (!list.length) return
-
     const exists =
       currentEpisodeId.value != null && list.some((e) => e.id === currentEpisodeId.value)
-
     if (exists) return
-
     const firstId = list[0]?.id ?? null
     currentEpisodeId.value = firstId
     if (firstId != null) syncEpisodeToUrl(firstId)
@@ -422,29 +309,22 @@ watch(
   { immediate: true },
 )
 
+/** 来源类型切换：重置话数（episodes 由父组件重新加载） */
 watch(
   () => props.sourceType,
   () => {
     currentEpisodeId.value = null
     syncEpisodeToUrl(null)
-    // episodes 会由父组件重新加载，watch(episodes) 会自动选第一话
   },
 )
 
+/** 卡面切换：重新加载卡面信息 */
 watch(
   () => props.cardId,
   () => {
     void loadCardInfo()
   },
 )
-
-watch(currentVersionId, () => {
-  editingLineId.value = null
-})
-
-watch(editingMode, (val) => {
-  if (!val) editingLineId.value = null
-})
 
 void loadCardInfo()
 </script>
