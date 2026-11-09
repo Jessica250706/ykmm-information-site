@@ -4,6 +4,7 @@ import com.xq.dto.DialogueTxtImportDTO;
 import com.xq.result.Result;
 import com.xq.service.DialogueTxtService;
 import com.xq.vo.DialogueTxtParseVO;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.constraints.NotNull;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,5 +43,17 @@ public class UserDialogueTxtController {
                                      @RequestBody @NotNull(message = "导入内容不能为空") DialogueTxtImportDTO dto) {
         dialogueTxtService.importParsed(versionId, dto);
         return Result.success();
+    }
+
+    /**
+     * 导出为 txt 文本
+     * <p>
+     * 直接写入响应流，浏览器自动下载。
+     */
+    @GetMapping("/export/{versionId}")
+    public void exportTxt(
+            @PathVariable @NotNull(message = "版本ID不能为空") Long versionId,
+            HttpServletResponse response) {
+        dialogueTxtService.exportTxt(versionId, response);
     }
 }

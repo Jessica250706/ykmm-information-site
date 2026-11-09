@@ -64,6 +64,21 @@
           </span>
         </el-option>
       </el-select>
+
+      <!-- 导出按钮 -->
+      <el-tooltip :content="exportDisabledReason" :disabled="canExport" placement="top">
+        <el-button
+          :disabled="!canExport"
+          :loading="exporting"
+          class="shrink-0"
+          type="primary"
+          plain
+          @click="handleExport"
+        >
+          <el-icon class="mr-1"><Download /></el-icon>
+          导出文本
+        </el-button>
+      </el-tooltip>
     </div>
 
     <!-- 对话内容 -->
@@ -112,7 +127,10 @@
 
 <script setup lang="ts">
 import { computed, nextTick, ref, watch } from 'vue'
+import { Download } from '@element-plus/icons-vue'
+import { ElMessage } from 'element-plus'
 import { storeToRefs } from 'pinia'
+import { exportDialogueTxtAPI } from '@/api/dialogueTxt'
 import { useScrollShadow } from '@/composables/useScrollShadow'
 import { SOURCE_TYPE, SOURCE_TYPE_LABEL, STATUS, VERSION_FORMAT } from '@/constants'
 import { useUserStore } from '@/stores'
@@ -217,6 +235,50 @@ function handleReview() {
 function handleReviewSuccess() {
   emit('review-success')
 }
+
+/* -------- 导出 -------- */
+
+/** 是否可以导出：版本已存在 + 文字版本 */
+const canExport = computed(() => {
+  const v = currentVersion.value
+  return v != null && v.format === VERSION_FORMAT.TEXT
+})
+
+const exporting = ref(false)
+
+async function handleExport() {
+  const v = currentVersion.value
+  if (!v?.id) {
+    ElMessage.warning('请先选择一个已存在的文字版本')
+    return
+  }
+  if (v.format !== VERSION_FORMAT.TEXT) {
+    ElMessage.warning('只有文字版本支持导出')
+    return
+  }
+
+  exporting.value = true
+  try {
+    // 文件名带来源上下文，下载后好辨认
+    const prefix = props.sourceType === SOURCE_TYPE.STORY ? 'story' : 'card'
+    const filename = `${prefix}-${v.id}.txt`
+    await exportDialogueTxtAPI(v.id, filename)
+    ElMessage.success('导出成功')
+  } catch (err) {
+    console.error('[export] 导出失败', err)
+    ElMessage.error('导出失败，请稍后重试')
+  } finally {
+    exporting.value = false
+  }
+}
+
+/** 导出按钮禁用原因（用于 tooltip 提示） */
+const exportDisabledReason = computed(() => {
+  const v = currentVersion.value
+  if (!v) return '当前版本暂无数据'
+  if (v.format !== VERSION_FORMAT.TEXT) return '只有文字版本支持导出'
+  return ''
+})
 
 /* -------- 阴影 -------- */
 const scrollerRef = ref<HTMLElement | null>(null)

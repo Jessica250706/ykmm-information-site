@@ -3,20 +3,17 @@ package com.xq.service.impl;
 import com.xq.constant.DialogueConstant;
 import com.xq.constant.DialogueSegmentTypeConstant;
 import com.xq.dto.DialogueTxtImportDTO;
-import com.xq.entity.DialogueVersion;
-import com.xq.entity.Role;
-import com.xq.entity.Sticker;
+import com.xq.entity.*;
 import com.xq.enums.DialogueFormatEnum;
 import com.xq.enums.DialogueRoleEnum;
 import com.xq.enums.DialogueSourceTypeEnum;
-import com.xq.mapper.DialogueVersionMapper;
-import com.xq.mapper.RoleMapper;
-import com.xq.mapper.StickerMapper;
+import com.xq.mapper.*;
 import com.xq.service.DialogueLineService;
 import com.xq.service.DialogueTxtService;
 import com.xq.vo.DialogueLineVO;
 import com.xq.vo.DialogueSegmentVO;
 import com.xq.vo.DialogueTxtParseVO;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -26,10 +23,13 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.PrintWriter;
+import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -64,6 +64,10 @@ public class DialogueTxtServiceImpl implements DialogueTxtService {
     private RoleMapper roleMapper;
     @Autowired
     private StickerMapper stickerMapper;
+    @Autowired
+    private DialogueLineMapper dialogueLineMapper;
+    @Autowired
+    private RcOptionMapper rcOptionMapper;
 
     @Override
     public DialogueTxtParseVO parseTxt(Long versionId, MultipartFile file) {
@@ -96,6 +100,92 @@ public class DialogueTxtServiceImpl implements DialogueTxtService {
         dialogueLineService.clearByVersionId(versionId);
         dialogueLineService.saveBatch(versionId, dto.getLines());
         log.info("导入 txt 对话成功，versionId={}, count={}", versionId, dto.getLines().size());
+    }
+
+    @Override
+    public void exportTxt(Long versionId, HttpServletResponse response) {
+        log.info("[exportTxt] enter, versionId={}", versionId);
+
+        // 1. 校验版本
+        DialogueVersion version = dialogueVersionMapper.getById(versionId);
+        if (version == null) {
+            throw new RuntimeException("对话版本不存在");
+        }
+        if (!DialogueFormatEnum.TEXT.getValue().equals(version.getFormat())) {
+            throw new RuntimeException("该版本不是文字版本，无法导出");
+        }
+
+        // 2. 查所有 line（按 sort 升序；sort 理论上非 null，兜底一下）
+        List<DialogueLine> lines = dialogueLineMapper.listByVersionId(versionId);
+        if (lines == null) lines = Collections.emptyList();
+        lines.sort(Comparator.comparing(DialogueLine::getSort, Comparator.nullsLast(Integer::compareTo)));
+
+        // 3. 查说话人名字：speakerId → role.name
+        Map<Long, String> speakerNameMap = new HashMap<>();
+        Set<Long> speakerIds = lines.stream()
+                .map(DialogueLine::getSpeakerId)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toSet());
+        if (!speakerIds.isEmpty()) {
+            List<Role> roles = roleMapper.listByIds(speakerIds);
+            if (roles != null) {
+                for (Role r : roles) {
+                    if (r.getId() != null) speakerNameMap.put(r.getId(), r.getName());
+                }
+            }
+        }
+
+        // 4. RC 场景：反查 rc_option，还原 dialogueRole + optionNumber
+        Map<Long, Integer> lineIdToRole = new HashMap<>();
+        Map<Long, Integer> lineIdToOptionNum = new HashMap<>();
+        if (DialogueSourceTypeEnum.RC.getValue().equals(version.getSourceType())) {
+            List<RcOption> options = rcOptionMapper.listByVersionIds(List.of(versionId));
+            if (options != null) {
+                for (RcOption opt : options) {
+                    if (opt.getQuestionLineId() != null) {
+                        lineIdToRole.put(opt.getQuestionLineId(), DialogueRoleEnum.QUESTION.getValue());
+                        lineIdToOptionNum.put(opt.getQuestionLineId(), opt.getSort());
+                    }
+                    if (opt.getAnswerLineId() != null) {
+                        lineIdToRole.put(opt.getAnswerLineId(), DialogueRoleEnum.ANSWER.getValue());
+                        lineIdToOptionNum.put(opt.getAnswerLineId(), opt.getSort());
+                    }
+                }
+            }
+        }
+
+        // 5. 组装 VO
+        List<DialogueLineVO> lineVOs = new ArrayList<>(lines.size());
+        for (DialogueLine line : lines) {
+            DialogueLineVO vo = new DialogueLineVO();
+            vo.setId(line.getId());
+            vo.setSpeakerId(line.getSpeakerId());
+            vo.setSpeakerName(speakerNameMap.get(line.getSpeakerId()));
+            vo.setContent(line.getContent());
+            vo.setSort(line.getSort());
+            vo.setMonologue(line.getMonologue());
+            vo.setDialogueRole(lineIdToRole.getOrDefault(line.getId(), DialogueRoleEnum.NORMAL.getValue()));
+            vo.setOptionNumber(lineIdToOptionNum.get(line.getId()));
+            lineVOs.add(vo);
+        }
+
+        // 6. 生成 txt 文本
+        String text = buildTxtText(lineVOs);
+
+        // 7. 写入响应（下载）
+        String filename = "dialogue-" + versionId + ".txt";
+        response.setContentType("text/plain;charset=UTF-8");
+        response.setHeader("Content-Disposition",
+                "attachment; filename=\"" +
+                        URLEncoder.encode(filename, StandardCharsets.UTF_8) + "\"");
+        try (PrintWriter writer = response.getWriter()) {
+            writer.write(text);
+            writer.flush();
+            log.info("导出 txt 成功，versionId={}", versionId);
+        } catch (Exception e) {
+            log.error("导出 txt 失败，versionId={}", versionId, e);
+            throw new RuntimeException("导出 txt 失败", e);
+        }
     }
 
     // ---------------------------------------------------
@@ -623,5 +713,197 @@ public class DialogueTxtServiceImpl implements DialogueTxtService {
             segments.add(seg);
         }
         return segments;
+    }
+
+    /** 文本块类型 */
+    private enum TxtBlockType { NORMAL, NARRATOR, OPTION }
+
+    /** 逻辑块：一组连续的 line */
+    private static class TxtBlock {
+        TxtBlockType type;
+        List<DialogueLineVO> lines;
+
+        TxtBlock(TxtBlockType type, List<DialogueLineVO> lines) {
+            this.type = type;
+            this.lines = lines;
+        }
+    }
+
+    /**
+     * 把排好序的 lines 转换成 txt 文本。
+     * <p>
+     * 规则（与解析方法严格逆向）：
+     * <ul>
+     *   <li>普通块之间 → 空行</li>
+     *   <li>涉及选项块时 → {@code ——} 分隔（选项块前后、选项之间）</li>
+     *   <li>旁白块 → 直接输出 content（保留原括号）</li>
+     *   <li>内心独白 → 内容自动补 {@code （...）}</li>
+     *   <li>普通对话 → {@code 说话人：\n内容}</li>
+     * </ul>
+     */
+    private String buildTxtText(List<DialogueLineVO> lines) {
+        if (lines == null || lines.isEmpty()) return "";
+
+        // 1. 分组
+        List<TxtBlock> blocks = splitLinesToBlocks(lines);
+
+        // 2. 拼装
+        StringBuilder sb = new StringBuilder();
+        TxtBlock lastBlock = null;
+
+        for (TxtBlock block : blocks) {
+            // 块间分隔
+            if (lastBlock != null) {
+                boolean lastIsOption = lastBlock.type == TxtBlockType.OPTION;
+                boolean curIsOption = block.type == TxtBlockType.OPTION;
+                if (lastIsOption || curIsOption) {
+                    sb.append("——\n");
+                    // 选项块后接普通/旁白块，额外空行隔开
+                    if (!curIsOption) sb.append("\n");
+                } else {
+                    sb.append("\n");
+                }
+            }
+
+            // 输出块内容
+            if (block.type == TxtBlockType.OPTION) {
+                appendOptionBlock(sb, block.lines);
+            } else if (block.type == TxtBlockType.NARRATOR) {
+                for (DialogueLineVO line : block.lines) {
+                    sb.append(nullToEmpty(line.getContent())).append("\n");
+                }
+            } else {
+                for (DialogueLineVO line : block.lines) {
+                    sb.append(formatLine(line)).append("\n");
+                }
+            }
+
+            lastBlock = block;
+        }
+
+        // 最后一个块是选项时，末尾补一个 ——
+        if (lastBlock != null && lastBlock.type == TxtBlockType.OPTION) {
+            sb.append("——\n");
+        }
+
+        return sb.toString();
+    }
+
+    /**
+     * 把 lines 分成逻辑块：
+     * <ul>
+     *   <li>连续的选项行 → 一个 OPTION 块</li>
+     *   <li>连续的旁白行 → 一个 NARRATOR 块</li>
+     *   <li>其余每行 → 一个 NORMAL 块</li>
+     * </ul>
+     */
+    private List<TxtBlock> splitLinesToBlocks(List<DialogueLineVO> lines) {
+        List<TxtBlock> blocks = new ArrayList<>();
+        int i = 0;
+        while (i < lines.size()) {
+            DialogueLineVO line = lines.get(i);
+
+            if (isOptionLine(line)) {
+                List<DialogueLineVO> optLines = new ArrayList<>();
+                while (i < lines.size() && isOptionLine(lines.get(i))) {
+                    optLines.add(lines.get(i));
+                    i++;
+                }
+                blocks.add(new TxtBlock(TxtBlockType.OPTION, optLines));
+            } else if (isNarratorLine(line)) {
+                List<DialogueLineVO> narratorLines = new ArrayList<>();
+                while (i < lines.size() && isNarratorLine(lines.get(i))) {
+                    narratorLines.add(lines.get(i));
+                    i++;
+                }
+                blocks.add(new TxtBlock(TxtBlockType.NARRATOR, narratorLines));
+            } else {
+                blocks.add(new TxtBlock(TxtBlockType.NORMAL, List.of(line)));
+                i++;
+            }
+        }
+        return blocks;
+    }
+
+    /** 是否为选项行：有 optionNumber 且 role ∈ {QUESTION, ANSWER} */
+    private boolean isOptionLine(DialogueLineVO line) {
+        return line.getOptionNumber() != null
+                && (DialogueRoleEnum.QUESTION.getValue().equals(line.getDialogueRole())
+                || DialogueRoleEnum.ANSWER.getValue().equals(line.getDialogueRole()));
+    }
+
+    /** 是否为旁白行：speakerName 等于旁白角色名 */
+    private boolean isNarratorLine(DialogueLineVO line) {
+        return DialogueConstant.NARRATOR_ROLE_NAME.equals(line.getSpeakerName());
+    }
+
+    /**
+     * 输出一个选项块组：按 optionNumber 分组，每组输出「问句 + 空行 + 回答」。
+     * <p>
+     * 输出示例：
+     * <pre>{@code
+     * ——
+     * 1.
+     * 纺：
+     * 除了吉他，您还会其他乐器吗？
+     *
+     * 千：
+     * 虽然不是每项都很擅长...
+     * ——
+     * 2.
+     * ...
+     * }</pre>
+     */
+    private void appendOptionBlock(StringBuilder sb, List<DialogueLineVO> optLines) {
+        // 按 optionNumber 分组，保持出现顺序
+        Map<Integer, List<DialogueLineVO>> grouped = new LinkedHashMap<>();
+        for (DialogueLineVO line : optLines) {
+            if (line.getOptionNumber() != null) {
+                grouped.computeIfAbsent(line.getOptionNumber(), k -> new ArrayList<>()).add(line);
+            }
+        }
+
+        boolean first = true;
+        for (Map.Entry<Integer, List<DialogueLineVO>> entry : grouped.entrySet()) {
+            if (!first) sb.append("——\n");
+            first = false;
+
+            sb.append(entry.getKey()).append(".\n");
+
+            // 问句
+            DialogueLineVO question = entry.getValue().stream()
+                    .filter(l -> DialogueRoleEnum.QUESTION.getValue().equals(l.getDialogueRole()))
+                    .findFirst().orElse(null);
+            if (question != null) {
+                sb.append(formatLine(question)).append("\n");
+                sb.append("\n");  // 问句和回答之间空行
+            }
+
+            // 回答
+            DialogueLineVO answer = entry.getValue().stream()
+                    .filter(l -> DialogueRoleEnum.ANSWER.getValue().equals(l.getDialogueRole()))
+                    .findFirst().orElse(null);
+            if (answer != null) {
+                sb.append(formatLine(answer)).append("\n");
+            }
+        }
+    }
+
+    /**
+     * 格式化一行普通对话：{@code 说话人：\n内容}
+     * <p>
+     * 内心独白（monologue=1）时自动给内容加上 {@code （...）}。
+     */
+    private String formatLine(DialogueLineVO line) {
+        String content = nullToEmpty(line.getContent());
+        if (Integer.valueOf(1).equals(line.getMonologue())) {
+            content = "（" + content + "）";
+        }
+        String speaker = nullToEmpty(line.getSpeakerName());
+        return speaker + "：\n" + content;
+    }
+
+    private String nullToEmpty(String s) {
+        return s == null ? "" : s;
     }
 }

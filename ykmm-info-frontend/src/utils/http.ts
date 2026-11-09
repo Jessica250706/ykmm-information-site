@@ -53,11 +53,6 @@ function showErrorOnce(msg: string) {
 
 /* ================== 401 处理 ================== */
 
-/**
- * 这些前缀下的接口在 401 时不强制登录
- * - /auth：登录、注册、刷新、me 等
- * - /pub ：游客接口，本就不该 401
- */
 const SILENT_401_PREFIXES = ['/auth', '/pub']
 
 function isSilent401Url(url?: string): boolean {
@@ -72,14 +67,12 @@ function handleUnauthorized(url: string | undefined, msg: string) {
   const currentRoute = router.currentRoute.value
   const onPublicPage = !currentRoute.meta.requiresAuth
 
-  // 静默情况：/auth、/pub 接口，或当前在公开页面
   if (isSilent401Url(url) || onPublicPage) {
     userStore.clearUserInfo()
     console.warn('[http] 静默 401：', url, msg)
     return
   }
 
-  // 以下为「已登录 + 访问需要认证的页面」时 token 失效
   if (isHandlingUnauthorized) return
   isHandlingUnauthorized = true
 
@@ -91,6 +84,26 @@ function handleUnauthorized(url: string | undefined, msg: string) {
       isHandlingUnauthorized = false
     }, 1500)
   })
+}
+
+/* ================== Blob 错误文案提取 ================== */
+/**
+ * 某些后端会用 200 + text/json 返回业务错误（比如 "PRO FEATURE ONLY"）。
+ * 前端需要把 Blob 内容读出来，尽量取出可读文案。
+ */
+async function readBlobMessage(blob: Blob): Promise<string> {
+  try {
+    const text = await blob.text()
+    if (!text) return ''
+    try {
+      const json = JSON.parse(text)
+      return json.msg || json.message || ''
+    } catch {
+      return text
+    }
+  } catch {
+    return ''
+  }
 }
 
 /* ================== 实例 ================== */
@@ -119,7 +132,26 @@ httpInstance.interceptors.request.use(
 )
 
 httpInstance.interceptors.response.use(
-  (res) => {
+  // ⭐ 改成 async，因为 blob 错误需要异步读内容
+  async (res) => {
+    /* ---------- 1. 文件流（blob）响应：直接放行 ---------- */
+    if (res.config?.responseType === 'blob' || res.data instanceof Blob) {
+      const blob = res.data as Blob
+      const contentType = blob.type || ''
+
+      // 后端如果按"标准错误"返回 JSON，就读出来走统一错误处理
+      if (contentType.includes('application/json')) {
+        const msg = (await readBlobMessage(blob)) || '请求失败'
+        showErrorOnce(msg)
+        return Promise.reject(new Error(msg))
+      }
+
+      // 正常文件流：原样返回 Blob，交给调用方处理（下载 / 预览）
+      // 注意：这里返回的是 res.data 而不是 body，保持和调用方 as unknown as Blob 的约定一致
+      return blob as unknown as typeof res
+    }
+
+    /* ---------- 2. 普通 JSON 响应 ---------- */
     const body = res.data as ApiResponse
 
     if (body.code !== 200) {
@@ -132,15 +164,29 @@ httpInstance.interceptors.response.use(
       } else {
         showErrorOnce(body.msg || '请求失败')
       }
-      return Promise.reject(new Error(body.msg))
+      return Promise.reject(new Error(body.msg || '请求失败'))
     }
 
     return body as unknown as typeof res
   },
-  (e) => {
+
+  // ⭐ error 分支改成 async，以支持读取 blob 错误体
+  async (e) => {
     const status = e?.response?.status
-    const msg = e?.response?.data?.msg ?? e?.message ?? '请求失败'
     const url = e?.config?.url as string | undefined
+    const data = e?.response?.data
+
+    let msg = e?.message ?? '请求失败'
+
+    // 错误响应也可能是 blob（例如后端用非 2xx + blob 返回）
+    if (data instanceof Blob) {
+      const text = await readBlobMessage(data)
+      if (text) msg = text
+    } else if (data?.msg) {
+      msg = data.msg
+    } else if (data?.message) {
+      msg = data.message
+    }
 
     if (status === 401) {
       handleUnauthorized(url, msg)
@@ -148,6 +194,9 @@ httpInstance.interceptors.response.use(
       showErrorOnce(msg)
     }
 
+    // 保留原始 AxiosError（含 response / config），只把 message 改成可读文案
+    // 避免破坏其他依赖 e.response 的代码
+    e.message = msg
     return Promise.reject(e)
   },
 )
