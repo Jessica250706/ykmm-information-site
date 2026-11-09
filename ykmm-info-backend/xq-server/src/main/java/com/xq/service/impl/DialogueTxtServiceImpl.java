@@ -757,6 +757,8 @@ public class DialogueTxtServiceImpl implements DialogueTxtService {
                 boolean lastIsOption = lastBlock.type == TxtBlockType.OPTION;
                 boolean curIsOption = block.type == TxtBlockType.OPTION;
                 if (lastIsOption || curIsOption) {
+                    // ★ 选项块前是普通/旁白块 → 先补一个空行，再输出 ——
+                    if (curIsOption && !lastIsOption) sb.append("\n");
                     sb.append("——\n");
                     // 选项块后接普通/旁白块，额外空行隔开
                     if (!curIsOption) sb.append("\n");
