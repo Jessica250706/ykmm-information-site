@@ -85,6 +85,7 @@
         ELSE 4          <!-- 兜底：未知状态 / NULL 排最后 -->
       END ASC,
       c.first_pool_time DESC,
+      c.series_id DESC,
       c.id DESC
   </select>
 

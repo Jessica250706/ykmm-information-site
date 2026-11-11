@@ -27,7 +27,7 @@ public class WebMvcConfiguration implements WebMvcConfigurer {
                         "/error");
     }
 
-    // =全局 CORS
+    // 全局 CORS
     @Override
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/**")

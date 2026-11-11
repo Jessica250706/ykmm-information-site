@@ -1,8 +1,14 @@
 <template>
   <!-- 触发按钮 -->
-  <el-button size="small" plain @click="drawerVisible = true">
-    主题：{{ themes[currentTheme]?.label }}
-  </el-button>
+  <el-tooltip :content="`主题：${themes[currentTheme]?.label}`" placement="bottom">
+    <button
+      :aria-label="`主题：${themes[currentTheme]?.label}`"
+      :style="{ backgroundColor: themes[currentTheme]?.primary }"
+      class="h-6 w-6 cursor-pointer rounded-full border border-white/70 shadow-sm ring-1 ring-slate-200 transition hover:scale-110 hover:shadow"
+      type="button"
+      @click="drawerVisible = true"
+    />
+  </el-tooltip>
 
   <!-- 右侧抽屉 -->
   <el-drawer
