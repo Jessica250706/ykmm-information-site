@@ -42,7 +42,9 @@ public class CardDTO implements Serializable {
 
     /**
      * 所属系列ID
+     * <p>新增必填；编辑可不传（不改）。是否“存在”由 Service 校验。
      */
+    @NotNull(message = "所属系列不能为空", groups = CreateGroup.class)
     private Long seriesId;
 
     /**

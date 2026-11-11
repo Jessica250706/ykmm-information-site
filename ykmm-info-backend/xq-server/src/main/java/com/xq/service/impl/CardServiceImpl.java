@@ -14,6 +14,7 @@ import com.xq.dto.CardPageQueryDTO;
 import com.xq.dto.CardReviewDTO;
 import com.xq.entity.*;
 import com.xq.enums.*;
+import com.xq.exception.BusinessException;
 import com.xq.exception.ForbiddenException;
 import com.xq.exception.UnauthorizedException;
 import com.xq.mapper.*;
@@ -235,12 +236,24 @@ public class CardServiceImpl implements CardService {
     @Override
     @Transactional
     public Long create(CardDTO dto) {
+        // 1. 校验所属系列必须存在
+        CardSeries cardSeries = cardSeriesMapper.getById(dto.getSeriesId());
+        if (cardSeries == null) {
+            throw new BusinessException("所属系列不存在");
+        }
+
+        // 2. 校验同系列下卡面名称唯一
+        int dup = cardMapper.countByNameAndSeriesId(dto.getName(), dto.getSeriesId(), null);
+        if (dup > 0) {
+            throw new BusinessException("该系列下已存在同名卡面「" + dto.getName() + "」");
+        }
+
         Card card = new Card();
         BeanUtils.copyProperties(dto, card);
 
         switch (UserRoleEnum.current()) {
             case ADMIN -> card.setStatus(StatusConstant.PUBLISHED);
-            case USER -> card.setStatus(StatusConstant.PENDING);
+            case USER  -> card.setStatus(StatusConstant.PENDING);
             case GUEST -> throw new UnauthorizedException("请先登录");
         }
         card.setCreatorId(BaseContext.getCurrentId());
@@ -253,14 +266,13 @@ public class CardServiceImpl implements CardService {
 
         // 用户提交卡面 → 广播给管理员
         if (UserRoleEnum.current() == UserRoleEnum.USER) {
-            CardSeries cardSeries = cardSeriesMapper.getById(card.getSeriesId());
             sysMessageService.sendToRole(
                     SysMessageConstant.BROADCAST_ROLE_ADMIN,
                     SysMessageConstant.TYPE_SYSTEM,
                     SysMessageConstant.TARGET_CARD,
                     cardId,
                     "新卡面待审核",
-                    "用户提交了新卡面「" + card.getName() + "[" + cardSeries.getName() + "]" + "」，请及时审核");
+                    "用户提交了新卡面「" + card.getName() + "[" + cardSeries.getName() + "]」，请及时审核");
         }
 
         log.info("新增卡面成功，id={}, status={}, creatorId={}", cardId, card.getStatus(), card.getCreatorId());
@@ -270,27 +282,58 @@ public class CardServiceImpl implements CardService {
     /**
      * 编辑
      */
+    /**
+     * 编辑
+     */
     @Override
     @Transactional
     public void update(Long id, CardDTO dto) {
-        if (id == null) throw new RuntimeException("卡面ID不能为空");
+        if (id == null) throw new BusinessException("卡面ID不能为空");
 
         Card exist = cardMapper.getById(id);
-        if (exist == null) throw new RuntimeException("卡面不存在");
+        if (exist == null) throw new BusinessException("卡面不存在");
 
-        Card card = new Card();
-        BeanUtils.copyProperties(dto, card);
-        card.setId(id);
+        // ---------- 1. 权限 & 目标状态（先判权限，避免越权探测数据） ----------
+        int targetStatus;
         switch (UserRoleEnum.current()) {
-            case ADMIN -> card.setStatus(StatusConstant.PUBLISHED);
+            case ADMIN -> targetStatus = StatusConstant.PUBLISHED;
             case USER -> {
                 if (!Objects.equals(exist.getCreatorId(), BaseContext.getCurrentId())) {
                     throw new ForbiddenException("只能修改自己创建的卡面");
                 }
-                card.setStatus(StatusConstant.PENDING);
+                targetStatus = StatusConstant.PENDING;
             }
             case GUEST -> throw new UnauthorizedException("请先登录");
+            default -> throw new IllegalStateException("未知用户角色");
         }
+
+        // ---------- 2. 合并“更新后”的 name / seriesId（dto 未传表示不改） ----------
+        String effectiveName = dto.getName() != null ? dto.getName() : exist.getName();
+        Long effectiveSeriesId = dto.getSeriesId() != null ? dto.getSeriesId() : exist.getSeriesId();
+
+        // ---------- 3. 若显式传了 seriesId，校验其存在 ----------
+        CardSeries cardSeries = null;
+        if (dto.getSeriesId() != null) {
+            cardSeries = cardSeriesMapper.getById(dto.getSeriesId());
+            if (cardSeries == null) {
+                throw new BusinessException("所属系列不存在");
+            }
+        }
+
+        // ---------- 4. 同系列同名唯一性校验（排除自己） ----------
+        // 说明：effectiveSeriesId 为 null 的历史数据不参与校验；正常新增/编辑都有 seriesId
+        if (effectiveSeriesId != null) {
+            int dup = cardMapper.countByNameAndSeriesId(effectiveName, effectiveSeriesId, id);
+            if (dup > 0) {
+                throw new BusinessException("该系列下已存在同名卡面「" + effectiveName + "」");
+            }
+        }
+
+        // ---------- 5. 落库 ----------
+        Card card = new Card();
+        BeanUtils.copyProperties(dto, card);
+        card.setId(id);
+        card.setStatus(targetStatus);
         cardMapper.update(card);
 
         // 图片：全删全插
@@ -304,16 +347,19 @@ public class CardServiceImpl implements CardService {
             savePersonRels(id, dto.getPersonIds());
         }
 
-        // 用户更新卡面 → 广播给管理员
+        // ---------- 6. 用户更新卡面 → 广播给管理员（用更新后的名称/系列） ----------
         if (UserRoleEnum.current() == UserRoleEnum.USER) {
-            CardSeries cardSeries = cardSeriesMapper.getById(exist.getSeriesId());
+            if (cardSeries == null && effectiveSeriesId != null) {
+                cardSeries = cardSeriesMapper.getById(effectiveSeriesId);
+            }
+            String seriesName = cardSeries != null ? cardSeries.getName() : "";
             sysMessageService.sendToRole(
                     SysMessageConstant.BROADCAST_ROLE_ADMIN,
                     SysMessageConstant.TYPE_SYSTEM,
                     SysMessageConstant.TARGET_CARD,
                     id,
                     "卡面重新提交审核",
-                    "用户重新提交了卡面「" + exist.getName() + "[" + cardSeries.getName() + "]" + "」，请审核");
+                    "用户重新提交了卡面「" + effectiveName + "[" + seriesName + "]" + "」，请审核");
         }
 
         log.info("编辑卡面成功，id={}", id);

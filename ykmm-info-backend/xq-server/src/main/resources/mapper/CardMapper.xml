@@ -195,4 +195,15 @@
     WHERE c.id = #{id}
   </select>
 
+  <!-- 同系列下同名卡面计数（新增/编辑时做唯一性校验） -->
+  <select id="countByNameAndSeriesId" resultType="int">
+    SELECT COUNT(*)
+    FROM card
+    WHERE name = #{name}
+    AND series_id = #{seriesId}
+    <if test="excludeId != null">
+      AND id != #{excludeId}
+    </if>
+  </select>
+
 </mapper>

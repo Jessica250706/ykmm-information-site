@@ -76,4 +76,16 @@ public interface CardMapper {
      * @return 轻量来源信息；不存在返回 null
      */
     CardSourceVO getWithSeriesById(@Param("id") Long id);
+
+    /**
+     * 同系列下同名卡面计数（新增/编辑时做唯一性校验）
+     *
+     * @param name
+     * @param seriesId
+     * @param excludeId
+     * @return
+     */
+    int countByNameAndSeriesId(@Param("name") String name,
+                               @Param("seriesId") Long seriesId,
+                               @Param("excludeId") Long excludeId);
 }

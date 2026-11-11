@@ -17,7 +17,7 @@
         <el-form-item label="所属系列" prop="seriesId">
           <el-select
             v-model="form.seriesId"
-            placeholder="选择或输入新系列名"
+            placeholder="请选择或输入新系列名"
             style="width: 100%"
             allow-create
             default-first-option
@@ -173,6 +173,7 @@ const imageMap = reactive<Record<number, string>>({
 
 const rules: FormRules<CardDTO> = {
   name: [{ required: true, message: '请输入卡面名称', trigger: 'blur' }],
+  seriesId: [{ required: true, message: '请选择或输入所属系列', trigger: 'change' }],
   maxRarity: [{ required: true, message: '请选择最高等级', trigger: 'change' }],
 }
 
@@ -201,9 +202,10 @@ async function loadSeriesOptions() {
 /**
  * allow-create 输入了新系列名 → 自动创建并绑定
  */
-async function handleSeriesChange(val: number | string) {
+async function handleSeriesChange(val: number | string | null) {
   // 数字 = 已存在系列ID，直接接受
   if (typeof val === 'number') return
+
   // 字符串 = 用户输入的新系列名
   if (typeof val === 'string' && val.trim()) {
     try {
@@ -212,11 +214,19 @@ async function handleSeriesChange(val: number | string) {
       if (newId != null) {
         form.seriesId = newId
         await loadSeriesOptions()
+      } else {
+        // 创建失败则清空，让必填校验暴露问题
+        form.seriesId = undefined
       }
     } catch {
+      form.seriesId = undefined
       ElMessage.error('创建系列失败')
     }
+    return
   }
+
+  // 清空
+  form.seriesId = undefined
 }
 
 /* -------- 加载详情 -------- */
@@ -260,16 +270,18 @@ async function handleSubmit() {
   const valid = await formRef.value.validate().catch(() => false)
   if (!valid) return
 
+  // 兜底：allow-create 异步创建期间 seriesId 可能是字符串，等创建完成再提交
+  if (typeof form.seriesId !== 'number') {
+    ElMessage.error('所属系列创建中或未选择，请稍后重试')
+    return
+  }
+
   // 组装图片列表：每种类型最多一张
   const images: CardDTO['images'] = []
   for (const type of Object.keys(imageMap).map(Number)) {
     const url = imageMap[type]
     if (!url) continue
-    images.push({
-      imageType: type,
-      url,
-      sort: 1,
-    })
+    images.push({ imageType: type, url, sort: 1 })
   }
 
   const payload: CardDTO = {
