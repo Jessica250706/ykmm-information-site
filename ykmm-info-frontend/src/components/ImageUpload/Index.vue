@@ -6,7 +6,9 @@
       :class="{ 'hide-trigger': fileList.length >= limit }"
       :http-request="handleUpload"
       :limit="limit"
+      :multiple="multiple"
       :on-error="handleError"
+      :on-exceed="handleExceed"
       :on-preview="handlePreview"
       :on-remove="handleRemove"
       accept="image/*"
@@ -25,7 +27,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, nextTick, ref, watch } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { Plus } from '@element-plus/icons-vue'
 import {
   ElMessage,
@@ -73,43 +75,65 @@ function toArray(val: string | string[] | undefined): string[] {
   return typeof val === 'string' && val ? [val] : []
 }
 
-/** 外部 modelValue → fileList */
+/** 生成不冲突的 uid（负数，避免和 el-upload 内部 uid 重叠） */
+let uidSeed = Date.now()
+function genUid() {
+  return -++uidSeed
+}
+
+/** 是否有文件处于上传中（ready / uploading） */
+function hasUploading() {
+  return fileList.value.some((f) => f.status === 'ready' || f.status === 'uploading')
+}
+
+/* ============================================================
+ * 方向一：外部 modelValue → fileList
+ *   - 仅做「外部替换」：编辑页初次加载、父组件主动覆盖
+ *   - 上传过程中直接跳过，避免打断并发上传
+ * ============================================================ */
 watch(
   () => props.modelValue,
   (val) => {
+    // ★ 上传中不同步，避免重建把正在上传的文件丢弃 / 重复
+    if (hasUploading()) return
+
     const urls = toArray(val)
     const currentUrls = fileList.value.filter((f) => f.status === 'success').map((f) => f.url ?? '')
 
-    // 内容相同，跳过（避免循环更新）
+    // 内容一致，跳过（避免循环）
     if (urls.join('|') === currentUrls.join('|')) return
 
-    // 保留正在上传中的文件，重建已完成的
-    const uploading = fileList.value.filter((f) => f.status !== 'success')
-    fileList.value = [
-      ...urls.map((url, i) => ({
-        name: `image-${i + 1}.png`,
-        url,
-        uid: -(Date.now() + i),
-        status: 'success' as const,
-      })),
-      ...uploading,
-    ]
+    fileList.value = urls.map((url, i) => ({
+      name: `image-${i + 1}.png`,
+      url,
+      uid: genUid(),
+      status: 'success' as const,
+    }))
   },
   { immediate: true },
 )
 
-/** fileList → 外部 modelValue */
-function syncToModel() {
-  const urls = fileList.value
-    .filter((f) => f.url && f.status !== 'fail')
-    .map((f) => f.url as string)
+/* ============================================================
+ * 方向二：fileList → 外部 modelValue
+ *   - 唯一 emit 出口
+ *   - 过滤条件与上面保持一致：status === 'success' && url
+ * ============================================================ */
+watch(
+  fileList,
+  (files) => {
+    const urls = files.filter((f) => f.status === 'success' && f.url).map((f) => f.url as string)
 
-  if (props.multiple) {
-    emit('update:modelValue', urls)
-  } else {
-    emit('update:modelValue', urls[0] ?? '')
-  }
-}
+    const current = toArray(props.modelValue)
+    if (urls.join('|') === current.join('|')) return
+
+    if (props.multiple) {
+      emit('update:modelValue', urls)
+    } else {
+      emit('update:modelValue', urls[0] ?? '')
+    }
+  },
+  { deep: true },
+)
 
 /** 上传前校验 */
 function beforeUpload(file: UploadRawFile) {
@@ -124,37 +148,41 @@ function beforeUpload(file: UploadRawFile) {
   return true
 }
 
-/** 自定义上传：调用后端接口 */
+/** 自定义上传 */
 async function handleUpload(options: UploadRequestOptions) {
   try {
     const res = await uploadFileAPI(options.file as File)
     const url = res.data
 
-    // 1. 找到 fileList 里对应的文件，写回 url 和 status
+    // 直接改 fileList 中对应元素，deep watch 会自动 emit 到 modelValue
     const file = fileList.value.find((f) => f.uid === options.file.uid)
     if (file) {
       file.url = url
       file.status = 'success'
     }
 
-    // 2. 通知 element-plus：上传成功（触发内部状态同步）
+    // 通知 el-upload 内部状态同步
     options.onSuccess?.(url)
-
-    // 3. 等一个 tick，确保 fileList 已经同步，再 emit
-    await nextTick()
-    syncToModel()
   } catch {
-    return
+    // 错误已由 el-upload 内部标记 status = 'fail'
   }
 }
 
 function handleError() {
-  // 错误已在 handleUpload 内提示
+  // 错误已在 handleUpload 内处理
 }
 
-/** 删除文件 */
+/** 删除：fileList 变化由 watch(fileList) 自动同步到 modelValue */
 function handleRemove() {
-  syncToModel()
+  // 无需手动 sync
+}
+
+/** 超出 limit 时提示 */
+function handleExceed() {
+  const remaining = limit.value - fileList.value.length
+  ElMessage.warning(
+    remaining > 0 ? `最多还能再上传 ${remaining} 张图片` : `最多只能上传 ${limit.value} 张图片`,
+  )
 }
 
 /** 点击预览 */
