@@ -6,9 +6,13 @@
         <dt class="shrink-0 text-slate-400">名称</dt>
         <dd class="truncate text-right">{{ card.name || '-' }}[{{ card.seriesName || '-' }}]</dd>
       </div>
-      <div class="flex justify-between gap-3">
-        <dt class="shrink-0 text-slate-400">系列</dt>
-        <dd class="truncate text-right">{{ card.seriesName || '-' }}</dd>
+      <div v-if="card.categoryName" class="flex justify-between gap-3">
+        <dt class="shrink-0 text-slate-400">类别</dt>
+        <dd class="truncate text-right">
+          <el-tag effect="plain" size="small">
+            {{ card.categoryName }}
+          </el-tag>
+        </dd>
       </div>
       <div class="flex justify-between gap-3">
         <dt class="shrink-0 text-slate-400">属性</dt>

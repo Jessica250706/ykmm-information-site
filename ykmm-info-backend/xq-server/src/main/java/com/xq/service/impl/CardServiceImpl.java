@@ -49,6 +49,8 @@ public class CardServiceImpl implements CardService {
     @Autowired
     private CardSeriesMapper cardSeriesMapper;
     @Autowired
+    private CardCategoryMapper cardCategoryMapper;
+    @Autowired
     private CardRcMapper cardRcMapper;
     @Autowired
     private CardRtvMapper cardRtvMapper;
@@ -242,6 +244,14 @@ public class CardServiceImpl implements CardService {
             throw new BusinessException("所属系列不存在");
         }
 
+        // 1.5 校验类别（可选字段；传了必须存在）
+        if (dto.getCategory() != null) {
+            CardCategory cardCategory = cardCategoryMapper.getById(dto.getCategory());
+            if (cardCategory == null) {
+                throw new BusinessException("卡面类别不存在");
+            }
+        }
+
         // 2. 校验同系列下卡面名称唯一
         int dup = cardMapper.countByNameAndSeriesId(dto.getName(), dto.getSeriesId(), null);
         if (dup > 0) {
@@ -282,9 +292,6 @@ public class CardServiceImpl implements CardService {
     /**
      * 编辑
      */
-    /**
-     * 编辑
-     */
     @Override
     @Transactional
     public void update(Long id, CardDTO dto) {
@@ -317,6 +324,14 @@ public class CardServiceImpl implements CardService {
             cardSeries = cardSeriesMapper.getById(dto.getSeriesId());
             if (cardSeries == null) {
                 throw new BusinessException("所属系列不存在");
+            }
+        }
+
+        // ---------- 3.5 若显式传了 category，校验其存在 ----------
+        if (dto.getCategory() != null) {
+            CardCategory cardCategory = cardCategoryMapper.getById(dto.getCategory());
+            if (cardCategory == null) {
+                throw new BusinessException("卡面类别不存在");
             }
         }
 
@@ -664,6 +679,14 @@ public class CardServiceImpl implements CardService {
         if (card.getSeriesId() != null) {
             var series = cardSeriesMapper.getById(card.getSeriesId());
             if (series != null) vo.setSeriesName(series.getName());
+        }
+
+        // 类别名
+        if (card.getCategory() != null) {
+            CardCategory category = cardCategoryMapper.getById(card.getCategory());
+            if (category != null) {
+                vo.setCategoryName(category.getName());
+            }
         }
 
         if (withDetail) {

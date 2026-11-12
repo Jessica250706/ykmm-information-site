@@ -29,6 +29,26 @@
           <div class="mt-1 text-xs text-slate-400">提示：输入不存在的系列名后回车，会自动创建</div>
         </el-form-item>
 
+        <el-form-item label="类别" prop="category">
+          <el-select
+            v-model="form.category"
+            placeholder="可不选"
+            style="width: 100%"
+            clearable
+            filterable
+          >
+            <el-option
+              v-for="c in categoryOptions"
+              :key="c.id"
+              :label="c.name ?? `#${c.id}`"
+              :value="c.id!"
+            />
+          </el-select>
+          <div class="mt-1 text-xs text-slate-400">
+            类别为字典项，由管理员在「卡面类别」页面维护
+          </div>
+        </el-form-item>
+
         <el-form-item label="最高等级" prop="maxRarity">
           <el-radio-group v-model="form.maxRarity">
             <el-radio v-for="opt in CARD_MAX_RARITY_OPTIONS" :key="opt.value" :value="opt.value">
@@ -124,6 +144,7 @@ import { computed, onMounted, reactive, ref } from 'vue'
 import { ElMessage, type FormInstance, type FormRules } from 'element-plus'
 import { useRoute, useRouter } from 'vue-router'
 import { createCardAPI, getCardDetailAPI, updateCardAPI } from '@/api/card'
+import { listCardCategoryOptionsAPI } from '@/api/cardCategory'
 import { findOrCreateCardSeriesAPI, listCardSeriesOptionsAPI } from '@/api/cardSeries'
 import {
   AdminRouteName,
@@ -137,6 +158,7 @@ import {
 } from '@/constants'
 import { usePersonStore } from '@/stores'
 import type { CardDTO } from '@/types/card'
+import type { CardCategoryVO } from '@/types/cardCategory'
 import type { CardSeriesVO } from '@/types/cardSeries'
 
 const route = useRoute()
@@ -229,6 +251,14 @@ async function handleSeriesChange(val: number | string | null) {
   form.seriesId = undefined
 }
 
+/* -------- 类别下拉 -------- */
+const categoryOptions = ref<CardCategoryVO[]>([])
+
+async function loadCategoryOptions() {
+  const res = await listCardCategoryOptionsAPI()
+  categoryOptions.value = res.data ?? []
+}
+
 /* -------- 加载详情 -------- */
 async function loadDetail() {
   if (!editId.value) return
@@ -242,6 +272,7 @@ async function loadDetail() {
 
   form.name = data.name ?? ''
   form.seriesId = data.seriesId ?? undefined
+  form.category = data.category ?? undefined
   form.maxRarity = data.maxRarity ?? CARD_MAX_RARITY.SSR
   form.firstPoolTime = data.firstPoolTime
   form.attribute = data.attribute
@@ -316,7 +347,7 @@ function handleBack() {
 
 /* -------- 初始化 -------- */
 onMounted(async () => {
-  await Promise.all([personStore.loadAll(), loadSeriesOptions()])
+  await Promise.all([personStore.loadAll(), loadSeriesOptions(), loadCategoryOptions()])
   if (isEdit.value) {
     await loadDetail()
   }

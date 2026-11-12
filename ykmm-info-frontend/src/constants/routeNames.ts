@@ -83,6 +83,11 @@ export const AdminRouteName = {
   CARD_CREATE: 'AdminCardCreate',
   CARD_EDIT: 'AdminCardEdit',
 
+  // ---------- 卡面类别管理 ----------
+  CARD_CATEGORY_MANAGE: 'CardCategoryManage',
+  CARD_CATEGORY_CREATE: 'CardCategoryCreate',
+  CARD_CATEGORY_EDIT: 'CardCategoryEdit',
+
   // ---------- 卡面 RC 管理 ----------
   CARD_RC_MANAGE: 'AdminCardRcManage',
 

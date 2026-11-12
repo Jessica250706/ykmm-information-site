@@ -24,6 +24,23 @@
         </el-select>
       </el-form-item>
 
+      <el-form-item label="类别">
+        <el-select
+          v-model="query.category"
+          placeholder="全部"
+          style="width: 160px"
+          clearable
+          filterable
+        >
+          <el-option
+            v-for="c in categoryOptions"
+            :key="c.id"
+            :label="c.name ?? `#${c.id}`"
+            :value="c.id!"
+          />
+        </el-select>
+      </el-form-item>
+
       <el-form-item label="最高等级">
         <el-select v-model="query.maxRarity" placeholder="全部" style="width: 120px" clearable>
           <el-option
@@ -101,9 +118,16 @@
         <!-- 名称 -->
         <template #name="{ row }">
           <div class="leading-tight flex items-center">
-            <div class="font-medium">{{ row.name || '-' }}</div>
-            <div v-if="row.seriesName">[{{ row.seriesName }}]</div>
+            <span class="font-medium">{{ row.name || '-' }}</span>
+            <span v-if="row.seriesName">[{{ row.seriesName }}]</span>
           </div>
+        </template>
+
+        <template #category="{ row }">
+          <el-tag v-if="row.categoryName" effect="plain" type="success">
+            {{ row.categoryName }}
+          </el-tag>
+          <span v-else class="text-slate-300">-</span>
         </template>
 
         <!-- 最高等级 -->
@@ -199,6 +223,7 @@ import { ArrowDown, Plus } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { useRouter } from 'vue-router'
 import { deleteCardAPI, pageCardAPI } from '@/api/card'
+import { listCardCategoryOptionsAPI } from '@/api/cardCategory'
 import { listCardSeriesOptionsAPI } from '@/api/cardSeries'
 import {
   type PageResult,
@@ -222,6 +247,7 @@ import {
 } from '@/constants'
 import { usePersonStore } from '@/stores'
 import type { CardPageQueryDTO, CardVO } from '@/types/card'
+import type { CardCategoryVO } from '@/types/cardCategory'
 import type { CardSeriesVO } from '@/types/cardSeries'
 import {
   getAttributeTagStyle,
@@ -241,6 +267,7 @@ const tableRef = ref<TableInstance>()
 const query = reactive<{
   keyword?: string
   seriesId?: number
+  category?: number
   maxRarity?: number
   attribute?: number
   status?: number
@@ -248,6 +275,7 @@ const query = reactive<{
 }>({
   keyword: '',
   seriesId: undefined,
+  category: undefined,
   maxRarity: undefined,
   attribute: undefined,
   status: undefined,
@@ -255,11 +283,13 @@ const query = reactive<{
 })
 
 const seriesOptions = ref<CardSeriesVO[]>([])
+const categoryOptions = ref<CardCategoryVO[]>([])
 const reviewDialogRef = ref<InstanceType<typeof ReviewCardDialog> | null>(null)
 
 const columns: ProTableColumn<CardVO>[] = [
   { label: '封面', width: 100, align: 'center', slot: 'cover', fixed: 'left' },
-  { label: '名称', minWidth: 200, slot: 'name', fixed: 'left' },
+  { label: '名称', minWidth: 240, slot: 'name', fixed: 'left' },
+  { label: '类别', width: 160, align: 'center', slot: 'category' },
   { label: '状态', width: 100, align: 'center', slot: 'status' },
   { label: '最高等级', width: 110, align: 'center', slot: 'maxRarity' },
   { label: '属性', width: 110, align: 'center', slot: 'attribute' },
@@ -291,6 +321,7 @@ function handleSearch() {
   tableRef.value?.search({
     keyword: query.keyword || undefined,
     seriesId: query.seriesId ?? undefined,
+    category: query.category ?? undefined,
     maxRarity: query.maxRarity ?? undefined,
     attribute: query.attribute ?? undefined,
     status: query.status ?? undefined,
@@ -301,6 +332,7 @@ function handleSearch() {
 function handleReset() {
   query.keyword = ''
   query.seriesId = undefined
+  query.category = undefined
   query.maxRarity = undefined
   query.attribute = undefined
   query.status = undefined
@@ -375,7 +407,11 @@ async function handleReviewSuccess() {
 /* -------- 初始化 -------- */
 onMounted(async () => {
   void personStore.loadAll()
-  const res = await listCardSeriesOptionsAPI()
-  seriesOptions.value = res.data ?? []
+  const [seriesRes, categoryRes] = await Promise.all([
+    listCardSeriesOptionsAPI(),
+    listCardCategoryOptionsAPI(),
+  ])
+  seriesOptions.value = seriesRes.data ?? []
+  categoryOptions.value = categoryRes.data ?? []
 })
 </script>

@@ -3,10 +3,83 @@
     "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.xq.mapper.CardCategoryMapper">
 
-  <select id="listAll" resultType="com.xq.entity.CardCategory">
-    SELECT id, name, sort
-    FROM card_category
-    ORDER BY sort, id
+  <sql id="baseColumns">
+    id,
+    name,
+    sort
+  </sql>
+
+  <!--
+    分页查询：附带每个类别的卡面数量
+    实现方式：标量子查询
+    - 好处：没有 GROUP BY，PageHelper 生成的 count SQL 就是
+      SELECT count(0) FROM card_category WHERE ...，简单可靠；
+    - 坏处：每个类别执行一次子查询，字典表规模小（几十~几百行），完全可忽略。
+    如果想排除掉「已删除/未发布」的卡面，在子查询里补 AND cd.status = 1 即可。
+  -->
+  <select id="pageQuery" resultType="com.xq.vo.CardCategoryVO">
+    SELECT
+    c.id,
+    c.name,
+    c.sort,
+    (SELECT COUNT(*) FROM card cd WHERE cd.category = c.id) AS cardCount
+    FROM card_category c
+    <where>
+      <if test="keyword != null and keyword != ''">
+        AND c.name LIKE CONCAT('%', #{keyword}, '%')
+      </if>
+    </where>
+    ORDER BY c.sort ASC, c.id ASC
   </select>
+
+  <select id="listAll" resultType="com.xq.entity.CardCategory">
+    SELECT
+    <include refid="baseColumns"/>
+    FROM card_category
+    ORDER BY sort ASC, id ASC
+  </select>
+
+  <select id="getById" resultType="com.xq.entity.CardCategory">
+    SELECT
+    <include refid="baseColumns"/>
+    FROM card_category
+    WHERE id = #{id}
+  </select>
+
+  <select id="countByName" resultType="int">
+    SELECT COUNT(*)
+    FROM card_category
+    WHERE name = #{name}
+    <if test="excludeId != null">
+      AND id != #{excludeId}
+    </if>
+  </select>
+
+  <select id="countCardsByCategoryId" resultType="int">
+    SELECT COUNT(*)
+    FROM card
+    WHERE category = #{categoryId}
+  </select>
+
+  <insert id="insert" parameterType="com.xq.entity.CardCategory"
+          useGeneratedKeys="true" keyProperty="id">
+    INSERT INTO card_category (name, sort)
+    VALUES (#{name}, #{sort})
+  </insert>
+
+  <update id="update" parameterType="com.xq.entity.CardCategory">
+    UPDATE card_category
+    <set>
+      <if test="name != null">name = #{name},</if>
+      <if test="sort != null">sort = #{sort},</if>
+    </set>
+    WHERE id = #{id}
+  </update>
+
+  <delete id="deleteById">
+    DELETE
+    FROM card_category
+    WHERE id = #{id}
+  </delete>
 
 </mapper>

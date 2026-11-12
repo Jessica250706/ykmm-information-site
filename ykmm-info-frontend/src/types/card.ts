@@ -58,6 +58,10 @@ export interface CardVO {
    */
   category?: number
   /**
+   * 类别名（关联 card_category.name）
+   */
+  categoryName?: string
+  /**
    * 偶像小人ID
    */
   chibiId?: number

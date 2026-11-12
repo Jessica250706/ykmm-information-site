@@ -39,6 +39,10 @@ public class CardVO implements Serializable {
      */
     private Integer category;
     /**
+     * 类别名（关联 card_category.name）
+     */
+    private String categoryName;
+    /**
      * 最高等级
      */
     private Integer maxRarity;

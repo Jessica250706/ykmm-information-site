@@ -114,6 +114,27 @@ export const adminRoutes: RouteRecordRaw = {
       component: () => import('@/views/adminContent/cardManage/components/EditCard.vue'),
       meta: { title: '编辑卡面' },
     },
+    // ---------- 卡面类别管理 ----------
+    {
+      path: 'content/card-category',
+      name: AdminRouteName.CARD_CATEGORY_MANAGE,
+      component: () => import('@/views/adminContent/cardCategoryManage/Index.vue'),
+      meta: { title: '卡面类别' },
+    },
+    {
+      path: 'content/card-category/create',
+      name: AdminRouteName.CARD_CATEGORY_CREATE,
+      component: () =>
+        import('@/views/adminContent/cardCategoryManage/components/EditCardCategory.vue'),
+      meta: { title: '新增卡面类别' },
+    },
+    {
+      path: 'content/card-category/edit/:id',
+      name: AdminRouteName.CARD_CATEGORY_EDIT,
+      component: () =>
+        import('@/views/adminContent/cardCategoryManage/components/EditCardCategory.vue'),
+      meta: { title: '编辑卡面类别' },
+    },
     // ---------- 卡面 RC 管理 ----------
     {
       path: 'content/card-rc',
