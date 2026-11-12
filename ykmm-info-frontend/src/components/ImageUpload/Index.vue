@@ -19,10 +19,16 @@
 
     <div v-if="tip" class="mt-1 text-xs text-slate-400">{{ tip }}</div>
 
-    <!-- 预览弹窗 -->
-    <el-dialog v-model="previewVisible" width="600px" append-to-body>
-      <img :src="previewUrl" alt="preview" class="w-full" />
-    </el-dialog>
+    <!-- 图片预览：全屏查看器，支持左右切换 / 缩放 / 旋转 -->
+    <el-image-viewer
+      v-if="viewerVisible"
+      :initial-index="previewIndex"
+      :url-list="previewList"
+      hide-on-click-modal
+      lazy
+      teleported
+      @close="handleViewerClose"
+    />
   </div>
 </template>
 
@@ -30,6 +36,7 @@
 import { computed, ref, watch } from 'vue'
 import { Plus } from '@element-plus/icons-vue'
 import {
+  ElImageViewer,
   ElMessage,
   type UploadFile,
   type UploadRawFile,
@@ -64,8 +71,6 @@ const emit = defineEmits<{
 }>()
 
 const fileList = ref<UploadUserFile[]>([])
-const previewVisible = ref(false)
-const previewUrl = ref('')
 
 const limit = computed(() => (props.multiple ? props.maxCount : 1))
 
@@ -84,6 +89,39 @@ function genUid() {
 /** 是否有文件处于上传中（ready / uploading） */
 function hasUploading() {
   return fileList.value.some((f) => f.status === 'ready' || f.status === 'uploading')
+}
+
+/* ============================================================
+ * 图片预览
+ *   - viewerVisible 控制查看器显隐
+ *   - previewIndex 当前点击的图片在 previewList 中的索引
+ *   - previewList 所有「已成功上传」的图片 URL，保证左右切换顺序与列表一致
+ * ============================================================ */
+const viewerVisible = ref(false)
+const previewIndex = ref(0)
+
+const previewList = computed(() =>
+  fileList.value.filter((f) => f.status === 'success' && f.url).map((f) => f.url as string),
+)
+
+function handlePreview(file: UploadFile) {
+  if (!file.url) return
+
+  // 用 uid 匹配，避免同名 / 同 URL 造成索引错位
+  const list = fileList.value.filter((f) => f.status === 'success' && f.url)
+  const idx = list.findIndex((f) => f.uid === file.uid)
+  if (idx < 0) return
+
+  previewIndex.value = idx
+  viewerVisible.value = true
+}
+
+function handleViewerClose() {
+  viewerVisible.value = false
+  // 关闭预览后，主动移除缩略图上的焦点，避免“按Delete键”提示残留
+  if (document.activeElement instanceof HTMLElement) {
+    document.activeElement.blur()
+  }
 }
 
 /* ============================================================
@@ -183,13 +221,6 @@ function handleExceed() {
   ElMessage.warning(
     remaining > 0 ? `最多还能再上传 ${remaining} 张图片` : `最多只能上传 ${limit.value} 张图片`,
   )
-}
-
-/** 点击预览 */
-function handlePreview(file: UploadFile) {
-  if (!file.url) return
-  previewUrl.value = file.url
-  previewVisible.value = true
 }
 </script>
 
