@@ -74,6 +74,44 @@ export const SOURCE_TYPE_FILTER_OPTIONS = [
   { value: SOURCE_TYPE.STORY, label: SOURCE_TYPE_LABEL[SOURCE_TYPE.STORY] },
 ] as const
 
+/* ============================================================
+ * 卡面附属剧情（card.attached_story_type）
+ *   0-无 1-RC 2-RTV 3-Rabitter
+ *   ★ 不含 STORY：剧情是独立来源，不是「卡面附属」剧情
+ * ============================================================ */
+
+/**
+ * 卡面附属剧情类型。
+ * <p>是 {@link SourceTypeValue} 的子集，显式排除 {@link SOURCE_TYPE.STORY}。
+ * <p>用 Exclude 而非硬编码，意味着未来 SourceTypeValue 新增值时，
+ * 这里会因"未显式声明"而让调用方得到类型提示，强制审查是否应纳入。
+ */
+export type CardAttachedStoryTypeValue = Exclude<SourceTypeValue, typeof SOURCE_TYPE.STORY>
+
+/**
+ * 卡面附属剧情标签。
+ * <p>与 {@link SOURCE_TYPE_LABEL} 的子集部分完全一致，单独抽出来是为了让
+ * 索引时的 key 被约束在 0/1/2/3 范围内——传入 STORY 会被 TS 直接报错。
+ */
+export const CARD_ATTACHED_STORY_TYPE_LABEL: Record<CardAttachedStoryTypeValue, string> = {
+  [SOURCE_TYPE.NONE]: SOURCE_TYPE_LABEL[SOURCE_TYPE.NONE],
+  [SOURCE_TYPE.RC]: SOURCE_TYPE_LABEL[SOURCE_TYPE.RC],
+  [SOURCE_TYPE.RTV]: SOURCE_TYPE_LABEL[SOURCE_TYPE.RTV],
+  [SOURCE_TYPE.RABITTER]: SOURCE_TYPE_LABEL[SOURCE_TYPE.RABITTER],
+}
+
+/**
+ * 卡面附属剧情筛选/编辑下拉。
+ * <p>保留 NONE（"无"是有效选项，用于筛"没有附属剧情的卡面"）；
+ * 排除 STORY（剧情不是卡面附属剧情）。
+ */
+export const CARD_ATTACHED_STORY_TYPE_OPTIONS = [
+  { value: SOURCE_TYPE.NONE, label: CARD_ATTACHED_STORY_TYPE_LABEL[SOURCE_TYPE.NONE] },
+  { value: SOURCE_TYPE.RC, label: CARD_ATTACHED_STORY_TYPE_LABEL[SOURCE_TYPE.RC] },
+  { value: SOURCE_TYPE.RTV, label: CARD_ATTACHED_STORY_TYPE_LABEL[SOURCE_TYPE.RTV] },
+  { value: SOURCE_TYPE.RABITTER, label: CARD_ATTACHED_STORY_TYPE_LABEL[SOURCE_TYPE.RABITTER] },
+] as const
+
 export function sourceTypeBrowseRouteName(v?: number | null): string | undefined {
   if (v == null) return undefined
   switch (v) {

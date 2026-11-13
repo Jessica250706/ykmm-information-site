@@ -1,11 +1,11 @@
 <template>
   <div class="flex h-full min-h-0 flex-col">
-    <!-- 状态筛选 + 刷新 -->
+    <!-- 状态 + 附属剧情筛选 + 刷新 -->
     <div class="mb-3 flex shrink-0 items-center gap-3">
       <el-select
         v-model="statusFilter"
         placeholder="全部状态"
-        style="width: 240px"
+        style="width: 200px"
         clearable
         @change="reload"
       >
@@ -16,18 +16,34 @@
           :value="opt.value"
         />
       </el-select>
+
+      <el-select
+        v-model="attachedStoryTypeFilter"
+        placeholder="全部附属剧情"
+        style="width: 200px"
+        clearable
+        @change="reload"
+      >
+        <el-option
+          v-for="opt in CARD_ATTACHED_STORY_TYPE_OPTIONS"
+          :key="opt.value"
+          :label="opt.label"
+          :value="opt.value"
+        />
+      </el-select>
+
       <span class="text-sm text-slate-500">共 {{ total }} 张</span>
     </div>
 
     <div v-loading="loading" class="min-h-0 flex-1 overflow-y-auto">
       <el-empty v-if="!loading && !list.length" description="还没有上传过卡面" />
 
-      <div v-else class="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
+      <div v-else class="grid gap-4 grid-cols-5">
         <article
           v-for="card in list"
           :key="card.id"
           class="group cursor-pointer overflow-hidden rounded-xl bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
-          @click="router.push({ name: UserRouteName.CARD_DETAIL, params: { id: String(card.id) } })"
+          @click="handleOpenDetail(card)"
         >
           <div class="relative aspect-3/4 overflow-hidden bg-slate-100">
             <img
@@ -55,7 +71,7 @@
       </div>
     </div>
 
-    <div v-if="total > pageSize" class="shrink-0 pt-3">
+    <div v-if="total > pageSize" class="flex shrink-0 pt-3 justify-end">
       <el-pagination
         v-model:current-page="pageNum"
         :page-size="pageSize"
@@ -71,7 +87,13 @@
 import { onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { pageMyCardsAPI } from '@/api/card'
-import { STATUS_OPTIONS, statusLabel, UserRouteName } from '@/constants'
+import {
+  CARD_ATTACHED_STORY_TYPE_OPTIONS,
+  type CardAttachedStoryTypeValue,
+  STATUS_OPTIONS,
+  statusLabel,
+  UserRouteName,
+} from '@/constants'
 import type { CardVO } from '@/types/card'
 import { getCoverImage, getStatusTagType } from '@/utils'
 
@@ -81,8 +103,9 @@ const loading = ref(false)
 const list = ref<CardVO[]>([])
 const total = ref(0)
 const pageNum = ref(1)
-const pageSize = ref(12)
+const pageSize = ref(20)
 const statusFilter = ref<number | undefined>()
+const attachedStoryTypeFilter = ref<CardAttachedStoryTypeValue | undefined>()
 
 async function load() {
   loading.value = true
@@ -91,6 +114,7 @@ async function load() {
       pageNum: pageNum.value,
       pageSize: pageSize.value,
       status: statusFilter.value,
+      attachedStoryType: attachedStoryTypeFilter.value,
     })
     list.value = res.data.records ?? []
     total.value = res.data.total ?? 0
@@ -102,6 +126,16 @@ async function load() {
 function reload() {
   pageNum.value = 1
   void load()
+}
+
+/** 新标签页打开卡面详情 */
+function handleOpenDetail(card: CardVO) {
+  if (card.id == null) return
+  const { href } = router.resolve({
+    name: UserRouteName.CARD_DETAIL,
+    params: { id: String(card.id) },
+  })
+  window.open(href, '_blank', 'noopener,noreferrer')
 }
 
 onMounted(load)

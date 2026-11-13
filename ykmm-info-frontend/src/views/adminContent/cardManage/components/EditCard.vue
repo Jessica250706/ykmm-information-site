@@ -95,7 +95,11 @@
         <!-- -------- 附属剧情 -------- -->
         <el-form-item label="附属剧情" prop="attachedStoryType">
           <el-radio-group v-model="form.attachedStoryType">
-            <el-radio v-for="opt in SOURCE_TYPE_OPTIONS" :key="opt.value" :value="opt.value">
+            <el-radio
+              v-for="opt in CARD_ATTACHED_STORY_TYPE_OPTIONS"
+              :key="opt.value"
+              :value="opt.value"
+            >
               {{ opt.label }}
             </el-radio>
           </el-radio-group>
@@ -148,13 +152,13 @@ import { listCardCategoryOptionsAPI } from '@/api/cardCategory'
 import { findOrCreateCardSeriesAPI, listCardSeriesOptionsAPI } from '@/api/cardSeries'
 import {
   AdminRouteName,
+  CARD_ATTACHED_STORY_TYPE_OPTIONS,
   CARD_ATTRIBUTE_OPTIONS,
   CARD_COSTUME_TYPE_OPTIONS,
   CARD_IMAGE_TYPE,
   CARD_IMAGE_TYPE_OPTIONS,
   CARD_MAX_RARITY,
   CARD_MAX_RARITY_OPTIONS,
-  SOURCE_TYPE_OPTIONS,
 } from '@/constants'
 import { usePersonStore } from '@/stores'
 import type { CardDTO } from '@/types/card'
@@ -207,7 +211,7 @@ function imageTypeHint(type: number): string {
     case CARD_IMAGE_TYPE.UR_VERTICAL:
       return 'UR 竖卡，详情页封面优先展示'
     case CARD_IMAGE_TYPE.UR_HORIZONTAL:
-      return 'UR 横卡，详情页可横向浏览'
+      return 'UR 横卡，即 UR 的全图'
     default:
       return ''
   }
