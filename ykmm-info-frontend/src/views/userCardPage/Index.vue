@@ -131,10 +131,11 @@
 
     <!-- 卡片网格：无限滚动 -->
     <div
+      ref="scrollContainerRef"
       v-infinite-scroll="load"
       v-loading="loading && !list.length"
       :infinite-scroll-disabled="disabled || loading"
-      :infinite-scroll-distance="80"
+      :infinite-scroll-distance="preloadDistance"
       class="min-h-40 flex-1 overflow-y-auto"
     >
       <div v-if="list.length" :class="['grid gap-4', gridClass]">
@@ -205,7 +206,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, reactive, ref, watch } from 'vue'
+import { computed, nextTick, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue'
 import { ArrowDown, FullScreen, Grid, Menu, Plus, Search } from '@element-plus/icons-vue'
 import { useRoute, useRouter } from 'vue-router'
 import { pageCardAPI } from '@/api/card'
@@ -399,7 +400,7 @@ watch(
       }
     }
 
-    resetAndLoad()
+    void resetAndLoad()
   },
 )
 
@@ -488,12 +489,32 @@ async function load() {
   }
 }
 
-function resetAndLoad() {
+async function resetAndLoad() {
   pageNum.value = 1
   list.value = []
   disabled.value = false
   loading.value = false
-  void loadList()
+
+  await loadList() // 第 1 页
+  if (!disabled.value) {
+    await load() // 第 2 页
+  }
+}
+
+const scrollContainerRef = ref<HTMLElement | null>(null)
+
+/**
+ * 触发加载的「提前量」。
+ * <p>设为「一屏高度」：用户距底还有一屏未读时，就开始加载下一页，
+ * 保证滚到当前页尾部时下一页已经就绪，无空缺。
+ * <p>想更提前可改成 `el.clientHeight * 1.5` 或 `* 2`。
+ */
+const preloadDistance = ref(800)
+
+function updatePreloadDistance() {
+  const el = scrollContainerRef.value
+  if (!el) return
+  preloadDistance.value = el.clientHeight
 }
 
 /* ============================================================
@@ -504,7 +525,7 @@ function handleSearch() {
   // keyword 变了 → URL 会被 replace，route watch 会自动加载
   // keyword 没变 → 手动强制刷新
   const changed = writeToUrl()
-  if (!changed) resetAndLoad()
+  if (!changed) void resetAndLoad()
 }
 
 function handleCreate() {
@@ -519,12 +540,21 @@ function handleDetail(row: CardVO) {
 }
 
 onMounted(async () => {
-  void loadList()
+  void resetAndLoad() // 首屏 2 页
+
+  await nextTick()
+  updatePreloadDistance() // 测量一屏高度
+  window.addEventListener('resize', updatePreloadDistance)
+
   const [seriesRes, categoryRes] = await Promise.all([
     listCardSeriesOptionsAPI(),
     listCardCategoryOptionsAPI(),
   ])
   seriesOptions.value = seriesRes.data ?? []
   categoryOptions.value = categoryRes.data ?? []
+})
+
+onBeforeUnmount(() => {
+  window.removeEventListener('resize', updatePreloadDistance)
 })
 </script>
