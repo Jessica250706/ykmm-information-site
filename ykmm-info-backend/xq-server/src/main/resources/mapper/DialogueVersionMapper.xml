@@ -143,7 +143,29 @@
 
       <!-- 管理员：statusFilter 和 viewerId 都为 null，不加过滤 -->
     </where>
-    ORDER BY source_id, id
+
+    <!--
+      ★ 排序策略：与 /dialogue-version/options 接口（listDialogueVersionOptionsAPI）保持一致
+
+      - source_id ASC: 多话数批量查询时，同一话数的版本聚在一起（虽然 Java 层会 groupingBy 重新分组，
+                       但 SQL 层保持稳定顺序，便于人工核对）
+      - language ASC:  1-中文 → 2-日文（中文优先）
+      - format   ASC:  1-文字 → 2-图片（★ 文字优先：前端 useVersionSelection 取 versions[0] 作为默认选中版本，
+                       此处顺序即业务上的"默认优先版本"）
+      - scope    ASC:  与 DialogueScopeEnum 枚举值顺序一致
+      - id       ASC:  兜底稳定排序
+
+      修改前请确认：
+      1. format 枚举为 1-文字 / 2-图片（DialogueFormatEnum.TEXT.getValue() = 1）；
+      2. versionOptions 接口对应的 SQL 也是这个排序方向，否则前端仍会"选中错位"；
+      3. 没有其他调用方依赖当前"按 id 升序"的旧顺序。
+    -->
+    ORDER BY
+    source_id ASC,
+    language  ASC,
+    format    ASC,
+    scope     ASC,
+    id        ASC
   </select>
 
   <select id="listIdsBySource" resultType="java.lang.Long">

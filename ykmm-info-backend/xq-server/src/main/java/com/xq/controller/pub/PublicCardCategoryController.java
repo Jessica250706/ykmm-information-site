@@ -20,7 +20,7 @@ import java.util.List;
 @RequestMapping("/pub/card-category")
 @Slf4j
 @Validated
-public class PubCardCategoryController {
+public class PublicCardCategoryController {
 
     @Autowired
     private CardCategoryService cardCategoryService;

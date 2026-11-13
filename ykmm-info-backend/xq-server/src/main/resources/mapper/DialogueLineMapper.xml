@@ -99,7 +99,7 @@
     <foreach collection="versionIds" item="vid" open="(" separator="," close=")">
       #{vid}
     </foreach>
-    ORDER BY version_id, sort
+    ORDER BY version_id , sort , id
   </select>
 
   <delete id="deleteByIds">
