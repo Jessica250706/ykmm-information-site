@@ -212,7 +212,7 @@ async function handleLogout() {
 </script>
 
 <style lang="scss" scoped>
-/* ★ 核心改动：高度固定 + overflow hidden，让 page 本身不滚动 */
+/* 高度固定 + overflow hidden，让 page 本身不滚动 */
 .quiz-page {
   height: 100dvh; /* 原来是 min-height，改成 height */
   display: flex;
@@ -221,7 +221,7 @@ async function handleLogout() {
   overflow: hidden; /* 防止 page 被撑出滚动条 */
 }
 
-/* ★ header 不参与压缩，永远占据顶部固定高度 */
+/* header 不参与压缩，永远占据顶部固定高度 */
 .quiz-header {
   flex-shrink: 0;
   display: flex;
@@ -240,7 +240,7 @@ async function handleLogout() {
   color: #1e293b;
 }
 
-/* ★ main 是唯一的滚动容器 */
+/* main 是唯一的滚动容器 */
 .quiz-main {
   flex: 1;
   min-height: 0; /* 关键：允许 flex 项收缩，否则 overflow 不生效 */

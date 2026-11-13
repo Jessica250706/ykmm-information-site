@@ -10,6 +10,7 @@ import com.xq.dto.DialogueVersionPageQueryDTO;
 import com.xq.dto.DialogueVersionReviewDTO;
 import com.xq.entity.*;
 import com.xq.enums.*;
+import com.xq.exception.AlreadyExistsException;
 import com.xq.exception.ForbiddenException;
 import com.xq.exception.UnauthorizedException;
 import com.xq.mapper.*;
@@ -139,7 +140,7 @@ public class DialogueVersionServiceImpl implements DialogueVersionService {
                 dto.getSourceType(), dto.getSourceId(),
                 dto.getLanguage(), dto.getFormat(), dto.getScope());
         if (exist != null) {
-            throw new RuntimeException("该组合的对话版本已存在");
+            throw new AlreadyExistsException("该组合的对话版本已存在，等待管理员审核中");
         }
 
         DialogueVersion version = new DialogueVersion();

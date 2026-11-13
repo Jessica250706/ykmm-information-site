@@ -2,7 +2,9 @@
   <div class="w-full max-w-lg">
     <div class="rounded-2xl border border-slate-200 bg-white p-8 shadow-sm">
       <div class="text-center">
-        <h1 class="mb-2 text-2xl font-semibold text-slate-800">欢迎用户{{ userInfo?.nickname }}</h1>
+        <h1 class="mb-2 text-2xl font-semibold text-slate-800">
+          欢迎用户 {{ userInfo?.nickname }}
+        </h1>
         <p class="mb-6 text-sm leading-relaxed text-slate-500">
           为了保护社区环境，新用户需要完成答题才能使用完整功能。
         </p>

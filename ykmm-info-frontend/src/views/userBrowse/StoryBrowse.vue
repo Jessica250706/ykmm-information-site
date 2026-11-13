@@ -274,7 +274,6 @@ async function handleCreateVersion(payload: {
     selectByVersionId(newId)
   } catch (err) {
     console.error('创建版本失败：', err)
-    ElMessage.error('创建失败')
   }
 }
 
