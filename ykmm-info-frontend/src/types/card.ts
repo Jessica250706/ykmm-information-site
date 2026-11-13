@@ -3,9 +3,21 @@ import { STATUS } from '@/constants'
 
 export interface CardPageQueryDTO extends PageRequest {
   /**
+   * 附属剧情类型：0无 1RC 2RTV 3Rabbiter
+   */
+  attachedStoryType?: number
+  /**
    * 属性
    */
   attribute?: number
+  /**
+   * 关联 card_category.id
+   */
+  category?: number
+  /**
+   * 服装类型：0无 1偶像小人 2 3D造型
+   */
+  costumeType?: number
   /**
    * 关键字：卡面名称模糊匹配
    */

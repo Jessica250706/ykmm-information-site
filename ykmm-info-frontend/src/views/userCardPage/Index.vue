@@ -33,47 +33,100 @@
     </div>
 
     <!-- 筛选行 -->
-    <div class="mb-5 flex items-center gap-3 col-4 shrink-0">
-      <el-select
-        v-model="filter.personIds"
-        :max-collapse-tags="2"
-        class="w-64"
-        placeholder="人物"
-        clearable
-        collapse-tags
-        collapse-tags-tooltip
-        filterable
-        multiple
-      >
-        <el-option
-          v-for="p in personStore.persons"
-          :key="p.id"
-          :label="p.nameCn || p.nameJp || `#${p.id}`"
-          :value="p.id!"
-        />
-      </el-select>
+    <div class="mb-5 flex flex-col gap-3 shrink-0">
+      <!-- 主筛选行：原四个 + 右侧「更多」按钮 -->
+      <div class="flex items-center gap-3 col-4 shrink-0">
+        <el-select
+          v-model="filter.personIds"
+          :max-collapse-tags="2"
+          class="w-64"
+          placeholder="人物"
+          clearable
+          collapse-tags
+          collapse-tags-tooltip
+          filterable
+          multiple
+        >
+          <el-option
+            v-for="p in personStore.persons"
+            :key="p.id"
+            :label="p.nameCn || p.nameJp || `#${p.id}`"
+            :value="p.id!"
+          />
+        </el-select>
 
-      <el-select v-model="filter.seriesId" class="w-48" placeholder="系列" clearable filterable>
-        <el-option v-for="s in seriesOptions" :key="s.id" :label="s.name" :value="s.id!" />
-      </el-select>
+        <el-select v-model="filter.seriesId" class="w-48" placeholder="系列" clearable filterable>
+          <el-option v-for="s in seriesOptions" :key="s.id" :label="s.name" :value="s.id!" />
+        </el-select>
 
-      <el-select v-model="filter.maxRarity" class="w-32" placeholder="最高等级" clearable>
-        <el-option
-          v-for="opt in CARD_MAX_RARITY_OPTIONS"
-          :key="opt.value"
-          :label="opt.label"
-          :value="opt.value"
-        />
-      </el-select>
+        <el-select v-model="filter.maxRarity" class="w-32" placeholder="最高等级" clearable>
+          <el-option
+            v-for="opt in CARD_MAX_RARITY_OPTIONS"
+            :key="opt.value"
+            :label="opt.label"
+            :value="opt.value"
+          />
+        </el-select>
 
-      <el-select v-model="filter.attribute" class="w-32" placeholder="属性" clearable>
-        <el-option
-          v-for="opt in CARD_ATTRIBUTE_OPTIONS"
-          :key="opt.value"
-          :label="opt.label"
-          :value="opt.value"
-        />
-      </el-select>
+        <!-- 右侧：更多 -->
+        <div class="ml-auto">
+          <el-button text @click="showMore = !showMore">
+            {{ showMore ? '收起' : '更多' }}
+            <el-icon
+              :class="{ 'rotate-180': showMore }"
+              class="ml-1 transition-transform duration-200"
+            >
+              <ArrowDown />
+            </el-icon>
+          </el-button>
+        </div>
+      </div>
+
+      <!-- 更多筛选（折叠） -->
+      <el-collapse-transition>
+        <div v-show="showMore" class="flex items-center gap-3 col-4 shrink-0">
+          <el-select v-model="filter.attribute" class="w-32" placeholder="属性" clearable>
+            <el-option
+              v-for="opt in CARD_ATTRIBUTE_OPTIONS"
+              :key="opt.value"
+              :label="opt.label"
+              :value="opt.value"
+            />
+          </el-select>
+
+          <el-select v-model="filter.category" class="w-44" placeholder="类别" clearable filterable>
+            <el-option
+              v-for="c in categoryOptions"
+              :key="c.id"
+              :label="c.name ?? `#${c.id}`"
+              :value="c.id!"
+            />
+          </el-select>
+
+          <el-select
+            v-model="filter.attachedStoryType"
+            class="w-36"
+            placeholder="附属剧情"
+            clearable
+          >
+            <el-option
+              v-for="opt in SOURCE_TYPE_OPTIONS"
+              :key="opt.value"
+              :label="opt.label"
+              :value="opt.value"
+            />
+          </el-select>
+
+          <el-select v-model="filter.costumeType" class="w-36" placeholder="服装类型" clearable>
+            <el-option
+              v-for="opt in CARD_COSTUME_TYPE_OPTIONS"
+              :key="opt.value"
+              :label="opt.label"
+              :value="opt.value"
+            />
+          </el-select>
+        </div>
+      </el-collapse-transition>
     </div>
 
     <!-- 卡片网格：无限滚动 -->
@@ -153,16 +206,19 @@
 
 <script setup lang="ts">
 import { computed, onMounted, reactive, ref, watch } from 'vue'
-import { FullScreen, Grid, Menu, Plus, Search } from '@element-plus/icons-vue'
+import { ArrowDown, FullScreen, Grid, Menu, Plus, Search } from '@element-plus/icons-vue'
 import { useRoute, useRouter } from 'vue-router'
 import { pageCardAPI } from '@/api/card'
+import { listCardCategoryOptionsAPI } from '@/api/cardCategory'
 import { listCardSeriesOptionsAPI } from '@/api/cardSeries'
 import {
   CARD_ATTRIBUTE_OPTIONS,
+  CARD_COSTUME_TYPE_OPTIONS,
   CARD_MAX_RARITY,
   CARD_MAX_RARITY_OPTIONS,
   cardAttributeLabel,
   cardMaxRarityLabel,
+  SOURCE_TYPE_OPTIONS,
   STATUS,
   STATUS_LABEL,
   STATUS_TAG_TYPE,
@@ -170,6 +226,7 @@ import {
 } from '@/constants'
 import { usePersonStore, useUserStore } from '@/stores'
 import type { CardVO } from '@/types/card'
+import type { CardCategoryVO } from '@/types/cardCategory'
 import type { CardSeriesVO } from '@/types/cardSeries'
 import { getAttributeTagStyle, getCoverImage } from '@/utils'
 
@@ -217,7 +274,8 @@ function readStr(v: unknown): string {
 function readNum(v: unknown): number | undefined {
   if (v === undefined || v === null || v === '') return undefined
   const n = Number(v)
-  return Number.isFinite(n) && n > 0 ? n : undefined
+  // 改成 n >= 0：允许 0（"无"），对 category / maxRarity 等 1 起字段无影响
+  return Number.isFinite(n) && n >= 0 ? n : undefined
 }
 
 /** 返回 undefined：URL 没传该参数；返回 []：用户主动清空 */
@@ -241,15 +299,28 @@ const initialPersonIds = readIds(route.query.personIds)
 const keyword = ref(readStr(route.query.keyword))
 const filter = reactive<{
   seriesId?: number
+  category?: number
   maxRarity?: number
   attribute?: number
+  attachedStoryType?: number
+  costumeType?: number
   personIds: number[]
 }>({
   seriesId: readNum(route.query.seriesId),
+  category: readNum(route.query.category),
   maxRarity: readNum(route.query.maxRarity),
   attribute: readNum(route.query.attribute),
+  attachedStoryType: readNum(route.query.attachedStoryType),
+  costumeType: readNum(route.query.costumeType),
   personIds: initialPersonIds ?? [],
 })
+
+/** 更多筛选面板展开状态（首次进入时，若 URL 带了更多筛选则自动展开） */
+const showMore = ref(
+  filter.category !== undefined ||
+    filter.attachedStoryType !== undefined ||
+    filter.costumeType !== undefined,
+)
 
 /** 标记 query 是否由本组件主动 replace，避免 route watch 重复同步 */
 let selfPushing = false
@@ -263,11 +334,14 @@ function writeToUrl(): boolean {
   const kw = keyword.value.trim()
   if (kw) query.keyword = kw
   if (filter.seriesId !== undefined) query.seriesId = String(filter.seriesId)
+  if (filter.category !== undefined) query.category = String(filter.category)
   if (filter.maxRarity !== undefined) query.maxRarity = String(filter.maxRarity)
   if (filter.attribute !== undefined) query.attribute = String(filter.attribute)
+  if (filter.attachedStoryType !== undefined)
+    query.attachedStoryType = String(filter.attachedStoryType)
+  if (filter.costumeType !== undefined) query.costumeType = String(filter.costumeType)
   if (filter.personIds.length) query.personIds = filter.personIds.join(',')
 
-  // 与当前 URL 比较
   const current = route.query as Record<string, unknown>
   const keys = new Set([...Object.keys(query), ...Object.keys(current)])
   for (const k of keys) {
@@ -288,8 +362,11 @@ function readFromQuery(q: Record<string, unknown>) {
   return {
     keyword: readStr(q.keyword),
     seriesId: readNum(q.seriesId),
+    category: readNum(q.category),
     maxRarity: readNum(q.maxRarity),
     attribute: readNum(q.attribute),
+    attachedStoryType: readNum(q.attachedStoryType),
+    costumeType: readNum(q.costumeType),
     personIds: readIds(q.personIds) ?? [],
   }
 }
@@ -302,13 +379,24 @@ watch(
     selfPushing = false
 
     if (!fromSelf) {
-      // 外部变化（前进/后退）→ 把 URL 回填到 UI
       const parsed = readFromQuery(q as Record<string, unknown>)
       keyword.value = parsed.keyword
       filter.seriesId = parsed.seriesId
+      filter.category = parsed.category
       filter.maxRarity = parsed.maxRarity
       filter.attribute = parsed.attribute
+      filter.attachedStoryType = parsed.attachedStoryType
+      filter.costumeType = parsed.costumeType
       filter.personIds = parsed.personIds
+
+      // ★ 前进/后退若带更多筛选，自动展开面板
+      if (
+        parsed.category !== undefined ||
+        parsed.attachedStoryType !== undefined ||
+        parsed.costumeType !== undefined
+      ) {
+        showMore.value = true
+      }
     }
 
     resetAndLoad()
@@ -334,6 +422,7 @@ const pageNum = ref(1)
 const pageSize = ref(20)
 
 const seriesOptions = ref<CardSeriesVO[]>([])
+const categoryOptions = ref<CardCategoryVO[]>([])
 
 async function loadList() {
   loading.value = true
@@ -343,8 +432,11 @@ async function loadList() {
       pageSize: pageSize.value,
       keyword: keyword.value.trim() || undefined,
       seriesId: filter.seriesId,
+      category: filter.category,
       maxRarity: filter.maxRarity,
       attribute: filter.attribute,
+      attachedStoryType: filter.attachedStoryType,
+      costumeType: filter.costumeType,
       personIds: filter.personIds.length ? filter.personIds : undefined,
     })
     const records = res.data.records ?? []
@@ -370,8 +462,11 @@ async function load() {
       pageSize: pageSize.value,
       keyword: keyword.value.trim() || undefined,
       seriesId: filter.seriesId,
+      category: filter.category,
       maxRarity: filter.maxRarity,
       attribute: filter.attribute,
+      attachedStoryType: filter.attachedStoryType,
+      costumeType: filter.costumeType,
       personIds: filter.personIds.length ? filter.personIds : undefined,
     })
     const records = res.data.records ?? []
@@ -425,7 +520,11 @@ function handleDetail(row: CardVO) {
 
 onMounted(async () => {
   void loadList()
-  const res = await listCardSeriesOptionsAPI()
-  seriesOptions.value = res.data ?? []
+  const [seriesRes, categoryRes] = await Promise.all([
+    listCardSeriesOptionsAPI(),
+    listCardCategoryOptionsAPI(),
+  ])
+  seriesOptions.value = seriesRes.data ?? []
+  categoryOptions.value = categoryRes.data ?? []
 })
 </script>

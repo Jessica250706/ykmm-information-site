@@ -47,7 +47,7 @@ public class Card implements Serializable {
     /** 0无 1RC 2RTV 3Rabbiter */
     private Integer attachedStoryType;
 
-    /** 1偶像小人 2 3D造型 */
+    /** 0无 1偶像小人 2 3D造型 */
     private Integer costumeType;
 
     /** 小人ID */

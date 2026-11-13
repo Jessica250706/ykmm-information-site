@@ -37,27 +37,32 @@
       <if test="query.seriesId != null">
         AND c.series_id = #{query.seriesId}
       </if>
+      <if test="query.category != null">
+        AND c.category = #{query.category}
+      </if>
       <if test="query.maxRarity != null">
         AND c.max_rarity = #{query.maxRarity}
       </if>
       <if test="query.attribute != null">
         AND c.attribute = #{query.attribute}
       </if>
+      <if test="query.attachedStoryType != null">
+        AND c.attached_story_type = #{query.attachedStoryType}
+      </if>
+      <if test="query.costumeType != null">
+        AND c.costume_type = #{query.costumeType}
+      </if>
 
       <!-- ==================== 三身份过滤 ==================== -->
-
       <!-- 游客：强制只看已发布（Service 设置 query.status = 1） -->
       <if test="query.status != null and viewerId == null">
         AND c.status = #{query.status}
       </if>
-
       <!-- 用户：已发布 OR 自己创建的（Service 传 viewerId） -->
       <if test="viewerId != null">
         AND (c.status = 1 OR c.creator_id = #{viewerId})
       </if>
-
       <!-- 管理员：query.status 可为空也可为具体值，viewerId 始终为 null -->
-      <!-- 若前端传了 status（如只查待审核），上面的第一个 <if> 会生效 -->
 
       <!-- ==================== 其他 ==================== -->
       <if test="query.personIds != null and query.personIds.size() > 0">
@@ -70,13 +75,6 @@
         )
       </if>
     </where>
-    <!--
-      业务排序：
-        1. 状态：待审核(2) → 已发布(1) → 已拒绝(3)
-           —— 管理员一眼看到待处理队列，不用先筛选
-        2. 同状态内：首次入池时间倒序（新的在前，NULL 排最后）
-        3. 再按 id 倒序，保证稳定排序
-    -->
     ORDER BY
       CASE c.status
         WHEN 2 THEN 1   <!-- 待审核 -->
@@ -165,11 +163,20 @@
       <if test="query.seriesId != null">
         AND c.series_id = #{query.seriesId}
       </if>
+      <if test="query.category != null">
+        AND c.category = #{query.category}
+      </if>
       <if test="query.maxRarity != null">
         AND c.max_rarity = #{query.maxRarity}
       </if>
       <if test="query.attribute != null">
         AND c.attribute = #{query.attribute}
+      </if>
+      <if test="query.attachedStoryType != null">
+        AND c.attached_story_type = #{query.attachedStoryType}
+      </if>
+      <if test="query.costumeType != null">
+        AND c.costume_type = #{query.costumeType}
       </if>
       <if test="query.status != null">
         AND c.status = #{query.status}
