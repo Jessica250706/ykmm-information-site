@@ -52,6 +52,21 @@ public class DialogueTxtServiceImpl implements DialogueTxtService {
             Pattern.compile("^(…+|\\.{3,})$");
 
     /**
+     * 颜文字检测：整行是一个"表情符号"而非"内心独白"。
+     * <p>
+     * 判定原则：**半角括号包裹 + 内部无汉字**，允许空格（颜文字里空格是排版分隔符）。
+     * <ul>
+     *   <li>{@code (*°∀°*)} ✅</li>
+     *   <li>{@code ( ´ ; ω ;｀)} ✅（含空格）</li>
+     *   <li>{@code (T_T)} ✅</li>
+     *   <li>{@code (今天好开心)} ❌ 含汉字 → 独白</li>
+     *   <li>{@code (I'm fine)} ❌ 含空格 + 英文，判独白（避免把长英文句子当颜文字）</li>
+     * </ul>
+     */
+    private static final Pattern KAOMOJI_PATTERN =
+            Pattern.compile("^\\([^\\u4e00-\\u9fa5]{1,40}\\)$");
+
+    /**
      * role.name 字段最大长度（表定义 VARCHAR(64)）。
      * 自动创建角色时若姓名超长，会截断到该长度内。
      */
@@ -485,6 +500,8 @@ public class DialogueTxtServiceImpl implements DialogueTxtService {
     /**
      * 判定内容是否是"整段被一对括号包裹"，即内心独白。
      * <p>
+     * 注意：颜文字（如 {@code (*°∀°*)}、{@code (T_T)}）不是内心独白，优先排除。
+     * <p>
      * 全角括号与半角括号必须"首尾配对"：
      * <ul>
      *   <li>{@code （...）} 视为独白</li>
@@ -496,6 +513,14 @@ public class DialogueTxtServiceImpl implements DialogueTxtService {
         if (content == null) return false;
         String t = content.trim();
         if (t.length() < 4) return false;
+
+        log.info("带括号的：{}", t);
+        log.info("是否是颜文字：{}", KAOMOJI_PATTERN.matcher(t).matches());
+        // 颜文字不是内心独白：(*°∀°*)、(T_T)、(・ω・) 等
+        if (KAOMOJI_PATTERN.matcher(t).matches()) {
+            return false;
+        }
+
         return (t.startsWith("（") && t.endsWith("）"))
                 || (t.startsWith("(") && t.endsWith(")"));
     }
