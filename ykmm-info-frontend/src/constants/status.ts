@@ -31,6 +31,11 @@ export function statusLabel(v?: number | null): string {
   return STATUS_LABEL[v as StatusValue] ?? '未知'
 }
 
+export function statusTagType(v?: number | null): string {
+  if (v == null) return 'info'
+  return STATUS_TAG_TYPE[v as StatusValue] ?? 'info'
+}
+
 /* -------- 审核结果（仅通过 / 拒绝） -------- */
 export const REVIEW_STATUS = {
   PUBLISHED: STATUS.PUBLISHED,
