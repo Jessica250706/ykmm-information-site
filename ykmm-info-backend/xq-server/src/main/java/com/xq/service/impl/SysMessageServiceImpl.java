@@ -9,6 +9,7 @@ import com.xq.dto.SysMessagePageQueryDTO;
 import com.xq.entity.SysMessage;
 import com.xq.enums.SysMessageTargetTypeEnum;
 import com.xq.enums.SysMessageTypeEnum;
+import com.xq.exception.BusinessException;
 import com.xq.exception.ForbiddenException;
 import com.xq.exception.UnauthorizedException;
 import com.xq.mapper.SysMessageMapper;
@@ -56,11 +57,11 @@ public class SysMessageServiceImpl implements SysMessageService {
     @Override
     public SysMessageVO getById(Long id) {
         if (id == null) {
-            throw new RuntimeException("消息ID不能为空");
+            throw new BusinessException("消息ID不能为空");
         }
         SysMessage msg = sysMessageMapper.getById(id);
         if (msg == null) {
-            throw new RuntimeException("消息不存在");
+            throw new BusinessException("消息不存在");
         }
 
         Long currentId = BaseContext.getCurrentId();
@@ -95,7 +96,7 @@ public class SysMessageServiceImpl implements SysMessageService {
     @Transactional
     public void markRead(Long id) {
         if (id == null) {
-            throw new RuntimeException("消息ID不能为空");
+            throw new BusinessException("消息ID不能为空");
         }
         Long currentId = BaseContext.getCurrentId();
         if (currentId == null) {
@@ -104,7 +105,7 @@ public class SysMessageServiceImpl implements SysMessageService {
 
         SysMessage msg = sysMessageMapper.getById(id);
         if (msg == null) {
-            throw new RuntimeException("消息不存在");
+            throw new BusinessException("消息不存在");
         }
 
         if (msg.getBroadcastRole() != null) {

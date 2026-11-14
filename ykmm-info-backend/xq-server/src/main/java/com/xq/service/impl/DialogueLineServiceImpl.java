@@ -6,6 +6,7 @@ import com.xq.context.BaseContext;
 import com.xq.dto.DialogueLineDTO;
 import com.xq.entity.*;
 import com.xq.enums.*;
+import com.xq.exception.BusinessException;
 import com.xq.mapper.*;
 import com.xq.service.DialogueLineService;
 import com.xq.service.DialogueVersionService;
@@ -59,13 +60,13 @@ public class DialogueLineServiceImpl implements DialogueLineService {
     public void saveBatch(Long versionId, List<DialogueLineDTO> lines) {
         DialogueVersion version = dialogueVersionMapper.getById(versionId);
         if (version == null) {
-            throw new RuntimeException("对话版本不存在");
+            throw new BusinessException("对话版本不存在");
         }
         if (!DialogueFormatEnum.TEXT.getValue().equals(version.getFormat())) {
-            throw new RuntimeException("该版本不是文字版本");
+            throw new BusinessException("该版本不是文字版本");
         }
         if (!UserRoleEnum.current().isAdmin() && !Objects.equals(version.getCreatorId(), BaseContext.getCurrentId())) {
-            throw new RuntimeException("暂无权限进行保存操作");
+            throw new BusinessException("暂无权限进行保存操作");
         }
 
         // RC 场景下：先查 card_rc 拿到发起人角色ID
@@ -132,13 +133,13 @@ public class DialogueLineServiceImpl implements DialogueLineService {
         DialogueLine exist = dialogueLineMapper.getById(lineId);
         // 句子必须存在
         if (exist == null) {
-            throw new RuntimeException("对话句子不存在");
+            throw new BusinessException("对话句子不存在");
         }
 
         DialogueVersion version = dialogueVersionMapper.getById(exist.getVersionId());
         // 版本必须存在
         if (version == null) {
-            throw new RuntimeException("对话版本不存在");
+            throw new BusinessException("对话版本不存在");
         }
         validateLineDTO(dto, version);
 
@@ -180,7 +181,7 @@ public class DialogueLineServiceImpl implements DialogueLineService {
     public void delete(Long lineId) {
         DialogueLine exist = dialogueLineMapper.getById(lineId);
         if (exist == null) {
-            throw new RuntimeException("对话句子不存在");
+            throw new BusinessException("对话句子不存在");
         }
         dialogueSegmentMapper.deleteByLineId(lineId);
         dialogueLineMapper.deleteById(lineId);
@@ -202,17 +203,17 @@ public class DialogueLineServiceImpl implements DialogueLineService {
     public void sort(Long versionId, List<Long> lineIds) {
         DialogueVersion version = dialogueVersionMapper.getById(versionId);
         if (version == null) {
-            throw new RuntimeException("对话版本不存在");
+            throw new BusinessException("对话版本不存在");
         }
 
         for (int i = 0; i < lineIds.size(); i++) {
             Long lineId = lineIds.get(i);
             DialogueLine line = dialogueLineMapper.getById(lineId);
             if (line == null) {
-                throw new RuntimeException("对话句子不存在：id=" + lineId);
+                throw new BusinessException("对话句子不存在：id=" + lineId);
             }
             if (!line.getVersionId().equals(versionId)) {
-                throw new RuntimeException("句子不属于该版本：id=" + lineId);
+                throw new BusinessException("句子不属于该版本：id=" + lineId);
             }
             dialogueLineMapper.updateSort(lineId, i + 1);
         }
@@ -233,7 +234,7 @@ public class DialogueLineServiceImpl implements DialogueLineService {
     @Transactional
     public void clearByVersionId(Long versionId) {
         if (versionId == null) {
-            throw new RuntimeException("版本ID不能为空");
+            throw new BusinessException("版本ID不能为空");
         }
 
         // 1. 查出该版本下所有句子ID
@@ -261,7 +262,7 @@ public class DialogueLineServiceImpl implements DialogueLineService {
         DialogueVersion version = dialogueVersionMapper.getById(versionId);
         // 版本必须存在
         if (version == null) {
-            throw new RuntimeException("对话版本不存在");
+            throw new BusinessException("对话版本不存在");
         }
 
         // RC 场景下获取发起人角色ID（循环外查一次，避免 N 次重复查询）
@@ -276,14 +277,14 @@ public class DialogueLineServiceImpl implements DialogueLineService {
         // 校验所有行都属于该版本
         for (DialogueLineDTO dto : lines) {
             if (dto.getId() == null) {
-                throw new RuntimeException("更新时必须提供句子ID");
+                throw new BusinessException("更新时必须提供句子ID");
             }
             DialogueLine exist = dialogueLineMapper.getById(dto.getId());
             if (exist == null) {
-                throw new RuntimeException("对话句子不存在：id=" + dto.getId());
+                throw new BusinessException("对话句子不存在：id=" + dto.getId());
             }
             if (!exist.getVersionId().equals(versionId)) {
-                throw new RuntimeException("句子不属于该版本：id=" + dto.getId());
+                throw new BusinessException("句子不属于该版本：id=" + dto.getId());
             }
             validateLineDTO(dto, version);
         }
@@ -365,26 +366,25 @@ public class DialogueLineServiceImpl implements DialogueLineService {
      */
     private void validateLineDTO(DialogueLineDTO dto, DialogueVersion version) {
         if (dto == null) {
-            throw new RuntimeException("句子不能为空");
+            throw new BusinessException("句子不能为空");
         }
         if (dto.getSpeakerId() == null) {
-            throw new RuntimeException("说话角色不能为空");
+            throw new BusinessException("说话角色不能为空");
         }
         if (dto.getContent() == null || dto.getContent().isBlank()) {
-            throw new RuntimeException("对话内容不能为空");
+            throw new BusinessException("对话内容不能为空");
         }
         if (dto.getContent().length() > DialogueConstant.MAX_CONTENT_LENGTH) {
-            throw new RuntimeException("对话内容长度不能超过 "
-                    + DialogueConstant.MAX_CONTENT_LENGTH);
+            throw new BusinessException("对话内容长度不能超过 " + DialogueConstant.MAX_CONTENT_LENGTH);
         }
         Role role = roleMapper.getById(dto.getSpeakerId());
         if (role == null) {
-            throw new RuntimeException("说话角色不存在：id=" + dto.getSpeakerId());
+            throw new BusinessException("说话角色不存在：id=" + dto.getSpeakerId());
         }
         // RC 场景下 side 由服务端按发起人自动计算，前端可选传；
         // 只要传了就必须是 1 或 2
         if (dto.getSide() != null && !DialogueSideEnum.isValid(dto.getSide())) {
-            throw new RuntimeException("side 取值不合法：" + dto.getSide());
+            throw new BusinessException("side 取值不合法：" + dto.getSide());
         }
     }
 
@@ -462,14 +462,14 @@ public class DialogueLineServiceImpl implements DialogueLineService {
             return null;
         }
         if (version.getSourceId() == null) {
-            throw new RuntimeException("RC 版本的来源ID不能为空");
+            throw new BusinessException("RC 版本的来源ID不能为空");
         }
         CardRc rc = cardRcMapper.getById(version.getSourceId());
         if (rc == null) {
-            throw new RuntimeException("RC 不存在：id=" + version.getSourceId());
+            throw new BusinessException("RC 不存在：id=" + version.getSourceId());
         }
         if (rc.getRoleId() == null) {
-            throw new RuntimeException("RC 未设置发起人角色");
+            throw new BusinessException("RC 未设置发起人角色");
         }
         return rc.getRoleId();
     }

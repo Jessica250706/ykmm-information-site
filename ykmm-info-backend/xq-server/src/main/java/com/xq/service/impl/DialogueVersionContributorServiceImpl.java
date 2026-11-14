@@ -7,6 +7,7 @@ import com.xq.dto.DialogueVersionContributorDTO;
 import com.xq.dto.DialogueVersionContributorPageQueryDTO;
 import com.xq.entity.DialogueVersionContributor;
 import com.xq.enums.ContributorRoleEnum;
+import com.xq.exception.BusinessException;
 import com.xq.mapper.DialogueVersionContributorMapper;
 import com.xq.result.PageResult;
 import com.xq.service.DialogueVersionContributorService;
@@ -38,7 +39,7 @@ public class DialogueVersionContributorServiceImpl implements DialogueVersionCon
     @Override
     public PageResult<DialogueVersionContributorVO> pageQuery(DialogueVersionContributorPageQueryDTO query) {
         if (query == null) {
-            throw new RuntimeException("查询条件不能为空");
+            throw new BusinessException("查询条件不能为空");
         }
         PageHelper.startPage(query.getPageNum(), query.getPageSize());
         List<DialogueVersionContributorVO> list = dialogueVersionContributorMapper.pageQuery(query);
@@ -59,7 +60,7 @@ public class DialogueVersionContributorServiceImpl implements DialogueVersionCon
     @Override
     public List<DialogueVersionContributorVO> listByVersionId(Long versionId) {
         if (versionId == null) {
-            throw new RuntimeException("版本ID不能为空");
+            throw new BusinessException("版本ID不能为空");
         }
         List<DialogueVersionContributorVO> list = dialogueVersionContributorMapper.listByVersionId(versionId);
         for (DialogueVersionContributorVO vo : list) {
@@ -78,10 +79,10 @@ public class DialogueVersionContributorServiceImpl implements DialogueVersionCon
     @Override
     public List<StoryContributorVO> listContributorsBySource(Integer sourceType, Long sourceId) {
         if (sourceType == null) {
-            throw new RuntimeException("来源类型不能为空");
+            throw new BusinessException("来源类型不能为空");
         }
         if (sourceId == null) {
-            throw new RuntimeException("来源ID不能为空");
+            throw new BusinessException("来源ID不能为空");
         }
         return dialogueVersionContributorMapper.listContributorsBySource(sourceType, sourceId);
     }
@@ -96,19 +97,19 @@ public class DialogueVersionContributorServiceImpl implements DialogueVersionCon
     @Transactional
     public Long create(DialogueVersionContributorDTO dto) {
         if (dto == null) {
-            throw new RuntimeException("参数不能为空");
+            throw new BusinessException("参数不能为空");
         }
         if (dto.getVersionId() == null) {
-            throw new RuntimeException("版本ID不能为空");
+            throw new BusinessException("版本ID不能为空");
         }
         // 用户ID 和 姓名至少有一个
         boolean hasUser = dto.getUserId() != null;
         boolean hasName = dto.getContributorName() != null && !dto.getContributorName().isBlank();
         if (!hasUser && !hasName) {
-            throw new RuntimeException("贡献者用户ID和姓名不能同时为空");
+            throw new BusinessException("贡献者用户ID和姓名不能同时为空");
         }
         if (!ContributorRoleEnum.isValid(dto.getContributorRole())) {
-            throw new RuntimeException("贡献者角色不合法");
+            throw new BusinessException("贡献者角色不合法");
         }
 
         // 幂等判断
@@ -116,13 +117,13 @@ public class DialogueVersionContributorServiceImpl implements DialogueVersionCon
             int exists = dialogueVersionContributorMapper.countByVersionAndUser(
                     dto.getVersionId(), dto.getUserId());
             if (exists > 0) {
-                throw new RuntimeException("该用户已是当前版本的贡献者");
+                throw new BusinessException("该用户已是当前版本的贡献者");
             }
         } else {
             int exists = dialogueVersionContributorMapper.countByVersionAndName(
                     dto.getVersionId(), dto.getContributorName());
             if (exists > 0) {
-                throw new RuntimeException("该姓名已是当前版本的贡献者");
+                throw new BusinessException("该姓名已是当前版本的贡献者");
             }
         }
 
@@ -147,17 +148,17 @@ public class DialogueVersionContributorServiceImpl implements DialogueVersionCon
     @Transactional
     public void update(Long id, DialogueVersionContributorDTO dto) {
         if (id == null) {
-            throw new RuntimeException("贡献者ID不能为空");
+            throw new BusinessException("贡献者ID不能为空");
         }
         if (dto == null) {
-            throw new RuntimeException("参数不能为空");
+            throw new BusinessException("参数不能为空");
         }
         DialogueVersionContributor exist = dialogueVersionContributorMapper.getById(id);
         if (exist == null) {
-            throw new RuntimeException("贡献者记录不存在");
+            throw new BusinessException("贡献者记录不存在");
         }
         if (dto.getContributorRole() != null && !ContributorRoleEnum.isValid(dto.getContributorRole())) {
-            throw new RuntimeException("贡献者角色不合法");
+            throw new BusinessException("贡献者角色不合法");
         }
 
         DialogueVersionContributor entity = new DialogueVersionContributor();
@@ -178,11 +179,11 @@ public class DialogueVersionContributorServiceImpl implements DialogueVersionCon
     @Transactional
     public void delete(Long id) {
         if (id == null) {
-            throw new RuntimeException("贡献者ID不能为空");
+            throw new BusinessException("贡献者ID不能为空");
         }
         DialogueVersionContributor exist = dialogueVersionContributorMapper.getById(id);
         if (exist == null) {
-            throw new RuntimeException("贡献者记录不存在");
+            throw new BusinessException("贡献者记录不存在");
         }
         dialogueVersionContributorMapper.deleteById(id);
         log.info("删除贡献者成功，id={}", id);
@@ -197,7 +198,7 @@ public class DialogueVersionContributorServiceImpl implements DialogueVersionCon
     @Transactional
     public void deleteByVersionId(Long versionId) {
         if (versionId == null) {
-            throw new RuntimeException("版本ID不能为空");
+            throw new BusinessException("版本ID不能为空");
         }
         dialogueVersionContributorMapper.deleteByVersionId(versionId);
         log.info("清空版本贡献者成功，versionId={}", versionId);
@@ -248,10 +249,10 @@ public class DialogueVersionContributorServiceImpl implements DialogueVersionCon
     public void recordCreator(Long versionId, Long uploaderId, Integer uploaderRole,
                               Long contributorId, String contributorName) {
         if (versionId == null) {
-            throw new RuntimeException("版本ID不能为空");
+            throw new BusinessException("版本ID不能为空");
         }
         if (uploaderId == null) {
-            throw new RuntimeException("操作人ID不能为空");
+            throw new BusinessException("操作人ID不能为空");
         }
 
         boolean hasContributorId = contributorId != null;
@@ -260,7 +261,7 @@ public class DialogueVersionContributorServiceImpl implements DialogueVersionCon
         Long finalContributorId = hasContributorId ? contributorId
                 : (hasContributorName ? null : uploaderId);
         String finalContributorName = hasContributorName ? contributorName
-                : (hasContributorId ? null : null);
+                : (null);
 
         // 1. 内容作者
         if (!alreadyExists(versionId, finalContributorId, finalContributorName)) {
@@ -314,11 +315,11 @@ public class DialogueVersionContributorServiceImpl implements DialogueVersionCon
     @Override
     public DialogueVersionContributorVO getById(Long id) {
         if (id == null) {
-            throw new RuntimeException("贡献者ID不能为空");
+            throw new BusinessException("贡献者ID不能为空");
         }
         DialogueVersionContributorVO vo = dialogueVersionContributorMapper.getVOById(id);
         if (vo == null) {
-            throw new RuntimeException("贡献者不存在");
+            throw new BusinessException("贡献者不存在");
         }
         // 角色标签兜底（SQL 不算这个，Java 侧补）
         vo.setContributorRoleLabel(ContributorRoleEnum.getLabel(vo.getContributorRole()));

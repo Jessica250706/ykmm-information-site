@@ -3,6 +3,7 @@ package com.xq.service.impl;
 import com.xq.context.BaseContext;
 import com.xq.dto.CardRtvDTO;
 import com.xq.entity.CardRtv;
+import com.xq.exception.BusinessException;
 import com.xq.exception.ForbiddenException;
 import com.xq.mapper.CardRtvMapper;
 import com.xq.service.CardRtvService;
@@ -63,7 +64,7 @@ public class CardRtvServiceImpl implements CardRtvService {
     public CardRtvVO getById(Long id) {
         CardRtv rtv = cardRtvMapper.getById(id);
         if (rtv == null) {
-            throw new RuntimeException("RTV 不存在");
+            throw new BusinessException("RTV 不存在");
         }
         return toVO(rtv);
     }
@@ -146,16 +147,16 @@ public class CardRtvServiceImpl implements CardRtvService {
      * 校验当前用户是否有权操作指定 RTV，并返回其实体
      *
      * @param id RTV 主键
-     * @throws RuntimeException   资源不存在
+     * @throws BusinessException   资源不存在
      * @throws ForbiddenException 无权操作
      */
     private CardRtv checkOperable(Long id) {
         if (id == null) {
-            throw new RuntimeException("RTV ID不能为空");
+            throw new BusinessException("RTV ID不能为空");
         }
         CardRtv exist = cardRtvMapper.getById(id);
         if (exist == null) {
-            throw new RuntimeException("RTV 不存在");
+            throw new BusinessException("RTV 不存在");
         }
         Boolean can = cardRtvMapper.canOperate(id, BaseContext.getCurrentId(), BaseContext.getCurrentRole());
         if (!Boolean.TRUE.equals(can)) {

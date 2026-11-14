@@ -7,6 +7,7 @@ import com.xq.entity.*;
 import com.xq.enums.DialogueFormatEnum;
 import com.xq.enums.DialogueRoleEnum;
 import com.xq.enums.DialogueSourceTypeEnum;
+import com.xq.exception.BusinessException;
 import com.xq.mapper.*;
 import com.xq.service.DialogueLineService;
 import com.xq.service.DialogueTxtService;
@@ -102,19 +103,19 @@ public class DialogueTxtServiceImpl implements DialogueTxtService {
     @Override
     public DialogueTxtParseVO parseTxt(Long versionId, MultipartFile file) {
         if (file.getSize() > DialogueConstant.TXT_MAX_SIZE) {
-            throw new RuntimeException("txt 文件大小不能超过 2MB");
+            throw new BusinessException("txt 文件大小不能超过 2MB");
         }
         String originalFilename = file.getOriginalFilename();
         if (originalFilename == null
                 || !originalFilename.toLowerCase().endsWith(DialogueConstant.TXT_EXTENSION)) {
-            throw new RuntimeException("只允许上传 .txt 文件");
+            throw new BusinessException("只允许上传 .txt 文件");
         }
         DialogueVersion version = dialogueVersionMapper.getById(versionId);
         if (version == null) {
-            throw new RuntimeException("对话版本不存在");
+            throw new BusinessException("对话版本不存在");
         }
         if (!DialogueFormatEnum.TEXT.getValue().equals(version.getFormat())) {
-            throw new RuntimeException("该版本不是文字版本");
+            throw new BusinessException("该版本不是文字版本");
         }
 
         boolean allowOptions = Objects.equals(
@@ -139,10 +140,10 @@ public class DialogueTxtServiceImpl implements DialogueTxtService {
         // 1. 校验版本
         DialogueVersion version = dialogueVersionMapper.getById(versionId);
         if (version == null) {
-            throw new RuntimeException("对话版本不存在");
+            throw new BusinessException("对话版本不存在");
         }
         if (!DialogueFormatEnum.TEXT.getValue().equals(version.getFormat())) {
-            throw new RuntimeException("该版本不是文字版本，无法导出");
+            throw new BusinessException("该版本不是文字版本，无法导出");
         }
 
         // 2. 查所有 line（按 sort 升序；sort 理论上非 null，兜底一下）
@@ -225,7 +226,7 @@ public class DialogueTxtServiceImpl implements DialogueTxtService {
             log.info("导出 txt 成功，versionId={}", versionId);
         } catch (Exception e) {
             log.error("导出 txt 失败，versionId={}", versionId, e);
-            throw new RuntimeException("导出 txt 失败", e);
+            throw new BusinessException("导出 txt 失败");
         }
     }
 
@@ -248,7 +249,7 @@ public class DialogueTxtServiceImpl implements DialogueTxtService {
             return text;
         } catch (IOException e) {
             log.error("读取 txt 文件失败", e);
-            throw new RuntimeException("读取 txt 文件失败");
+            throw new BusinessException("读取 txt 文件失败");
         }
     }
 

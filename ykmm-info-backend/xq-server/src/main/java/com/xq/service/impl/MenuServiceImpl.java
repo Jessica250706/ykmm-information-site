@@ -2,6 +2,8 @@ package com.xq.service.impl;
 
 import com.xq.dto.MenuDTO;
 import com.xq.entity.SysMenu;
+import com.xq.exception.BusinessException;
+import com.xq.exception.DeletionNotAllowedException;
 import com.xq.mapper.MenuMapper;
 import com.xq.service.MenuService;
 import com.xq.vo.MenuVO;
@@ -59,11 +61,11 @@ public class MenuServiceImpl implements MenuService {
     @Transactional
     public void create(MenuDTO dto) {
         if (dto.getName() == null || dto.getName().isBlank()) {
-            throw new RuntimeException("菜单名称不能为空");
+            throw new BusinessException("菜单名称不能为空");
         }
         if (dto.getMenuType() == null
                 || (dto.getMenuType() != 1 && dto.getMenuType() != 2)) {
-            throw new RuntimeException("菜单类型不合法");
+            throw new BusinessException("菜单类型不合法");
         }
         // parentId 默认 0
         if (dto.getParentId() == null) {
@@ -71,7 +73,7 @@ public class MenuServiceImpl implements MenuService {
         } else if (dto.getParentId() != 0L) {
             SysMenu parent = menuMapper.getById(dto.getParentId());
             if (parent == null) {
-                throw new RuntimeException("父菜单不存在");
+                throw new BusinessException("父菜单不存在");
             }
         }
 
@@ -92,18 +94,18 @@ public class MenuServiceImpl implements MenuService {
     public void update(Long id, MenuDTO dto) {
         SysMenu exist = menuMapper.getById(id);
         if (exist == null) {
-            throw new RuntimeException("菜单不存在");
+            throw new BusinessException("菜单不存在");
         }
 
         // 不能把自己设为自己的父菜单
         if (dto.getParentId() != null && dto.getParentId().equals(id)) {
-            throw new RuntimeException("父菜单不能是自己");
+            throw new BusinessException("父菜单不能是自己");
         }
         // 父菜单存在性校验
         if (dto.getParentId() != null && dto.getParentId() != 0L) {
             SysMenu parent = menuMapper.getById(dto.getParentId());
             if (parent == null) {
-                throw new RuntimeException("父菜单不存在");
+                throw new BusinessException("父菜单不存在");
             }
         }
 
@@ -119,12 +121,12 @@ public class MenuServiceImpl implements MenuService {
     public void delete(Long id) {
         SysMenu exist = menuMapper.getById(id);
         if (exist == null) {
-            throw new RuntimeException("菜单不存在");
+            throw new BusinessException("菜单不存在");
         }
         // 有子菜单不允许删除
         int childCount = menuMapper.countChildren(id);
         if (childCount > 0) {
-            throw new RuntimeException("请先删除子菜单");
+            throw new DeletionNotAllowedException("请先删除子菜单");
         }
         menuMapper.deleteById(id);
         log.info("删除菜单成功，id={}", id);

@@ -11,6 +11,7 @@ import com.xq.dto.UserEditDTO;
 import com.xq.dto.UserPageQueryDTO;
 import com.xq.entity.SysQuizConfig;
 import com.xq.entity.SysUser;
+import com.xq.exception.BusinessException;
 import com.xq.exception.ForbiddenException;
 import com.xq.exception.UnauthorizedException;
 import com.xq.mapper.QuizConfigMapper;
@@ -56,11 +57,11 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserInfo getById(Long id) {
         if (id == null) {
-            throw new RuntimeException("用户ID不能为空");
+            throw new BusinessException("用户ID不能为空");
         }
         SysUser user = userMapper.getById(id);
         if (user == null) {
-            throw new RuntimeException("用户不存在");
+            throw new BusinessException("用户不存在");
         }
         return UserInfo.from(user);
     }
@@ -82,7 +83,7 @@ public class UserServiceImpl implements UserService {
 
         SysUser exist = userMapper.getById(id);
         if (exist == null) {
-            throw new RuntimeException("用户不存在");
+            throw new BusinessException("用户不存在");
         }
 
         // 3. 普通用户不允许修改 status（禁用/启用是管理员权限）
@@ -113,7 +114,7 @@ public class UserServiceImpl implements UserService {
     public void delete(Long id) {
         SysUser exist = userMapper.getById(id);
         if (exist == null) {
-            throw new RuntimeException("用户不存在");
+            throw new BusinessException("用户不存在");
         }
         userMapper.deleteById(id);
         log.info("删除用户成功，id={}", id);
@@ -123,11 +124,11 @@ public class UserServiceImpl implements UserService {
     @Transactional
     public void updateStatus(Long id, Integer status) {
         if (status == null || (status != UserStatusConstant.DISABLED && status != UserStatusConstant.ENABLED)) {
-            throw new RuntimeException("状态值不合法");
+            throw new BusinessException("状态值不合法");
         }
         SysUser exist = userMapper.getById(id);
         if (exist == null) {
-            throw new RuntimeException("用户不存在");
+            throw new BusinessException("用户不存在");
         }
         userMapper.updateStatus(id, status);
         log.info("更新用户状态成功，id={}, status={}", id, status);

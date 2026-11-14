@@ -2,10 +2,7 @@ package com.xq.service.impl;
 
 import com.xq.constant.*;
 import com.xq.entity.SysUser;
-import com.xq.exception.AccountLockedException;
-import com.xq.exception.AccountNotFoundException;
-import com.xq.exception.EmailAlreadyExistsException;
-import com.xq.exception.PasswordErrorException;
+import com.xq.exception.*;
 import com.xq.mapper.SysUserMapper;
 import com.xq.service.AuthService;
 import com.xq.service.MailService;
@@ -42,7 +39,7 @@ public class AuthServiceImpl implements AuthService {
         email = normalizeEmail(email);
 
         if (email == null || email.isBlank()) {
-            throw new RuntimeException("邮箱不能为空");
+            throw new BusinessException("邮箱不能为空");
         }
 
         SysUser exist = sysUserMapper.getByEmail(email);
@@ -55,7 +52,7 @@ public class AuthServiceImpl implements AuthService {
                 .setIfAbsent(limitKey, "1", RedisConstant.REGISTER_CODE_SEND_LIMIT);
 
         if (!Boolean.TRUE.equals(canSend)) {
-            throw new RuntimeException("验证码发送过于频繁，请1分钟后再试");
+            throw new BusinessException("验证码发送过于频繁，请1分钟后再试");
         }
 
         String code = generateCode();
@@ -83,18 +80,18 @@ public class AuthServiceImpl implements AuthService {
         email = normalizeEmail(email);
 
         if (email == null || email.isBlank()) {
-            throw new RuntimeException("邮箱不能为空");
+            throw new BusinessException("邮箱不能为空");
         }
 
         String codeKey = RedisConstant.REGISTER_CODE_KEY_PREFIX + email;
         String cachedCode = stringRedisTemplate.opsForValue().get(codeKey);
 
         if (cachedCode == null) {
-            throw new RuntimeException("验证码已过期，请重新获取");
+            throw new BusinessException("验证码已过期，请重新获取");
         }
 
         if (!cachedCode.equals(code)) {
-            throw new RuntimeException("验证码错误");
+            throw new BusinessException("验证码错误");
         }
 
         SysUser exist = sysUserMapper.getByEmail(email);
@@ -199,10 +196,10 @@ public class AuthServiceImpl implements AuthService {
         } else if ("NEW".equalsIgnoreCase(target)) {
             email = normalizeEmail(targetEmail);
             if (email == null || email.isBlank()) {
-                throw new RuntimeException("新邮箱不能为空");
+                throw new BusinessException("新邮箱不能为空");
             }
             if (email.equalsIgnoreCase(user.getEmail())) {
-                throw new RuntimeException("新邮箱不能与旧邮箱相同");
+                throw new BusinessException("新邮箱不能与旧邮箱相同");
             }
             SysUser exist = sysUserMapper.getByEmail(email);
             if (exist != null) {
@@ -210,7 +207,7 @@ public class AuthServiceImpl implements AuthService {
             }
             codePrefix = RedisConstant.REBIND_NEW_CODE_KEY_PREFIX;
         } else {
-            throw new RuntimeException("目标类型不合法");
+            throw new BusinessException("目标类型不合法");
         }
 
         // 频率限制：与注册共用 60s 规则
@@ -218,7 +215,7 @@ public class AuthServiceImpl implements AuthService {
         Boolean canSend = stringRedisTemplate.opsForValue()
                 .setIfAbsent(limitKey, "1", RedisConstant.REGISTER_CODE_SEND_LIMIT);
         if (!Boolean.TRUE.equals(canSend)) {
-            throw new RuntimeException("验证码发送过于频繁，请1分钟后再试");
+            throw new BusinessException("验证码发送过于频繁，请1分钟后再试");
         }
 
         String code = generateCode();
@@ -245,28 +242,28 @@ public class AuthServiceImpl implements AuthService {
         newEmail = normalizeEmail(newEmail);
 
         if (newEmail == null || newEmail.isBlank()) {
-            throw new RuntimeException("新邮箱不能为空");
+            throw new BusinessException("新邮箱不能为空");
         }
         if (newEmail.equalsIgnoreCase(oldEmail)) {
-            throw new RuntimeException("新邮箱不能与旧邮箱相同");
+            throw new BusinessException("新邮箱不能与旧邮箱相同");
         }
 
         // 校验旧邮箱验证码
         String cachedOld = stringRedisTemplate.opsForValue().get(RedisConstant.REBIND_OLD_CODE_KEY_PREFIX + oldEmail);
         if (cachedOld == null) {
-            throw new RuntimeException("旧邮箱验证码已过期，请重新获取");
+            throw new BusinessException("旧邮箱验证码已过期，请重新获取");
         }
         if (!cachedOld.equals(oldCode)) {
-            throw new RuntimeException("旧邮箱验证码错误");
+            throw new BusinessException("旧邮箱验证码错误");
         }
 
         // 校验新邮箱验证码
         String cachedNew = stringRedisTemplate.opsForValue().get(RedisConstant.REBIND_NEW_CODE_KEY_PREFIX + newEmail);
         if (cachedNew == null) {
-            throw new RuntimeException("新邮箱验证码已过期，请重新获取");
+            throw new BusinessException("新邮箱验证码已过期，请重新获取");
         }
         if (!cachedNew.equals(newCode)) {
-            throw new RuntimeException("新邮箱验证码错误");
+            throw new BusinessException("新邮箱验证码错误");
         }
 
         // 并发兜底：再确认一次新邮箱未被占用
@@ -298,16 +295,16 @@ public class AuthServiceImpl implements AuthService {
         }
         String email = user.getEmail();
         if (email == null || email.isBlank()) {
-            throw new RuntimeException("当前账号未绑定邮箱");
+            throw new BusinessException("当前账号未绑定邮箱");
         }
 
         String cached = stringRedisTemplate.opsForValue()
                 .get(RedisConstant.REBIND_OLD_CODE_KEY_PREFIX + email);
         if (cached == null) {
-            throw new RuntimeException("验证码已过期，请重新获取");
+            throw new BusinessException("验证码已过期，请重新获取");
         }
         if (!cached.equals(code)) {
-            throw new RuntimeException("验证码错误");
+            throw new BusinessException("验证码错误");
         }
         // 不删除验证码：最终 rebindEmail 时还要再用一次
         log.info("旧邮箱验证码校验通过：userId={}, email={}", userId, email);
@@ -321,14 +318,14 @@ public class AuthServiceImpl implements AuthService {
         }
         String email = user.getEmail();
         if (email == null || email.isBlank()) {
-            throw new RuntimeException("当前账号未绑定邮箱");
+            throw new BusinessException("当前账号未绑定邮箱");
         }
 
         String limitKey = RedisConstant.PASSWORD_RESET_CODE_LIMIT_KEY_PREFIX + email;
         Boolean canSend = stringRedisTemplate.opsForValue()
                 .setIfAbsent(limitKey, "1", RedisConstant.REGISTER_CODE_SEND_LIMIT);
         if (!Boolean.TRUE.equals(canSend)) {
-            throw new RuntimeException("验证码发送过于频繁，请1分钟后再试");
+            throw new BusinessException("验证码发送过于频繁，请1分钟后再试");
         }
 
         String code = generateCode();
@@ -353,16 +350,16 @@ public class AuthServiceImpl implements AuthService {
         }
         String email = user.getEmail();
         if (email == null || email.isBlank()) {
-            throw new RuntimeException("当前账号未绑定邮箱");
+            throw new BusinessException("当前账号未绑定邮箱");
         }
 
         String cached = stringRedisTemplate.opsForValue()
                 .get(RedisConstant.PASSWORD_RESET_CODE_KEY_PREFIX + email);
         if (cached == null) {
-            throw new RuntimeException("验证码已过期，请重新获取");
+            throw new BusinessException("验证码已过期，请重新获取");
         }
         if (!cached.equals(code)) {
-            throw new RuntimeException("验证码错误");
+            throw new BusinessException("验证码错误");
         }
 
         String encoded = passwordEncoder.encode(newPassword);

@@ -5,7 +5,7 @@ package com.xq.exception;
  * <p>
  * code = 423：前端识别后应跳转到 /quiz。
  */
-public class QuizRequiredException extends RuntimeException {
+public class QuizRequiredException extends BusinessException {
 
     /** 业务 code：前端据此跳转答题页 */
     public static final int CODE = 423;

@@ -11,6 +11,7 @@ import com.xq.dto.DialogueVersionReviewDTO;
 import com.xq.entity.*;
 import com.xq.enums.*;
 import com.xq.exception.AlreadyExistsException;
+import com.xq.exception.BusinessException;
 import com.xq.exception.ForbiddenException;
 import com.xq.exception.UnauthorizedException;
 import com.xq.mapper.*;
@@ -108,7 +109,7 @@ public class DialogueVersionServiceImpl implements DialogueVersionService {
     public DialogueVersionVO detail(Long versionId) {
         DialogueVersion version = dialogueVersionMapper.getById(versionId);
         if (version == null) {
-            throw new RuntimeException("对话版本不存在");
+            throw new BusinessException("对话版本不存在");
         }
 
         // 三身份可见性校验
@@ -209,7 +210,7 @@ public class DialogueVersionServiceImpl implements DialogueVersionService {
     public void delete(Long versionId) {
         DialogueVersion version = dialogueVersionMapper.getById(versionId);
         if (version == null) {
-            throw new RuntimeException("对话版本不存在");
+            throw new BusinessException("对话版本不存在");
         }
 
         // 权限：三身份
@@ -278,10 +279,10 @@ public class DialogueVersionServiceImpl implements DialogueVersionService {
             Integer sourceType, Long sourceId, Set<DialogueFormatEnum> formats) {
 
         if (!DialogueSourceTypeEnum.isValid(sourceType)) {
-            throw new RuntimeException("来源类型不合法");
+            throw new BusinessException("来源类型不合法");
         }
         if (sourceId == null) {
-            throw new RuntimeException("来源ID不能为空");
+            throw new BusinessException("来源ID不能为空");
         }
 
         // 计算 viewer 过滤条件
@@ -413,29 +414,29 @@ public class DialogueVersionServiceImpl implements DialogueVersionService {
 
         // 2. 参数校验
         if (id == null) {
-            throw new RuntimeException("版本ID不能为空");
+            throw new BusinessException("版本ID不能为空");
         }
         if (dto == null || dto.getStatus() == null) {
-            throw new RuntimeException("审核状态不能为空");
+            throw new BusinessException("审核状态不能为空");
         }
         Integer targetStatus = dto.getStatus();
         boolean pass = StatusEnum.PUBLISHED.getValue().equals(targetStatus);
         boolean reject = StatusEnum.REJECTED.getValue().equals(targetStatus);
         if (!pass && !reject) {
-            throw new RuntimeException("审核状态只能为「已发布」或「已拒绝」");
+            throw new BusinessException("审核状态只能为「已发布」或「已拒绝」");
         }
         String remark = dto.getReviewRemark();
         if (reject && (remark == null || remark.isBlank())) {
-            throw new RuntimeException("拒绝时必须填写审核备注");
+            throw new BusinessException("拒绝时必须填写审核备注");
         }
 
         // 3. 存在性 + 状态检查
         DialogueVersion exist = dialogueVersionMapper.getById(id);
         if (exist == null) {
-            throw new RuntimeException("对话版本不存在");
+            throw new BusinessException("对话版本不存在");
         }
         if (!StatusEnum.PENDING.getValue().equals(exist.getStatus())) {
-            throw new RuntimeException("当前对话版本不是待审核状态，无法审核");
+            throw new BusinessException("当前对话版本不是待审核状态，无法审核");
         }
 
         // 4. 更新审核字段

@@ -5,6 +5,9 @@ import com.github.pagehelper.PageInfo;
 import com.xq.dto.CardSeriesDTO;
 import com.xq.dto.CardSeriesPageQueryDTO;
 import com.xq.entity.CardSeries;
+import com.xq.exception.AlreadyExistsException;
+import com.xq.exception.BusinessException;
+import com.xq.exception.DeletionNotAllowedException;
 import com.xq.mapper.CardSeriesMapper;
 import com.xq.result.PageResult;
 import com.xq.service.CardSeriesService;
@@ -37,7 +40,7 @@ public class CardSeriesServiceImpl implements CardSeriesService {
     @Override
     public PageResult<CardSeriesVO> pageQuery(CardSeriesPageQueryDTO query) {
         if (query == null) {
-            throw new RuntimeException("查询条件不能为空");
+            throw new BusinessException("查询条件不能为空");
         }
         PageHelper.startPage(query.getPageNum(), query.getPageSize());
         // 借用 searchByName 做分页，PageHelper 会接管
@@ -91,11 +94,11 @@ public class CardSeriesServiceImpl implements CardSeriesService {
     @Override
     public CardSeriesVO getById(Long id) {
         if (id == null) {
-            throw new RuntimeException("系列ID不能为空");
+            throw new BusinessException("系列ID不能为空");
         }
         CardSeries s = cardSeriesMapper.getById(id);
         if (s == null) {
-            throw new RuntimeException("系列不存在");
+            throw new BusinessException("系列不存在");
         }
         return toVO(s, true);
     }
@@ -110,16 +113,16 @@ public class CardSeriesServiceImpl implements CardSeriesService {
     @Transactional
     public Long create(CardSeriesDTO dto) {
         if (dto == null) {
-            throw new RuntimeException("参数不能为空");
+            throw new BusinessException("参数不能为空");
         }
         if (dto.getName() == null || dto.getName().isBlank()) {
-            throw new RuntimeException("系列名不能为空");
+            throw new BusinessException("系列名不能为空");
         }
         // 名称唯一校验
         List<CardSeries> exists = cardSeriesMapper.searchByName(dto.getName());
         for (CardSeries s : exists) {
             if (dto.getName().equals(s.getName())) {
-                throw new RuntimeException("系列名已存在");
+                throw new AlreadyExistsException("系列名已存在");
             }
         }
 
@@ -140,23 +143,23 @@ public class CardSeriesServiceImpl implements CardSeriesService {
     @Transactional
     public void update(Long id, CardSeriesDTO dto) {
         if (id == null) {
-            throw new RuntimeException("系列ID不能为空");
+            throw new BusinessException("系列ID不能为空");
         }
         if (dto == null) {
-            throw new RuntimeException("参数不能为空");
+            throw new BusinessException("参数不能为空");
         }
         CardSeries exist = cardSeriesMapper.getById(id);
         if (exist == null) {
-            throw new RuntimeException("系列不存在");
+            throw new BusinessException("系列不存在");
         }
         if (dto.getName() != null) {
             if (dto.getName().isBlank()) {
-                throw new RuntimeException("系列名不能为空");
+                throw new BusinessException("系列名不能为空");
             }
             List<CardSeries> others = cardSeriesMapper.searchByName(dto.getName());
             for (CardSeries s : others) {
                 if (dto.getName().equals(s.getName()) && !s.getId().equals(id)) {
-                    throw new RuntimeException("系列名已存在");
+                    throw new AlreadyExistsException("系列名已存在");
                 }
             }
         }
@@ -177,15 +180,15 @@ public class CardSeriesServiceImpl implements CardSeriesService {
     @Transactional
     public void delete(Long id) {
         if (id == null) {
-            throw new RuntimeException("系列ID不能为空");
+            throw new BusinessException("系列ID不能为空");
         }
         CardSeries exist = cardSeriesMapper.getById(id);
         if (exist == null) {
-            throw new RuntimeException("系列不存在");
+            throw new BusinessException("系列不存在");
         }
         int count = cardSeriesMapper.countCards(id);
         if (count > 0) {
-            throw new RuntimeException("该系列下还有 " + count + " 张卡面，无法删除");
+            throw new DeletionNotAllowedException("该系列下还有 " + count + " 张卡面，无法删除");
         }
         cardSeriesMapper.deleteById(id);
         log.info("删除卡面系列成功，id={}", id);
@@ -201,7 +204,7 @@ public class CardSeriesServiceImpl implements CardSeriesService {
     @Transactional
     public Long findOrCreateByName(String name) {
         if (name == null || name.isBlank()) {
-            throw new RuntimeException("系列名不能为空");
+            throw new BusinessException("系列名不能为空");
         }
         List<CardSeries> list = cardSeriesMapper.searchByName(name);
         for (CardSeries s : list) {

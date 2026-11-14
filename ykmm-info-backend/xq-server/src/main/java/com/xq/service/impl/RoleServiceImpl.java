@@ -9,6 +9,7 @@ import com.xq.dto.StoryCategorySimpleDTO;
 import com.xq.entity.Person;
 import com.xq.entity.Role;
 import com.xq.entity.StoryCategory;
+import com.xq.exception.BusinessException;
 import com.xq.mapper.PersonMapper;
 import com.xq.mapper.RoleMapper;
 import com.xq.mapper.StoryCategoryMapper;
@@ -70,11 +71,11 @@ public class RoleServiceImpl implements RoleService {
     @Override
     public RoleVO getById(Long id) {
         if (id == null) {
-            throw new RuntimeException("角色ID不能为空");
+            throw new BusinessException("角色ID不能为空");
         }
         Role role = roleMapper.getById(id);
         if (role == null) {
-            throw new RuntimeException("角色不存在");
+            throw new BusinessException("角色不存在");
         }
         return toVO(role);
     }
@@ -89,16 +90,16 @@ public class RoleServiceImpl implements RoleService {
     @Transactional
     public Long create(RoleDTO dto) {
         if (dto == null) {
-            throw new RuntimeException("参数不能为空");
+            throw new BusinessException("参数不能为空");
         }
         if (dto.getName() == null || dto.getName().isBlank()) {
-            throw new RuntimeException("角色名称不能为空");
+            throw new BusinessException("角色名称不能为空");
         }
         // personId 可以为空，非空时校验人物存在
         if (dto.getPersonId() != null) {
             Person person = personMapper.getById(dto.getPersonId());
             if (person == null) {
-                throw new RuntimeException("对应人物不存在");
+                throw new BusinessException("对应人物不存在");
             }
         }
         // 校验分类根节点是否存在
@@ -107,7 +108,7 @@ public class RoleServiceImpl implements RoleService {
             for (Long cid : categoryIds) {
                 StoryCategory category = storyCategoryMapper.getById(cid);
                 if (category == null) {
-                    throw new RuntimeException("剧情分类不存在：id=" + cid);
+                    throw new BusinessException("剧情分类不存在：id=" + cid);
                 }
             }
         }
@@ -136,23 +137,23 @@ public class RoleServiceImpl implements RoleService {
     @Transactional
     public void update(Long id, RoleDTO dto) {
         if (id == null) {
-            throw new RuntimeException("角色ID不能为空");
+            throw new BusinessException("角色ID不能为空");
         }
         if (dto == null) {
-            throw new RuntimeException("参数不能为空");
+            throw new BusinessException("参数不能为空");
         }
         Role exist = roleMapper.getById(id);
         if (exist == null) {
-            throw new RuntimeException("角色不存在");
+            throw new BusinessException("角色不存在");
         }
         if (dto.getName() != null && dto.getName().isBlank()) {
-            throw new RuntimeException("角色名称不能为空");
+            throw new BusinessException("角色名称不能为空");
         }
         // 人物存在性校验
         if (dto.getPersonId() != null) {
             Person person = personMapper.getById(dto.getPersonId());
             if (person == null) {
-                throw new RuntimeException("对应人物不存在");
+                throw new BusinessException("对应人物不存在");
             }
         }
         // 分类存在性校验
@@ -161,7 +162,7 @@ public class RoleServiceImpl implements RoleService {
             for (Long cid : categoryIds) {
                 StoryCategory category = storyCategoryMapper.getById(cid);
                 if (category == null) {
-                    throw new RuntimeException("剧情分类不存在：id=" + cid);
+                    throw new BusinessException("剧情分类不存在：id=" + cid);
                 }
             }
         }
@@ -191,11 +192,11 @@ public class RoleServiceImpl implements RoleService {
     @Transactional
     public void delete(Long id) {
         if (id == null) {
-            throw new RuntimeException("角色ID不能为空");
+            throw new BusinessException("角色ID不能为空");
         }
         Role exist = roleMapper.getById(id);
         if (exist == null) {
-            throw new RuntimeException("角色不存在");
+            throw new BusinessException("角色不存在");
         }
         // 删除分类关系
         roleMapper.deleteCategoryRel(id);

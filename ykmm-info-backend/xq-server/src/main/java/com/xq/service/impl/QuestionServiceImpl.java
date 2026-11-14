@@ -10,6 +10,7 @@ import com.xq.entity.SysQuestion;
 import com.xq.entity.SysQuestionOption;
 import com.xq.enums.QuestionStatusEnum;
 import com.xq.enums.QuestionTypeEnum;
+import com.xq.exception.BusinessException;
 import com.xq.mapper.QuestionMapper;
 import com.xq.mapper.QuestionOptionMapper;
 import com.xq.result.PageResult;
@@ -57,9 +58,9 @@ public class QuestionServiceImpl implements QuestionService {
 
     @Override
     public QuestionVO getById(Long id) {
-        if (id == null) throw new RuntimeException("题目ID不能为空");
+        if (id == null) throw new BusinessException("题目ID不能为空");
         SysQuestion question = questionMapper.getById(id);
-        if (question == null) throw new RuntimeException("题目不存在");
+        if (question == null) throw new BusinessException("题目不存在");
 
         QuestionVO vo = new QuestionVO();
         BeanUtils.copyProperties(question, vo);
@@ -96,9 +97,9 @@ public class QuestionServiceImpl implements QuestionService {
     @Override
     @Transactional
     public void update(Long id, QuestionDTO dto) {
-        if (id == null) throw new RuntimeException("题目ID不能为空");
+        if (id == null) throw new BusinessException("题目ID不能为空");
         SysQuestion exist = questionMapper.getById(id);
-        if (exist == null) throw new RuntimeException("题目不存在");
+        if (exist == null) throw new BusinessException("题目不存在");
 
         validateQuestion(dto);
 
@@ -117,9 +118,9 @@ public class QuestionServiceImpl implements QuestionService {
     @Override
     @Transactional
     public void delete(Long id) {
-        if (id == null) throw new RuntimeException("题目ID不能为空");
+        if (id == null) throw new BusinessException("题目ID不能为空");
         SysQuestion exist = questionMapper.getById(id);
-        if (exist == null) throw new RuntimeException("题目不存在");
+        if (exist == null) throw new BusinessException("题目不存在");
 
         questionOptionMapper.deleteByQuestionId(id);
         questionMapper.deleteById(id);
@@ -133,13 +134,13 @@ public class QuestionServiceImpl implements QuestionService {
      */
     private void validateQuestion(QuestionDTO dto) {
         if (!QuestionTypeEnum.isValid(dto.getQuestionType())) {
-            throw new RuntimeException("题型不合法");
+            throw new BusinessException("题型不合法");
         }
         if (!QuestionStatusEnum.isValid(dto.getStatus())) {
-            throw new RuntimeException("状态不合法");
+            throw new BusinessException("状态不合法");
         }
         if (dto.getOptions() == null || dto.getOptions().size() < 2) {
-            throw new RuntimeException("至少需要 2 个选项");
+            throw new BusinessException("至少需要 2 个选项");
         }
 
         long correctCount = dto.getOptions().stream()
@@ -147,10 +148,10 @@ public class QuestionServiceImpl implements QuestionService {
                 .count();
 
         if (correctCount == 0) {
-            throw new RuntimeException("必须至少设置一个正确答案");
+            throw new BusinessException("必须至少设置一个正确答案");
         }
         if (QuestionTypeEnum.SINGLE.getValue().equals(dto.getQuestionType()) && correctCount > 1) {
-            throw new RuntimeException("单选题只能有一个正确答案");
+            throw new BusinessException("单选题只能有一个正确答案");
         }
     }
 

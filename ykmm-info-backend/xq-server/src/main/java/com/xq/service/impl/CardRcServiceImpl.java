@@ -4,6 +4,7 @@ import com.xq.context.BaseContext;
 import com.xq.dto.CardRcDTO;
 import com.xq.entity.CardRc;
 import com.xq.enums.DialogueSideEnum;
+import com.xq.exception.BusinessException;
 import com.xq.exception.ForbiddenException;
 import com.xq.mapper.CardRcMapper;
 import com.xq.service.CardRcService;
@@ -53,7 +54,7 @@ public class CardRcServiceImpl implements CardRcService {
     public CardRcVO getById(Long id) {
         CardRcVO vo = cardRcMapper.getVOById(id);
         if (vo == null) {
-            throw new RuntimeException("RC 不存在");
+            throw new BusinessException("RC 不存在");
         }
         return vo;
     }
@@ -125,14 +126,14 @@ public class CardRcServiceImpl implements CardRcService {
     @Override
     public Integer resolveSide(Long rcId, Long speakerId) {
         if (rcId == null) {
-            throw new RuntimeException("RC ID不能为空");
+            throw new BusinessException("RC ID不能为空");
         }
         if (speakerId == null) {
-            throw new RuntimeException("说话角色不能为空");
+            throw new BusinessException("说话角色不能为空");
         }
         CardRc rc = cardRcMapper.getById(rcId);
         if (rc == null) {
-            throw new RuntimeException("RC 不存在");
+            throw new BusinessException("RC 不存在");
         }
         // 说话角色 == 发起人 → 右侧
         return rc.getRoleId() != null && rc.getRoleId().equals(speakerId)
@@ -144,16 +145,16 @@ public class CardRcServiceImpl implements CardRcService {
      * 校验当前用户是否有权操作指定 RC，并返回其实体
      *
      * @param id RC 主键
-     * @throws RuntimeException   资源不存在
+     * @throws BusinessException   资源不存在
      * @throws ForbiddenException 无权操作
      */
     private CardRc checkOperable(Long id) {
         if (id == null) {
-            throw new RuntimeException("RC ID不能为空");
+            throw new BusinessException("RC ID不能为空");
         }
         CardRc exist = cardRcMapper.getById(id);
         if (exist == null) {
-            throw new RuntimeException("RC 不存在");
+            throw new BusinessException("RC 不存在");
         }
         Boolean can = cardRcMapper.canOperate(id, BaseContext.getCurrentId(), BaseContext.getCurrentRole());
         if (!Boolean.TRUE.equals(can)) {

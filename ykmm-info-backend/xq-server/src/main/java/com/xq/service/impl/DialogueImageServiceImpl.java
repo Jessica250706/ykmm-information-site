@@ -4,6 +4,7 @@ import com.xq.dto.DialogueImageDTO;
 import com.xq.entity.DialogueImage;
 import com.xq.entity.DialogueVersion;
 import com.xq.enums.DialogueFormatEnum;
+import com.xq.exception.BusinessException;
 import com.xq.mapper.DialogueImageMapper;
 import com.xq.mapper.DialogueVersionMapper;
 import com.xq.service.DialogueImageService;
@@ -39,10 +40,10 @@ public class DialogueImageServiceImpl implements DialogueImageService {
     public void saveImages(Long versionId, List<DialogueImageDTO> images) {
         DialogueVersion version = dialogueVersionMapper.getById(versionId);
         if (version == null) {
-            throw new RuntimeException("对话版本不存在");
+            throw new BusinessException("对话版本不存在");
         }
         if (!DialogueFormatEnum.IMAGE.getValue().equals(version.getFormat())) {
-            throw new RuntimeException("该版本不是图片版本");
+            throw new BusinessException("该版本不是图片版本");
         }
 
         // 先清空原有图片
@@ -52,7 +53,7 @@ public class DialogueImageServiceImpl implements DialogueImageService {
         for (int i = 0; i < images.size(); i++) {
             DialogueImageDTO dto = images.get(i);
             if (dto.getUrl() == null || dto.getUrl().isBlank()) {
-                throw new RuntimeException("图片地址不能为空");
+                throw new BusinessException("图片地址不能为空");
             }
             DialogueImage img = new DialogueImage();
             img.setVersionId(versionId);
@@ -74,7 +75,7 @@ public class DialogueImageServiceImpl implements DialogueImageService {
     public void delete(Long imageId) {
         DialogueImage img = dialogueImageMapper.getById(imageId);
         if (img == null) {
-            throw new RuntimeException("对话图片不存在");
+            throw new BusinessException("对话图片不存在");
         }
         dialogueImageMapper.deleteById(imageId);
         log.info("删除对话图片成功，id={}", imageId);
@@ -91,17 +92,17 @@ public class DialogueImageServiceImpl implements DialogueImageService {
     public void sort(Long versionId, List<Long> imageIds) {
         DialogueVersion version = dialogueVersionMapper.getById(versionId);
         if (version == null) {
-            throw new RuntimeException("对话版本不存在");
+            throw new BusinessException("对话版本不存在");
         }
 
         for (int i = 0; i < imageIds.size(); i++) {
             Long imageId = imageIds.get(i);
             DialogueImage img = dialogueImageMapper.getById(imageId);
             if (img == null) {
-                throw new RuntimeException("对话图片不存在：id=" + imageId);
+                throw new BusinessException("对话图片不存在：id=" + imageId);
             }
             if (!img.getVersionId().equals(versionId)) {
-                throw new RuntimeException("图片不属于该版本：id=" + imageId);
+                throw new BusinessException("图片不属于该版本：id=" + imageId);
             }
             dialogueImageMapper.updateSort(imageId, i + 1);
         }

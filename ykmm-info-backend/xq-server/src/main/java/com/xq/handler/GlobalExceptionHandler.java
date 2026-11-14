@@ -1,10 +1,7 @@
 package com.xq.handler;
 
 import com.xq.constant.MessageConstant;
-import com.xq.exception.BaseException;
-import com.xq.exception.ForbiddenException;
-import com.xq.exception.QuizRequiredException;
-import com.xq.exception.UnauthorizedException;
+import com.xq.exception.*;
 import com.xq.result.Result;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
@@ -75,6 +72,15 @@ public class GlobalExceptionHandler {
         return Result.error(ex.getMessage() == null
                 ? MessageConstant.UNKNOWN_ERROR
                 : ex.getMessage());
+    }
+
+    /**
+     * 系统内部异常：完整堆栈落日志，前端返回中性提示
+     */
+    @ExceptionHandler(SystemException.class)
+    public Result<Void> handleSystem(SystemException ex) {
+        log.error("系统异常：", ex);
+        return Result.error(MessageConstant.SYSTEM_ERROR);  // 如 "系统繁忙，请稍后重试"
     }
 
     /**

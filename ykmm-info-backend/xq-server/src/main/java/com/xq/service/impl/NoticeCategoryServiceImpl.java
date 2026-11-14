@@ -2,6 +2,8 @@ package com.xq.service.impl;
 
 import com.xq.dto.NoticeCategoryDTO;
 import com.xq.entity.SysNoticeCategory;
+import com.xq.exception.BusinessException;
+import com.xq.exception.DeletionNotAllowedException;
 import com.xq.mapper.NoticeCategoryMapper;
 import com.xq.mapper.NoticeMapper;
 import com.xq.service.NoticeCategoryService;
@@ -46,10 +48,10 @@ public class NoticeCategoryServiceImpl implements NoticeCategoryService {
     @Transactional
     public void create(NoticeCategoryDTO dto) {
         if (dto == null || dto.getId() == null) {
-            throw new RuntimeException("分类ID不能为空");
+            throw new BusinessException("分类ID不能为空");
         }
         if (noticeCategoryMapper.getById(dto.getId()) != null) {
-            throw new RuntimeException("分类ID已存在：" + dto.getId());
+            throw new BusinessException("分类ID已存在：" + dto.getId());
         }
 
         SysNoticeCategory category = new SysNoticeCategory();
@@ -63,11 +65,11 @@ public class NoticeCategoryServiceImpl implements NoticeCategoryService {
     @Override
     @Transactional
     public void update(Integer id, NoticeCategoryDTO dto) {
-        if (id == null) throw new RuntimeException("分类ID不能为空");
-        if (dto == null) throw new RuntimeException("参数不能为空");
+        if (id == null) throw new BusinessException("分类ID不能为空");
+        if (dto == null) throw new BusinessException("参数不能为空");
 
         SysNoticeCategory exist = noticeCategoryMapper.getById(id);
-        if (exist == null) throw new RuntimeException("分类不存在：" + id);
+        if (exist == null) throw new BusinessException("分类不存在：" + id);
 
         SysNoticeCategory category = new SysNoticeCategory();
         category.setId(id);
@@ -83,15 +85,15 @@ public class NoticeCategoryServiceImpl implements NoticeCategoryService {
     @Override
     @Transactional
     public void delete(Integer id) {
-        if (id == null) throw new RuntimeException("分类ID不能为空");
+        if (id == null) throw new BusinessException("分类ID不能为空");
 
         SysNoticeCategory exist = noticeCategoryMapper.getById(id);
-        if (exist == null) throw new RuntimeException("分类不存在：" + id);
+        if (exist == null) throw new BusinessException("分类不存在：" + id);
 
         // 分类下仍有公告时不允许删除，避免公告变成"孤儿"
         int count = noticeMapper.countByCategoryId(id);
         if (count > 0) {
-            throw new RuntimeException("该分类下还有 " + count + " 条公告，无法删除");
+            throw new DeletionNotAllowedException("该分类下还有 " + count + " 条公告，无法删除");
         }
 
         noticeCategoryMapper.deleteById(id);

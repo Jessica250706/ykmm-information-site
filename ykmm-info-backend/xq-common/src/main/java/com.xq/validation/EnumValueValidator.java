@@ -1,5 +1,6 @@
 package com.xq.validation;
 
+import com.xq.exception.SystemException;
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
 
@@ -49,7 +50,7 @@ public class EnumValueValidator implements ConstraintValidator<EnumValue, Intege
                 }
             }
         } catch (Exception e) {
-            throw new RuntimeException("枚举类 " + enumClass.getName()
+            throw new SystemException("枚举类 " + enumClass.getName()
                     + " 缺少 getValue() 或 isValid(Integer) 方法", e);
         }
 

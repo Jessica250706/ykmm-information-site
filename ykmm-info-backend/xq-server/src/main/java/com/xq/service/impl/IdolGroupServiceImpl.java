@@ -3,6 +3,9 @@ package com.xq.service.impl;
 import com.xq.dto.IdolGroupDTO;
 import com.xq.entity.Agency;
 import com.xq.entity.IdolGroup;
+import com.xq.exception.AlreadyExistsException;
+import com.xq.exception.BusinessException;
+import com.xq.exception.DeletionNotAllowedException;
 import com.xq.mapper.AgencyMapper;
 import com.xq.mapper.IdolGroupMapper;
 import com.xq.service.IdolGroupService;
@@ -66,11 +69,11 @@ public class IdolGroupServiceImpl implements IdolGroupService {
     @Override
     public IdolGroupVO getById(Long id) {
         if (id == null) {
-            throw new RuntimeException("团体ID不能为空");
+            throw new BusinessException("团体ID不能为空");
         }
         IdolGroup group = idolGroupMapper.getById(id);
         if (group == null) {
-            throw new RuntimeException("偶像团体不存在");
+            throw new BusinessException("偶像团体不存在");
         }
         String agencyName = null;
         if (group.getAgencyId() != null) {
@@ -95,20 +98,20 @@ public class IdolGroupServiceImpl implements IdolGroupService {
     @Transactional
     public Long create(IdolGroupDTO dto) {
         if (dto == null || dto.getName() == null || dto.getName().isBlank()) {
-            throw new RuntimeException("团体名不能为空");
+            throw new BusinessException("团体名不能为空");
         }
         if (dto.getAgencyId() == null) {
-            throw new RuntimeException("所属经纪公司不能为空");
+            throw new BusinessException("所属经纪公司不能为空");
         }
         // 公司存在性校验
         Agency agency = agencyMapper.getById(dto.getAgencyId());
         if (agency == null) {
-            throw new RuntimeException("所属经纪公司不存在");
+            throw new BusinessException("所属经纪公司不存在");
         }
         // 团体名唯一性校验
         IdolGroup exist = idolGroupMapper.getByName(dto.getName());
         if (exist != null) {
-            throw new RuntimeException("团体名已存在");
+            throw new AlreadyExistsException("团体名已存在");
         }
 
         IdolGroup group = new IdolGroup();
@@ -128,27 +131,27 @@ public class IdolGroupServiceImpl implements IdolGroupService {
     @Transactional
     public void update(Long id, IdolGroupDTO dto) {
         if (id == null) {
-            throw new RuntimeException("团体ID不能为空");
+            throw new BusinessException("团体ID不能为空");
         }
         if (dto == null || dto.getName() == null || dto.getName().isBlank()) {
-            throw new RuntimeException("团体名不能为空");
+            throw new BusinessException("团体名不能为空");
         }
         IdolGroup exist = idolGroupMapper.getById(id);
         if (exist == null) {
-            throw new RuntimeException("偶像团体不存在");
+            throw new BusinessException("偶像团体不存在");
         }
         // 名称变更时做唯一性校验
         if (!dto.getName().equals(exist.getName())) {
             IdolGroup byName = idolGroupMapper.getByName(dto.getName());
             if (byName != null && !byName.getId().equals(id)) {
-                throw new RuntimeException("团体名已存在");
+                throw new BusinessException("团体名已存在");
             }
         }
         // 公司存在性校验
         if (dto.getAgencyId() != null) {
             Agency agency = agencyMapper.getById(dto.getAgencyId());
             if (agency == null) {
-                throw new RuntimeException("所属经纪公司不存在");
+                throw new BusinessException("所属经纪公司不存在");
             }
         }
 
@@ -168,16 +171,16 @@ public class IdolGroupServiceImpl implements IdolGroupService {
     @Transactional
     public void delete(Long id) {
         if (id == null) {
-            throw new RuntimeException("团体ID不能为空");
+            throw new BusinessException("团体ID不能为空");
         }
         IdolGroup exist = idolGroupMapper.getById(id);
         if (exist == null) {
-            throw new RuntimeException("偶像团体不存在");
+            throw new BusinessException("偶像团体不存在");
         }
         // 有人物引用时不允许删除
         int personCount = idolGroupMapper.countPersonByGroupId(id);
         if (personCount > 0) {
-            throw new RuntimeException("该团体下还有人物，无法删除");
+            throw new DeletionNotAllowedException("该团体下还有人物，无法删除");
         }
         idolGroupMapper.deleteById(id);
         log.info("删除偶像团体成功，id={}", id);

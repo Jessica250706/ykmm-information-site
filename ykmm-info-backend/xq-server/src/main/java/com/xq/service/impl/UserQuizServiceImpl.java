@@ -9,6 +9,7 @@ import com.xq.dto.QuizAnswerDTO;
 import com.xq.dto.QuizSubmitDTO;
 import com.xq.entity.*;
 import com.xq.enums.QuizAttemptStatusEnum;
+import com.xq.exception.*;
 import com.xq.mapper.*;
 import com.xq.service.UserQuizService;
 import com.xq.vo.QuizAttemptVO;
@@ -47,13 +48,13 @@ public class UserQuizServiceImpl implements UserQuizService {
 
         SysQuizConfig config = quizConfigMapper.get();
         if (config == null || config.getEnabled() == null || config.getEnabled() == 0) {
-            throw new RuntimeException("答题未开启");
+            throw new BusinessException("答题未开启");
         }
 
         // 1. 已通过直接拒绝
         SysUser user = userMapper.getById(userId);
         if (user != null && QuizPassedConstant.PASSED == (user.getQuizPassed() == null ? 0 : user.getQuizPassed())) {
-            throw new RuntimeException("您已通过答题");
+            throw new BusinessException("您已通过答题");
         }
 
         // 2. 有进行中的答题，直接复用
@@ -66,7 +67,7 @@ public class UserQuizServiceImpl implements UserQuizService {
         if (config.getMaxAttempts() != null && config.getMaxAttempts() > 0) {
             int used = attemptMapper.countSubmittedByUserId(userId);
             if (used >= config.getMaxAttempts()) {
-                throw new RuntimeException("答题次数已用完（" + config.getMaxAttempts() + " 次）");
+                throw new BusinessException("答题次数已用完（" + config.getMaxAttempts() + " 次）");
             }
         }
 
@@ -77,10 +78,10 @@ public class UserQuizServiceImpl implements UserQuizService {
         int totalCount = config.getTotalCount();
         int needRandom = totalCount - fixed.size();
         if (needRandom < 0) {
-            throw new RuntimeException("固定题数量（" + fixed.size() + "）超过配置的总题数（" + totalCount + "）");
+            throw new BusinessException("固定题数量（" + fixed.size() + "）超过配置的总题数（" + totalCount + "）");
         }
         if (randomPool.size() < needRandom) {
-            throw new RuntimeException("随机题不足，无法开始答题");
+            throw new BusinessException("随机题不足，无法开始答题");
         }
 
         Collections.shuffle(randomPool);
@@ -143,10 +144,10 @@ public class UserQuizServiceImpl implements UserQuizService {
         Long userId = requireUserId();
 
         SysUserQuizAttempt attempt = attemptMapper.getById(dto.getAttemptId());
-        if (attempt == null) throw new RuntimeException("答题记录不存在");
-        if (!Objects.equals(attempt.getUserId(), userId)) throw new RuntimeException("无权提交此答题");
+        if (attempt == null) throw new BusinessException("答题记录不存在");
+        if (!Objects.equals(attempt.getUserId(), userId)) throw new ForbiddenException("无权提交此答题");
         if (QuizAttemptStatusConstant.IN_PROGRESS != attempt.getStatus()) {
-            throw new RuntimeException("该答题已提交");
+            throw new AlreadyExistsException("该答题已提交");
         }
 
         Map<Long, QuizAnswerDTO> answerMap = dto.getAnswers().stream()
@@ -260,7 +261,7 @@ public class UserQuizServiceImpl implements UserQuizService {
 
     private Long requireUserId() {
         Long userId = BaseContext.getCurrentId();
-        if (userId == null) throw new RuntimeException("请先登录");
+        if (userId == null) throw new UnauthorizedException("请先登录");
         return userId;
     }
 
@@ -316,7 +317,7 @@ public class UserQuizServiceImpl implements UserQuizService {
         try {
             return JSON.writeValueAsString(obj);
         } catch (Exception e) {
-            throw new RuntimeException("JSON 序列化失败", e);
+            throw new SerializationException("JSON 序列化失败", e);
         }
     }
 
@@ -324,7 +325,7 @@ public class UserQuizServiceImpl implements UserQuizService {
         try {
             return JSON.readValue(json, typeRef);
         } catch (Exception e) {
-            throw new RuntimeException("JSON 反序列化失败", e);
+            throw new SerializationException("JSON 反序列化失败", e);
         }
     }
 }

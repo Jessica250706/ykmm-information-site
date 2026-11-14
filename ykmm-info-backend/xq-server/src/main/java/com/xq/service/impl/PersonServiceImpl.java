@@ -10,6 +10,8 @@ import com.xq.dto.PersonPageQueryDTO;
 import com.xq.entity.Person;
 import com.xq.enums.BloodTypeEnum;
 import com.xq.enums.PersonTypeEnum;
+import com.xq.exception.BusinessException;
+import com.xq.exception.DeletionNotAllowedException;
 import com.xq.mapper.PersonMapper;
 import com.xq.result.PageResult;
 import com.xq.service.PersonService;
@@ -45,18 +47,17 @@ public class PersonServiceImpl implements PersonService {
      */
     private static void judgeLegality(PersonDTO dto) {
         if (dto.getNameCn() != null && dto.getNameCn().isBlank()) {
-            throw new RuntimeException("中文名不能为空");
+            throw new BusinessException("中文名不能为空");
         }
         if (dto.getPersonType() != null && !PersonTypeEnum.isValid(dto.getPersonType())) {
-            throw new RuntimeException("人物类型不合法");
+            throw new BusinessException("人物类型不合法");
         }
         if (dto.getBloodType() != null && !BloodTypeEnum.isValid(dto.getBloodType())) {
-            throw new RuntimeException("血型不合法");
+            throw new BusinessException("血型不合法");
         }
         if (dto.getSymbol() != null
                 && dto.getSymbol().length() > PersonConstant.SYMBOL_MAX_LENGTH) {
-            throw new RuntimeException("代表符号长度不能超过 "
-                    + PersonConstant.SYMBOL_MAX_LENGTH);
+            throw new BusinessException("代表符号长度不能超过 " + PersonConstant.SYMBOL_MAX_LENGTH);
         }
     }
 
@@ -89,11 +90,11 @@ public class PersonServiceImpl implements PersonService {
     @Override
     public PersonVO getById(Long id) {
         if (id == null) {
-            throw new RuntimeException("人物ID不能为空");
+            throw new BusinessException("人物ID不能为空");
         }
         Person person = personMapper.getById(id);
         if (person == null) {
-            throw new RuntimeException("人物不存在");
+            throw new BusinessException("人物不存在");
         }
         return toVOWithRelations(person);
     }
@@ -131,7 +132,7 @@ public class PersonServiceImpl implements PersonService {
     public void update(Long id, PersonDTO dto) {
         Person exist = personMapper.getById(id);
         if (exist == null) {
-            throw new RuntimeException("人物不存在");
+            throw new BusinessException("人物不存在");
         }
         judgeLegality(dto);
 
@@ -167,12 +168,12 @@ public class PersonServiceImpl implements PersonService {
     public void delete(Long id) {
         Person exist = personMapper.getById(id);
         if (exist == null) {
-            throw new RuntimeException("人物不存在");
+            throw new BusinessException("人物不存在");
         }
         // 被卡面引用时不允许删除
         int refCount = personMapper.countCardRefByPersonId(id);
         if (refCount > 0) {
-            throw new RuntimeException("该人物已被卡面引用，无法删除");
+            throw new DeletionNotAllowedException("该人物已被卡面引用，无法删除");
         }
         // 删除关系
         personMapper.deletePersonGroupRel(id);

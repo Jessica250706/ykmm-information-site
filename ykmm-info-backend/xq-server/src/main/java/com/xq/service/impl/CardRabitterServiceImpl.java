@@ -3,6 +3,7 @@ package com.xq.service.impl;
 import com.xq.context.BaseContext;
 import com.xq.dto.CardRabitterDTO;
 import com.xq.entity.CardRabitter;
+import com.xq.exception.BusinessException;
 import com.xq.exception.ForbiddenException;
 import com.xq.mapper.CardRabitterMapper;
 import com.xq.service.CardRabitterService;
@@ -63,7 +64,7 @@ public class CardRabitterServiceImpl implements CardRabitterService {
         CardRabitter rabitter = cardRabitterMapper.getById(id);
         // Rabitter 必须存在
         if (rabitter == null) {
-            throw new RuntimeException("Rabitter 不存在");
+            throw new BusinessException("Rabitter 不存在");
         }
         return toVO(rabitter);
     }
@@ -137,7 +138,7 @@ public class CardRabitterServiceImpl implements CardRabitterService {
     public void deleteByCardId(Long cardId) {
         // 卡面ID不能为空
         if (cardId == null) {
-            throw new RuntimeException("卡面ID不能为空");
+            throw new BusinessException("卡面ID不能为空");
         }
         cardRabitterMapper.deleteByCardId(cardId);
         log.info("根据卡面ID删除 Rabitter 成功，cardId={}", cardId);
@@ -162,16 +163,16 @@ public class CardRabitterServiceImpl implements CardRabitterService {
      * 校验当前用户是否有权操作指定 Rabitter，并返回其实体
      *
      * @param id Rabitter 主键
-     * @throws RuntimeException   资源不存在
+     * @throws BusinessException   资源不存在
      * @throws ForbiddenException 无权操作
      */
     private CardRabitter checkOperable(Long id) {
         if (id == null) {
-            throw new RuntimeException("Rabitter ID不能为空");
+            throw new BusinessException("Rabitter ID不能为空");
         }
         CardRabitter exist = cardRabitterMapper.getById(id);
         if (exist == null) {
-            throw new RuntimeException("Rabitter 不存在");
+            throw new BusinessException("Rabitter 不存在");
         }
         Boolean can = cardRabitterMapper.canOperate(id, BaseContext.getCurrentId(), BaseContext.getCurrentRole());
         if (!Boolean.TRUE.equals(can)) {

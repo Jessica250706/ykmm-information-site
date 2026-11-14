@@ -150,7 +150,7 @@ public class CardServiceImpl implements CardService {
         Card card = cardMapper.getById(id);
         // 卡面必须存在
         if (card == null) {
-            throw new RuntimeException("卡面不存在");
+            throw new BusinessException("卡面不存在");
         }
 
         // 三身份可见性校验：管理员全看，游客仅已发布，用户已发布+自己创建的
@@ -177,7 +177,7 @@ public class CardServiceImpl implements CardService {
         if (sourceType == DialogueSourceTypeConstant.RC) {
             CardRcVO rc = cardRcMapper.getVOById(sourceId);
             if (rc == null) {
-                throw new RuntimeException("RC 不存在");
+                throw new BusinessException("RC 不存在");
             }
             episode.setId(rc.getId());
             episode.setCardId(rc.getCardId());
@@ -188,7 +188,7 @@ public class CardServiceImpl implements CardService {
         } else if (sourceType == DialogueSourceTypeConstant.RTV) {
             CardRtv rtv = cardRtvMapper.getById(sourceId);
             if (rtv == null) {
-                throw new RuntimeException("RTV 不存在");
+                throw new BusinessException("RTV 不存在");
             }
             episode.setId(rtv.getId());
             episode.setCardId(rtv.getCardId());
@@ -197,7 +197,7 @@ public class CardServiceImpl implements CardService {
         } else if (sourceType == DialogueSourceTypeConstant.RABITTER) {
             CardRabitter rabitter = cardRabitterMapper.getById(sourceId);
             if (rabitter == null) {
-                throw new RuntimeException("Rabitter 不存在");
+                throw new BusinessException("Rabitter 不存在");
             }
             episode.setId(rabitter.getId());
             episode.setCardId(rabitter.getCardId());
@@ -213,7 +213,7 @@ public class CardServiceImpl implements CardService {
         Card card = cardMapper.getById(episode.getCardId());
         if (card == null || !ViewerFilterSupport.canView(card.getStatus(), card.getCreatorId())) {
             // 统一提示"不存在"，避免通过 id 枚举探测他人待审核内容
-            throw new RuntimeException("话不存在或无权查看");
+            throw new BusinessException("话不存在或无权查看");
         }
 
         // 2. 计算对话版本的过滤条件
@@ -394,7 +394,7 @@ public class CardServiceImpl implements CardService {
 
         Card exist = cardMapper.getById(id);
         if (exist == null) {
-            throw new RuntimeException("卡面不存在");
+            throw new BusinessException("卡面不存在");
         }
 
         // 1. 收集所有话数 id（RC / RTV / Rabitter）
@@ -479,11 +479,11 @@ public class CardServiceImpl implements CardService {
     @Override
     public void assertWritable(Long cardId) {
         if (cardId == null) {
-            throw new RuntimeException("卡面ID不能为空");
+            throw new BusinessException("卡面ID不能为空");
         }
         Card card = cardMapper.getById(cardId);
         if (card == null) {
-            throw new RuntimeException("卡面不存在");
+            throw new BusinessException("卡面不存在");
         }
         if (!canCreate(cardId)) {
             throw new ForbiddenException("无权操作该卡面下的内容");
@@ -549,26 +549,26 @@ public class CardServiceImpl implements CardService {
 
         // 2. 参数校验
         if (dto == null || dto.getStatus() == null) {
-            throw new RuntimeException("审核状态不能为空");
+            throw new BusinessException("审核状态不能为空");
         }
         Integer targetStatus = dto.getStatus();
         boolean pass = StatusEnum.PUBLISHED.getValue().equals(targetStatus);
         boolean reject = StatusEnum.REJECTED.getValue().equals(targetStatus);
         if (!pass && !reject) {
-            throw new RuntimeException("审核状态只能为「已发布」或「已拒绝」");
+            throw new BusinessException("审核状态只能为「已发布」或「已拒绝」");
         }
         String remark = dto.getReviewRemark();
         if (reject && (remark == null || remark.isBlank())) {
-            throw new RuntimeException("拒绝时必须填写审核备注");
+            throw new BusinessException("拒绝时必须填写审核备注");
         }
 
         // 3. 存在性 + 状态检查
         Card exist = cardMapper.getById(id);
         if (exist == null) {
-            throw new RuntimeException("卡面不存在");
+            throw new BusinessException("卡面不存在");
         }
         if (!StatusEnum.PENDING.getValue().equals(exist.getStatus())) {
-            throw new RuntimeException("当前卡面不是待审核状态，无法审核");
+            throw new BusinessException("当前卡面不是待审核状态，无法审核");
         }
 
         // 4. 更新审核字段
@@ -635,7 +635,7 @@ public class CardServiceImpl implements CardService {
             CardImageDTO d = images.get(i);
             if (d.getUrl() == null || d.getUrl().isBlank()) continue;
             if (!CardImageTypeEnum.isValid(d.getImageType())) {
-                throw new RuntimeException("图片类型不合法：" + d.getImageType());
+                throw new BusinessException("图片类型不合法：" + d.getImageType());
             }
             CardImage img = new CardImage();
             img.setCardId(cardId);

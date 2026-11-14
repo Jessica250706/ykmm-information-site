@@ -13,6 +13,7 @@ import com.xq.entity.SysNoticeCategory;
 import com.xq.entity.SysUser;
 import com.xq.enums.NoticeStatusEnum;
 import com.xq.enums.NoticeVisibilityEnum;
+import com.xq.exception.BusinessException;
 import com.xq.mapper.NoticeCategoryMapper;
 import com.xq.mapper.NoticeMapper;
 import com.xq.mapper.UserMapper;
@@ -57,28 +58,28 @@ public class NoticeServiceImpl implements NoticeService {
 
     @Override
     public NoticeVO detail(Long id) {
-        if (id == null) throw new RuntimeException("公告ID不能为空");
+        if (id == null) throw new BusinessException("公告ID不能为空");
 
         SysNotice notice = noticeMapper.getById(id);
         if (notice == null) {
-            throw new RuntimeException("公告不存在");
+            throw new BusinessException("公告不存在");
         }
 
         // 非管理员：必须通过状态 + 可见性 + 时间校验
         if (!RoleContext.isAdmin()) {
             if (!NoticeStatusEnum.PUBLISHED.getValue().equals(notice.getStatus())) {
-                throw new RuntimeException("公告不存在");
+                throw new BusinessException("公告不存在");
             }
             if (notice.getMinVisibility() != null
                     && notice.getMinVisibility() > currentVisibility()) {
-                throw new RuntimeException("公告不存在");
+                throw new BusinessException("公告不存在");
             }
             LocalDateTime now = LocalDateTime.now();
             if (notice.getPublishAt() != null && notice.getPublishAt().isAfter(now)) {
-                throw new RuntimeException("公告不存在");
+                throw new BusinessException("公告不存在");
             }
             if (notice.getExpireAt() != null && notice.getExpireAt().isBefore(now)) {
-                throw new RuntimeException("公告不存在");
+                throw new BusinessException("公告不存在");
             }
 
             // 非管理员访问才累计浏览量
@@ -101,10 +102,10 @@ public class NoticeServiceImpl implements NoticeService {
 
     @Override
     public NoticeVO adminDetail(Long id) {
-        if (id == null) throw new RuntimeException("公告ID不能为空");
+        if (id == null) throw new BusinessException("公告ID不能为空");
         SysNotice notice = noticeMapper.getById(id);
         if (notice == null) {
-            throw new RuntimeException("公告不存在");
+            throw new BusinessException("公告不存在");
         }
         return assembleVOs(List.of(notice)).get(0);
     }
@@ -112,12 +113,12 @@ public class NoticeServiceImpl implements NoticeService {
     @Override
     @Transactional
     public Long create(NoticeDTO dto) {
-        if (dto == null) throw new RuntimeException("参数不能为空");
+        if (dto == null) throw new BusinessException("参数不能为空");
         validateVisibility(dto.getMinVisibility());
 
         SysNoticeCategory category = noticeCategoryMapper.getById(dto.getCategoryId());
         if (category == null) {
-            throw new RuntimeException("公告分类不存在：id=" + dto.getCategoryId());
+            throw new BusinessException("公告分类不存在：id=" + dto.getCategoryId());
         }
 
         SysNotice notice = new SysNotice();
@@ -136,17 +137,17 @@ public class NoticeServiceImpl implements NoticeService {
     @Override
     @Transactional
     public void update(Long id, NoticeDTO dto) {
-        if (id == null) throw new RuntimeException("公告ID不能为空");
-        if (dto == null) throw new RuntimeException("参数不能为空");
+        if (id == null) throw new BusinessException("公告ID不能为空");
+        if (dto == null) throw new BusinessException("参数不能为空");
 
         SysNotice exist = noticeMapper.getById(id);
-        if (exist == null) throw new RuntimeException("公告不存在");
+        if (exist == null) throw new BusinessException("公告不存在");
 
         validateVisibility(dto.getMinVisibility());
 
         SysNoticeCategory category = noticeCategoryMapper.getById(dto.getCategoryId());
         if (category == null) {
-            throw new RuntimeException("公告分类不存在：id=" + dto.getCategoryId());
+            throw new BusinessException("公告分类不存在：id=" + dto.getCategoryId());
         }
 
         SysNotice update = new SysNotice();
@@ -160,9 +161,9 @@ public class NoticeServiceImpl implements NoticeService {
     @Override
     @Transactional
     public void delete(Long id) {
-        if (id == null) throw new RuntimeException("公告ID不能为空");
+        if (id == null) throw new BusinessException("公告ID不能为空");
         SysNotice exist = noticeMapper.getById(id);
-        if (exist == null) throw new RuntimeException("公告不存在");
+        if (exist == null) throw new BusinessException("公告不存在");
 
         noticeMapper.deleteById(id);
         log.info("删除公告成功，id={}", id);
@@ -171,14 +172,14 @@ public class NoticeServiceImpl implements NoticeService {
     @Override
     @Transactional
     public void publish(Long id) {
-        if (id == null) throw new RuntimeException("公告ID不能为空");
+        if (id == null) throw new BusinessException("公告ID不能为空");
         SysNotice exist = noticeMapper.getById(id);
-        if (exist == null) throw new RuntimeException("公告不存在");
+        if (exist == null) throw new BusinessException("公告不存在");
 
         Integer status = exist.getStatus();
         if (NoticeStatusEnum.PUBLISHED.getValue().equals(status)
                 || NoticeStatusEnum.SCHEDULED.getValue().equals(status)) {
-            throw new RuntimeException("公告已是发布或待发布状态，无需重复操作");
+            throw new BusinessException("公告已是发布或待发布状态，无需重复操作");
         }
 
         LocalDateTime now = LocalDateTime.now();
@@ -202,12 +203,12 @@ public class NoticeServiceImpl implements NoticeService {
     @Override
     @Transactional
     public void offline(Long id) {
-        if (id == null) throw new RuntimeException("公告ID不能为空");
+        if (id == null) throw new BusinessException("公告ID不能为空");
         SysNotice exist = noticeMapper.getById(id);
-        if (exist == null) throw new RuntimeException("公告不存在");
+        if (exist == null) throw new BusinessException("公告不存在");
 
         if (!NoticeStatusEnum.PUBLISHED.getValue().equals(exist.getStatus())) {
-            throw new RuntimeException("只有已发布状态才能下线");
+            throw new BusinessException("只有已发布状态才能下线");
         }
 
         SysNotice update = new SysNotice();
@@ -231,7 +232,7 @@ public class NoticeServiceImpl implements NoticeService {
 
     private void validateVisibility(Integer visibility) {
         if (!NoticeVisibilityEnum.isValid(visibility)) {
-            throw new RuntimeException("可见性参数不合法：" + visibility);
+            throw new BusinessException("可见性参数不合法：" + visibility);
         }
     }
 

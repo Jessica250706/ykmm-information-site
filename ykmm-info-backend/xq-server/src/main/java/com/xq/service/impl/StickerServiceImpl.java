@@ -7,6 +7,7 @@ import com.xq.dto.StickerDTO;
 import com.xq.dto.StickerPageQueryDTO;
 import com.xq.entity.Sticker;
 import com.xq.enums.StickerTypeEnum;
+import com.xq.exception.BusinessException;
 import com.xq.mapper.StickerGroupMapper;
 import com.xq.mapper.StickerMapper;
 import com.xq.result.PageResult;
@@ -45,7 +46,7 @@ public class StickerServiceImpl implements StickerService {
     public StickerVO getById(Long id) {
         StickerVO stickerVO = stickerMapper.getVOById(id);
         if (stickerVO == null) {
-            throw new RuntimeException("表情包不存在");
+            throw new BusinessException("表情包不存在");
         }
         return stickerVO;
     }
@@ -60,7 +61,7 @@ public class StickerServiceImpl implements StickerService {
 
         StickerGroupVO group = stickerGroupMapper.getVOById(stickerDTO.getGroupId());
         if (group == null) {
-            throw new RuntimeException("表情包分组不存在");
+            throw new BusinessException("表情包分组不存在");
         }
 
         Sticker sticker = Sticker.builder()
@@ -85,12 +86,12 @@ public class StickerServiceImpl implements StickerService {
 
         Sticker existing = stickerMapper.getEntityById(stickerDTO.getId());
         if (existing == null) {
-            throw new RuntimeException("表情包不存在");
+            throw new BusinessException("表情包不存在");
         }
 
         StickerGroupVO group = stickerGroupMapper.getVOById(stickerDTO.getGroupId());
         if (group == null) {
-            throw new RuntimeException("表情包分组不存在");
+            throw new BusinessException("表情包分组不存在");
         }
 
         Sticker sticker = Sticker.builder()
@@ -113,7 +114,7 @@ public class StickerServiceImpl implements StickerService {
     public void delete(Long id) {
         Sticker existing = stickerMapper.getEntityById(id);
         if (existing == null) {
-            throw new RuntimeException("表情包不存在");
+            throw new BusinessException("表情包不存在");
         }
         stickerMapper.deleteById(id);
     }
@@ -122,19 +123,19 @@ public class StickerServiceImpl implements StickerService {
      * 校验表情包类型与内容是否匹配
      */
     private void validateSticker(StickerDTO stickerDTO) {
-        StickerTypeEnum typeEnum = StickerTypeEnum.fromCode(stickerDTO.getStickerType());
+        StickerTypeEnum typeEnum = StickerTypeEnum.fromValue(stickerDTO.getStickerType());
         if (typeEnum == null) {
-            throw new RuntimeException("表情包类型不正确");
+            throw new BusinessException("表情包类型不正确");
         }
 
         if (StickerTypeEnum.CUSTOM_IMAGE.equals(typeEnum)
                 && !StringUtils.hasText(stickerDTO.getImageUrl())) {
-            throw new RuntimeException("自定义图片表情包必须填写图片地址");
+            throw new BusinessException("自定义图片表情包必须填写图片地址");
         }
 
         if (StickerTypeEnum.EMOJI.equals(typeEnum)
                 && !StringUtils.hasText(stickerDTO.getEmoji())) {
-            throw new RuntimeException("emoji表情包必须填写emoji");
+            throw new BusinessException("emoji表情包必须填写emoji");
         }
     }
 }

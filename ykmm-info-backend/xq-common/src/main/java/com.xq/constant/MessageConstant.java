@@ -18,5 +18,5 @@ public class MessageConstant {
     public static final String UNAUTHORIZED = "未登录或登录已失效，请重新登录";
     public static final String FORBIDDEN = "无权限访问";
     public static final String NOT_CONTENT_OWNER = "只能操作自己创建的内容";
-
+    public static final String SYSTEM_ERROR = "系统繁忙，请稍后重试";
 }

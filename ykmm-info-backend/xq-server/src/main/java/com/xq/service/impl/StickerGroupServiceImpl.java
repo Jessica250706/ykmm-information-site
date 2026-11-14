@@ -6,6 +6,9 @@ import com.xq.context.BaseContext;
 import com.xq.dto.StickerGroupDTO;
 import com.xq.dto.StickerGroupPageQueryDTO;
 import com.xq.entity.StickerGroup;
+import com.xq.exception.AlreadyExistsException;
+import com.xq.exception.BusinessException;
+import com.xq.exception.DeletionNotAllowedException;
 import com.xq.mapper.StickerGroupMapper;
 import com.xq.mapper.StickerMapper;
 import com.xq.result.PageResult;
@@ -61,7 +64,7 @@ public class StickerGroupServiceImpl implements StickerGroupService {
     public StickerGroupVO getById(Long id) {
         StickerGroupVO stickerGroupVO = stickerGroupMapper.getVOById(id);
         if (stickerGroupVO == null) {
-            throw new RuntimeException("表情包分组不存在");
+            throw new BusinessException("表情包分组不存在");
         }
         return stickerGroupVO;
     }
@@ -74,7 +77,7 @@ public class StickerGroupServiceImpl implements StickerGroupService {
     public void save(StickerGroupDTO stickerGroupDTO) {
         long count = stickerGroupMapper.countByName(stickerGroupDTO.getName(), null);
         if (count > 0) {
-            throw new RuntimeException("分组名称已存在");
+            throw new AlreadyExistsException("分组名称已存在");
         }
 
         StickerGroup stickerGroup = StickerGroup.builder()
@@ -95,12 +98,12 @@ public class StickerGroupServiceImpl implements StickerGroupService {
     public void update(StickerGroupDTO stickerGroupDTO) {
         StickerGroup existing = stickerGroupMapper.getEntityById(stickerGroupDTO.getId());
         if (existing == null) {
-            throw new RuntimeException("表情包分组不存在");
+            throw new BusinessException("表情包分组不存在");
         }
 
         long count = stickerGroupMapper.countByName(stickerGroupDTO.getName(), stickerGroupDTO.getId());
         if (count > 0) {
-            throw new RuntimeException("分组名称已存在");
+            throw new AlreadyExistsException("分组名称已存在");
         }
 
         StickerGroup stickerGroup = StickerGroup.builder()
@@ -121,12 +124,12 @@ public class StickerGroupServiceImpl implements StickerGroupService {
     public void delete(Long id) {
         StickerGroup existing = stickerGroupMapper.getEntityById(id);
         if (existing == null) {
-            throw new RuntimeException("表情包分组不存在");
+            throw new BusinessException("表情包分组不存在");
         }
 
         long stickerCount = stickerMapper.countByGroupId(id);
         if (stickerCount > 0) {
-            throw new RuntimeException("该分组下还有表情包，不能删除");
+            throw new DeletionNotAllowedException("该分组下还有表情包，不能删除");
         }
 
         stickerGroupMapper.deleteById(id);

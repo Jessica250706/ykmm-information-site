@@ -10,6 +10,7 @@ import com.xq.dto.StoryDTO;
 import com.xq.dto.StoryPageQueryDTO;
 import com.xq.entity.*;
 import com.xq.enums.*;
+import com.xq.exception.BusinessException;
 import com.xq.exception.ForbiddenException;
 import com.xq.exception.UnauthorizedException;
 import com.xq.mapper.*;
@@ -111,7 +112,7 @@ public class StoryServiceImpl implements StoryService {
     @Override
     public PageResult<StoryVO> pageQuery(StoryPageQueryDTO query) {
         if (query == null) {
-            throw new RuntimeException("查询条件不能为空");
+            throw new BusinessException("查询条件不能为空");
         }
 
         // 由角色上下文决定 status / viewerId
@@ -217,7 +218,7 @@ public class StoryServiceImpl implements StoryService {
     public Long create(StoryDTO dto) {
         StoryCategory category = storyCategoryMapper.getById(dto.getCategoryId());
         if (category == null) {
-            throw new RuntimeException("所属分类不存在");
+            throw new BusinessException("所属分类不存在");
         }
 
         Story story = new Story();
@@ -254,13 +255,13 @@ public class StoryServiceImpl implements StoryService {
     public void update(Long id, StoryDTO dto) {
         Story exist = storyMapper.getById(id);
         if (exist == null) {
-            throw new RuntimeException("剧情不存在");
+            throw new BusinessException("剧情不存在");
         }
 
         if (dto.getCategoryId() != null) {
             StoryCategory category = storyCategoryMapper.getById(dto.getCategoryId());
             if (category == null) {
-                throw new RuntimeException("所属分类不存在");
+                throw new BusinessException("所属分类不存在");
             }
         }
 
@@ -305,7 +306,7 @@ public class StoryServiceImpl implements StoryService {
 
         Story exist = storyMapper.getById(id);
         if (exist == null) {
-            throw new RuntimeException("剧情不存在");
+            throw new BusinessException("剧情不存在");
         }
 
         // 级联删除对话版本及其内容
@@ -347,10 +348,10 @@ public class StoryServiceImpl implements StoryService {
 
         Story exist = storyMapper.getById(id);
         if (exist == null) {
-            throw new RuntimeException("剧情不存在");
+            throw new BusinessException("剧情不存在");
         }
         if (!StatusEnum.PENDING.getValue().equals(exist.getStatus())) {
-            throw new RuntimeException("该剧情不在待审核状态");
+            throw new BusinessException("该剧情不在待审核状态");
         }
 
         Story story = new Story();
@@ -567,11 +568,11 @@ public class StoryServiceImpl implements StoryService {
 
     private @NotNull Story getStory(Long id) {
         if (id == null) {
-            throw new RuntimeException("剧情ID不能为空");
+            throw new BusinessException("剧情ID不能为空");
         }
         Story story = storyMapper.getById(id);
         if (story == null) {
-            throw new RuntimeException("剧情不存在");
+            throw new BusinessException("剧情不存在");
         }
         return story;
     }

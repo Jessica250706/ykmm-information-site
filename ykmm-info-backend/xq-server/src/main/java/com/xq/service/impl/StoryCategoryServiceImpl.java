@@ -7,6 +7,8 @@ import com.xq.dto.StoryCategoryDTO;
 import com.xq.dto.StoryCategoryPageQueryDTO;
 import com.xq.entity.StoryCategory;
 import com.xq.enums.StoryCategoryTypeEnum;
+import com.xq.exception.BusinessException;
+import com.xq.exception.DeletionNotAllowedException;
 import com.xq.mapper.StoryCategoryMapper;
 import com.xq.result.PageResult;
 import com.xq.service.StoryCategoryService;
@@ -146,11 +148,11 @@ public class StoryCategoryServiceImpl implements StoryCategoryService {
     @Override
     public StoryCategoryVO getById(Long id) {
         if (id == null) {
-            throw new RuntimeException("分类ID不能为空");
+            throw new BusinessException("分类ID不能为空");
         }
         StoryCategory category = storyCategoryMapper.getById(id);
         if (category == null) {
-            throw new RuntimeException("剧情分类不存在");
+            throw new BusinessException("剧情分类不存在");
         }
         return toVO(category);
     }
@@ -165,10 +167,10 @@ public class StoryCategoryServiceImpl implements StoryCategoryService {
     @Transactional
     public Long create(StoryCategoryDTO dto) {
         if (dto == null || dto.getName() == null || dto.getName().isBlank()) {
-            throw new RuntimeException("分类名不能为空");
+            throw new BusinessException("分类名不能为空");
         }
         if (!StoryCategoryTypeEnum.isValid(dto.getCategoryType())) {
-            throw new RuntimeException("分类类型不合法");
+            throw new BusinessException("分类类型不合法");
         }
         // 父分类处理
         if (dto.getParentId() == null) {
@@ -176,7 +178,7 @@ public class StoryCategoryServiceImpl implements StoryCategoryService {
         } else if (dto.getParentId() != StoryConstant.ROOT_PARENT_ID) {
             StoryCategory parent = storyCategoryMapper.getById(dto.getParentId());
             if (parent == null) {
-                throw new RuntimeException("父分类不存在");
+                throw new BusinessException("父分类不存在");
             }
         }
 
@@ -200,32 +202,32 @@ public class StoryCategoryServiceImpl implements StoryCategoryService {
     @Transactional
     public void update(Long id, StoryCategoryDTO dto) {
         if (id == null) {
-            throw new RuntimeException("分类ID不能为空");
+            throw new BusinessException("分类ID不能为空");
         }
         if (dto == null) {
-            throw new RuntimeException("参数不能为空");
+            throw new BusinessException("参数不能为空");
         }
         StoryCategory exist = storyCategoryMapper.getById(id);
         if (exist == null) {
-            throw new RuntimeException("剧情分类不存在");
+            throw new BusinessException("剧情分类不存在");
         }
         if (dto.getName() != null && dto.getName().isBlank()) {
-            throw new RuntimeException("分类名不能为空");
+            throw new BusinessException("分类名不能为空");
         }
         if (dto.getCategoryType() != null
                 && !StoryCategoryTypeEnum.isValid(dto.getCategoryType())) {
-            throw new RuntimeException("分类类型不合法");
+            throw new BusinessException("分类类型不合法");
         }
         // 不能把自己设为父分类
         if (dto.getParentId() != null && dto.getParentId().equals(id)) {
-            throw new RuntimeException("父分类不能是自己");
+            throw new BusinessException("父分类不能是自己");
         }
         // 父分类存在性校验
         if (dto.getParentId() != null
                 && dto.getParentId() != StoryConstant.ROOT_PARENT_ID) {
             StoryCategory parent = storyCategoryMapper.getById(dto.getParentId());
             if (parent == null) {
-                throw new RuntimeException("父分类不存在");
+                throw new BusinessException("父分类不存在");
             }
         }
 
@@ -245,21 +247,21 @@ public class StoryCategoryServiceImpl implements StoryCategoryService {
     @Transactional
     public void delete(Long id) {
         if (id == null) {
-            throw new RuntimeException("分类ID不能为空");
+            throw new BusinessException("分类ID不能为空");
         }
         StoryCategory exist = storyCategoryMapper.getById(id);
         if (exist == null) {
-            throw new RuntimeException("剧情分类不存在");
+            throw new BusinessException("剧情分类不存在");
         }
         // 有子分类不允许删除
         int childCount = storyCategoryMapper.countChildren(id);
         if (childCount > 0) {
-            throw new RuntimeException("请先删除子分类");
+            throw new DeletionNotAllowedException("请先删除子分类");
         }
         // 有剧情引用不允许删除
         int storyCount = storyCategoryMapper.countStoryByCategoryId(id);
         if (storyCount > 0) {
-            throw new RuntimeException("该分类下还有剧情，无法删除");
+            throw new DeletionNotAllowedException("该分类下还有剧情，无法删除");
         }
         storyCategoryMapper.deleteById(id);
         log.info("删除剧情分类成功，id={}", id);
@@ -274,11 +276,11 @@ public class StoryCategoryServiceImpl implements StoryCategoryService {
     @Override
     public StoryCategoryVO getDetailTree(Long id) {
         if (id == null) {
-            throw new RuntimeException("分类ID不能为空");
+            throw new BusinessException("分类ID不能为空");
         }
         StoryCategory root = storyCategoryMapper.getById(id);
         if (root == null) {
-            throw new RuntimeException("剧情分类不存在");
+            throw new BusinessException("剧情分类不存在");
         }
 
         // 查子孙（复用已有的 listDescendants）

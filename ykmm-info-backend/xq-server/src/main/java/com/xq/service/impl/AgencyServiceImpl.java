@@ -2,6 +2,9 @@ package com.xq.service.impl;
 
 import com.xq.dto.AgencyDTO;
 import com.xq.entity.Agency;
+import com.xq.exception.AlreadyExistsException;
+import com.xq.exception.BusinessException;
+import com.xq.exception.DeletionNotAllowedException;
 import com.xq.mapper.AgencyMapper;
 import com.xq.service.AgencyService;
 import com.xq.vo.AgencyVO;
@@ -51,11 +54,11 @@ public class AgencyServiceImpl implements AgencyService {
     @Override
     public AgencyVO getById(Long id) {
         if (id == null) {
-            throw new RuntimeException("公司ID不能为空");
+            throw new BusinessException("公司ID不能为空");
         }
         Agency agency = agencyMapper.getById(id);
         if (agency == null) {
-            throw new RuntimeException("经纪公司不存在");
+            throw new BusinessException("经纪公司不存在");
         }
         return toVO(agency);
     }
@@ -70,12 +73,12 @@ public class AgencyServiceImpl implements AgencyService {
     @Transactional
     public Long create(AgencyDTO dto) {
         if (dto == null || dto.getName() == null || dto.getName().isBlank()) {
-            throw new RuntimeException("公司名不能为空");
+            throw new BusinessException("公司名不能为空");
         }
         // 唯一性校验
         Agency exist = agencyMapper.getByName(dto.getName());
         if (exist != null) {
-            throw new RuntimeException("公司名已存在");
+            throw new AlreadyExistsException("公司名已存在");
         }
         Agency agency = new Agency();
         BeanUtils.copyProperties(dto, agency);
@@ -94,20 +97,20 @@ public class AgencyServiceImpl implements AgencyService {
     @Transactional
     public void update(Long id, AgencyDTO dto) {
         if (id == null) {
-            throw new RuntimeException("公司ID不能为空");
+            throw new BusinessException("公司ID不能为空");
         }
         if (dto == null || dto.getName() == null || dto.getName().isBlank()) {
-            throw new RuntimeException("公司名不能为空");
+            throw new BusinessException("公司名不能为空");
         }
         Agency exist = agencyMapper.getById(id);
         if (exist == null) {
-            throw new RuntimeException("经纪公司不存在");
+            throw new BusinessException("经纪公司不存在");
         }
         // 名称变更时做唯一性校验
         if (!dto.getName().equals(exist.getName())) {
             Agency byName = agencyMapper.getByName(dto.getName());
             if (byName != null && !byName.getId().equals(id)) {
-                throw new RuntimeException("公司名已存在");
+                throw new AlreadyExistsException("公司名已存在");
             }
         }
         Agency agency = new Agency();
@@ -126,21 +129,21 @@ public class AgencyServiceImpl implements AgencyService {
     @Transactional
     public void delete(Long id) {
         if (id == null) {
-            throw new RuntimeException("公司ID不能为空");
+            throw new BusinessException("公司ID不能为空");
         }
         Agency exist = agencyMapper.getById(id);
         if (exist == null) {
-            throw new RuntimeException("经纪公司不存在");
+            throw new BusinessException("经纪公司不存在");
         }
         // 有团体引用时不允许删除
         int groupCount = agencyMapper.countGroupByAgencyId(id);
         if (groupCount > 0) {
-            throw new RuntimeException("该公司下还有偶像团体，无法删除");
+            throw new DeletionNotAllowedException("该公司下还有偶像团体，无法删除");
         }
         // 有人物引用时不允许删除
         int personCount = agencyMapper.countPersonByAgencyId(id);
         if (personCount > 0) {
-            throw new RuntimeException("该公司已被人物引用，无法删除");
+            throw new DeletionNotAllowedException("该公司已被人物引用，无法删除");
         }
         agencyMapper.deleteById(id);
         log.info("删除经纪公司成功，id={}", id);

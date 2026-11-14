@@ -2,6 +2,7 @@ package com.xq.service.impl;
 
 import com.xq.dto.QuizConfigDTO;
 import com.xq.entity.SysQuizConfig;
+import com.xq.exception.BusinessException;
 import com.xq.mapper.QuestionMapper;
 import com.xq.mapper.QuizConfigMapper;
 import com.xq.service.QuizConfigService;
@@ -26,7 +27,7 @@ public class QuizConfigServiceImpl implements QuizConfigService {
     @Override
     public QuizConfigVO get() {
         SysQuizConfig config = quizConfigMapper.get();
-        if (config == null) throw new RuntimeException("答题配置不存在");
+        if (config == null) throw new BusinessException("答题配置不存在");
 
         QuizConfigVO vo = new QuizConfigVO();
         BeanUtils.copyProperties(config, vo);
@@ -39,7 +40,7 @@ public class QuizConfigServiceImpl implements QuizConfigService {
     @Transactional
     public void update(QuizConfigDTO dto) {
         if (dto.getPassCount() > dto.getTotalCount()) {
-            throw new RuntimeException("通过题数不能大于总题数");
+            throw new BusinessException("通过题数不能大于总题数");
         }
 
         // 校验总题数能否被当前题库支持
@@ -47,11 +48,11 @@ public class QuizConfigServiceImpl implements QuizConfigService {
         int randomCount = questionMapper.countRandomEnabled();
 
         if (dto.getTotalCount() < fixedCount) {
-            throw new RuntimeException("总题数不能小于固定题数量（当前固定题 " + fixedCount + " 道）");
+            throw new BusinessException("总题数不能小于固定题数量（当前固定题 " + fixedCount + " 道）");
         }
         int needRandom = dto.getTotalCount() - fixedCount;
         if (needRandom > randomCount) {
-            throw new RuntimeException("随机题不够：需要 " + needRandom + " 道，当前只有 " + randomCount + " 道");
+            throw new BusinessException("随机题不够：需要 " + needRandom + " 道，当前只有 " + randomCount + " 道");
         }
 
         SysQuizConfig config = new SysQuizConfig();

@@ -2,6 +2,7 @@ package com.xq.service.impl;
 
 import com.xq.dto.StoryCategoryTypeDTO;
 import com.xq.entity.StoryCategoryType;
+import com.xq.exception.BusinessException;
 import com.xq.mapper.StoryCategoryTypeMapper;
 import com.xq.service.StoryCategoryTypeService;
 import com.xq.vo.StoryCategoryTypeVO;
@@ -47,11 +48,11 @@ public class StoryCategoryTypeServiceImpl implements StoryCategoryTypeService {
     @Override
     public StoryCategoryTypeVO getById(Integer id) {
         if (id == null) {
-            throw new RuntimeException("分类类型ID不能为空");
+            throw new BusinessException("分类类型ID不能为空");
         }
         StoryCategoryType type = storyCategoryTypeMapper.getById(id);
         if (type == null) {
-            throw new RuntimeException("分类类型不存在");
+            throw new BusinessException("分类类型不存在");
         }
         return toVO(type);
     }
@@ -66,17 +67,17 @@ public class StoryCategoryTypeServiceImpl implements StoryCategoryTypeService {
     @Transactional
     public void update(Integer id, StoryCategoryTypeDTO dto) {
         if (id == null) {
-            throw new RuntimeException("分类类型ID不能为空");
+            throw new BusinessException("分类类型ID不能为空");
         }
         if (dto == null) {
-            throw new RuntimeException("参数不能为空");
+            throw new BusinessException("参数不能为空");
         }
         StoryCategoryType exist = storyCategoryTypeMapper.getById(id);
         if (exist == null) {
-            throw new RuntimeException("分类类型不存在");
+            throw new BusinessException("分类类型不存在");
         }
         if (dto.getName() != null && dto.getName().isBlank()) {
-            throw new RuntimeException("名称不能为空");
+            throw new BusinessException("名称不能为空");
         }
 
         StoryCategoryType type = new StoryCategoryType();
