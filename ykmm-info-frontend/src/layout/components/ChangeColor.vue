@@ -15,8 +15,8 @@
     v-model="drawerVisible"
     :append-to-body="true"
     :show-close="true"
-    :size="320"
     direction="rtl"
+    size="min(320px, 90vw)"
     title="主题配色"
   >
     <p class="mb-4 text-xs text-slate-400">选择一套你喜欢的配色，立即生效</p>
