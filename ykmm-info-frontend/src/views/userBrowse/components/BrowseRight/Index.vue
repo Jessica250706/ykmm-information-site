@@ -1,9 +1,6 @@
 <template>
   <div class="browse-right-root flex h-full min-h-0 flex-col">
-    <el-card
-      body-class="flex flex-col h-full overflow-hidden p-4"
-      class="w-96 flex-1 min-h-0 shrink-0 flex flex-col border-l bg-white"
-    >
+    <BrowsePanel :no-card="noCard" variant="right">
       <!-- 顶部：编辑模式开关 -->
       <div class="flex items-center justify-between border-b pb-3 mb-3 shrink-0">
         <div class="font-medium">编辑区</div>
@@ -60,7 +57,7 @@
           @select-line="(line) => emit('select-line', line)"
         />
       </div>
-    </el-card>
+    </BrowsePanel>
 
     <!-- 创建版本弹窗 -->
     <CreateVersionDialog
@@ -79,6 +76,7 @@ import { useUserStore } from '@/stores/userStore'
 import type { DialogueLineVO } from '@/types/dialogueLine'
 import type { DialogueVersionOptionVO, DialogueVersionVO } from '@/types/dialogueVersion'
 import type { StoryDetailVO } from '@/types/story'
+import BrowsePanel from '../BrowsePanel.vue'
 import ImageVersionEditor from './components/ImageVersionEditor.vue'
 import TextVersionEditor from './components/TextVersionEditor.vue'
 import CreateVersionDialog from './CreateVersionDialog.vue'
@@ -101,6 +99,8 @@ const props = defineProps<{
   currentOptionVersion: DialogueVersionOptionVO | null
   /** 来源类型：1-RC 2-RTV 3-Rabitter 4-story */
   sourceType: SourceTypeValue
+  /** 是否跳过 el-card（手机端） */
+  noCard?: boolean
 }>()
 
 const emit = defineEmits<{

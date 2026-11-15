@@ -1,8 +1,5 @@
 <template>
-  <el-card
-    body-class="flex-1 min-h-0 flex flex-col p-5"
-    class="min-w-0 flex-1 flex flex-col overflow-hidden bg-slate-50"
-  >
+  <BrowsePanel :no-card="noCard" variant="center">
     <!-- 顶部：左右栏开关 -->
     <div class="mb-3 flex shrink-0 items-center justify-between border-b pb-2">
       <el-button size="small" text @click="emit('toggleLeft')">
@@ -72,7 +69,7 @@
 
       <el-empty v-else description="请从左侧选择一个分类" />
     </template>
-  </el-card>
+  </BrowsePanel>
 </template>
 
 <script setup lang="ts">
@@ -83,6 +80,7 @@ import type { DialogueLineVO } from '@/types/dialogueLine'
 import type { DialogueVersionOptionVO } from '@/types/dialogueVersion'
 import type { StoryDetailVO, StoryVO } from '@/types/story'
 import type { StoryCategoryVO } from '@/types/storyCategory'
+import BrowsePanel from '../BrowsePanel.vue'
 import BrowseCenterCategory from './BrowseCenterCategory.vue'
 import BrowseCenterStory from './BrowseCenterStory.vue'
 import type { VersionSelectItem } from '../../composables/useVersionSelection.ts'
@@ -126,6 +124,8 @@ const props = defineProps<{
   showRight?: boolean
   /** 当前用户对选中版本是否有编辑权限 */
   canEdit?: boolean
+  /** 是否跳过 el-card（手机端） */
+  noCard?: boolean
 }>()
 
 const emit = defineEmits<{

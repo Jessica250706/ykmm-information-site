@@ -1,8 +1,5 @@
 <template>
-  <el-card
-    body-class="flex flex-col h-full overflow-hidden p-0"
-    class="flex w-64 shrink-0 flex-col overflow-hidden border-r bg-white"
-  >
+  <BrowsePanel :no-card="noCard" variant="left">
     <!-- 标题 -->
     <div class="flex shrink-0 flex-col border-b px-2 py-3 mb-2">
       <div class="text-xs text-slate-400">剧情类型</div>
@@ -45,13 +42,14 @@
         </template>
       </el-tree>
     </div>
-  </el-card>
+  </BrowsePanel>
 </template>
 
 <script setup lang="ts">
 import { nextTick, ref, watch } from 'vue'
 import type { StoryCategoryVO } from '@/types/storyCategory'
 import type { StoryCategoryTypeVO } from '@/types/storyCategoryType'
+import BrowsePanel from '../BrowsePanel.vue'
 import type { ElTree } from 'element-plus'
 
 const props = defineProps<{
@@ -61,6 +59,8 @@ const props = defineProps<{
   types: StoryCategoryTypeVO[]
   /** 外部指定当前高亮节点（例如从中间点击子分类后回传） */
   currentId?: number | null
+  /** 是否跳过 el-card（手机端） */
+  noCard?: boolean
 }>()
 
 const emit = defineEmits<{
