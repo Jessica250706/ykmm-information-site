@@ -1,8 +1,5 @@
 <template>
-  <el-card
-    body-class="flex flex-col h-full overflow-hidden p-0"
-    class="flex w-80 flex-col overflow-hidden border-r bg-white"
-  >
+  <NoticePanel :no-card="noCard" variant="left">
     <!-- 搜索 -->
     <div class="shrink-0 p-3">
       <el-input v-model="keyword" :prefix-icon="Search" placeholder="搜索公告标题" clearable />
@@ -34,23 +31,29 @@
 
       <el-empty v-else :image-size="80" description="暂无公告" />
     </el-scrollbar>
-  </el-card>
+  </NoticePanel>
 </template>
 
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import { Search } from '@element-plus/icons-vue'
 import type { NoticeCategoryVO, NoticeVO } from '@/types/notice'
+import NoticePanel from './NoticePanel.vue'
 
 interface GroupedCategory extends NoticeCategoryVO {
   notices: NoticeVO[]
 }
 
-const props = defineProps<{
-  categories: NoticeCategoryVO[]
-  groupedCategories: GroupedCategory[]
-  selectedNoticeId: string
-}>()
+const props = withDefaults(
+  defineProps<{
+    categories: NoticeCategoryVO[]
+    groupedCategories: GroupedCategory[]
+    selectedNoticeId: string
+    /** 是否跳过 el-card 包裹（移动端） */
+    noCard?: boolean
+  }>(),
+  { noCard: false },
+)
 
 const emit = defineEmits<{
   'select-notice': [id: number]

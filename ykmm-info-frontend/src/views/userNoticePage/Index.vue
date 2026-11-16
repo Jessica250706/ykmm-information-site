@@ -1,19 +1,41 @@
 <template>
-  <div class="notice-browse flex h-full gap-4 overflow-hidden">
-    <!-- 左侧目录 -->
+  <div class="notice-browse flex h-full overflow-hidden">
+    <!-- PC 端：左侧常驻 -->
     <NoticeLeft
+      v-if="!isMobile"
       :categories="categories"
       :grouped-categories="groupedCategories"
       :selected-notice-id="selectedNoticeId"
-      class="shrink-0 overflow-hidden"
+      class="shrink-0 overflow-hidden mr-4"
       @select-notice="handleSelectNotice"
     />
 
+    <!-- 移动端：左侧作为抽屉 -->
+    <el-drawer
+      v-if="isMobile"
+      v-model="drawerVisible"
+      :body-style="{ padding: 0 }"
+      :size="300"
+      :with-header="false"
+      direction="ltr"
+    >
+      <NoticeLeft
+        :categories="categories"
+        :grouped-categories="groupedCategories"
+        :no-card="true"
+        :selected-notice-id="selectedNoticeId"
+        @select-notice="handleSelectNoticeFromDrawer"
+      />
+    </el-drawer>
+
     <!-- 右侧详情 -->
     <NoticeDetail
+      :is-mobile="isMobile"
       :loading="loadingDetail"
+      :no-card="isMobile"
       :notice="currentNotice"
       class="min-w-0 flex-1 overflow-hidden"
+      @open-drawer="drawerVisible = true"
     />
   </div>
 </template>
@@ -27,12 +49,18 @@ import {
   listNoticeCategoriesAPI,
   pageVisibleNoticesAPI,
 } from '@/api/notice'
+import { useIsMobile } from '@/composables/useIsMobile'
 import type { NoticeCategoryVO, NoticeVO } from '@/types/notice'
 import NoticeDetail from './components/NoticeDetail.vue'
 import NoticeLeft from './components/NoticeLeft.vue'
 
 const route = useRoute()
 const router = useRouter()
+
+const isMobile = useIsMobile()
+
+/* -------- 移动端抽屉状态 -------- */
+const drawerVisible = ref(false)
 
 const categories = ref<NoticeCategoryVO[]>([])
 /** 全部可见公告（一次性拉取，个人项目数据量足够小） */
@@ -137,7 +165,15 @@ async function handleSelectNotice(id: number, syncUrl = true) {
   }
 }
 
-/* -------- 响应 URL 变化（前进 / 后退 / 手动改地址） -------- */
+/** 移动端抽屉里选择：选中后自动关闭抽屉 */
+function handleSelectNoticeFromDrawer(id: number) {
+  void handleSelectNotice(id)
+  if (isMobile.value) {
+    drawerVisible.value = false
+  }
+}
+
+/* -------- 响应 URL 变化 -------- */
 watch(
   () => route.query.id,
   (raw) => {
@@ -157,6 +193,11 @@ watch(
   },
 )
 
+/* -------- 切换为手机端时关闭抽屉 -------- */
+watch(isMobile, (mobile) => {
+  if (!mobile) drawerVisible.value = false
+})
+
 /* -------- 初始化 -------- */
 onMounted(async () => {
   await Promise.all([loadCategories(), loadNotices()])
@@ -165,6 +206,9 @@ onMounted(async () => {
   const initialId = resolveUrlNoticeId()
   if (initialId != null) {
     void handleSelectNotice(initialId, false)
+  } else if (isMobile.value && notices.value.length > 0) {
+    // 移动端首次进入且 URL 无 id：打开抽屉让用户选择
+    drawerVisible.value = true
   }
 })
 </script>
