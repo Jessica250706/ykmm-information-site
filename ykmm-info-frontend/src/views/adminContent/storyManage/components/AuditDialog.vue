@@ -1,5 +1,11 @@
 <template>
-  <el-dialog v-model="visible" title="剧情审核" width="480px" append-to-body @closed="handleClosed">
+  <el-dialog
+    v-model="visible"
+    title="剧情审核"
+    width="min(480px, 92vw)"
+    append-to-body
+    @closed="handleClosed"
+  >
     <el-form ref="formRef" :model="form" :rules="rules" label-width="80px">
       <el-form-item label="审核结果" prop="status">
         <el-radio-group v-model="form.status">

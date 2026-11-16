@@ -1,6 +1,6 @@
 <template>
   <div class="card-edit flex h-full flex-col">
-    <el-card class="flex-1" shadow="never">
+    <el-card class="edit-card flex-1" shadow="never">
       <template #header>
         <div class="flex items-center justify-between">
           <span class="font-medium">{{ isEdit ? '编辑卡面' : '新增卡面' }}</span>
@@ -8,7 +8,13 @@
         </div>
       </template>
 
-      <el-form ref="formRef" :model="form" :rules="rules" class="max-w-3xl" label-width="120px">
+      <el-form
+        ref="formRef"
+        :model="form"
+        :rules="rules"
+        class="max-w-3xl pr-5 sm:pr-0"
+        label-width="120px"
+      >
         <!-- -------- 基本信息 -------- -->
         <el-form-item label="卡面名称" prop="name">
           <el-input v-model="form.name" placeholder="请输入卡面名称" />
@@ -135,15 +141,17 @@
           </div>
         </el-form-item>
 
-        <!-- -------- 卡面图片 -------- -->
-        <el-divider content-position="left">卡面图片</el-divider>
+        <div class="flex flex-col pl-5">
+          <!-- -------- 卡面图片 -------- -->
+          <el-divider content-position="left">卡面图片</el-divider>
 
-        <div v-for="type in CARD_IMAGE_TYPE_OPTIONS" :key="type.value" class="mb-4">
-          <div class="mb-2 flex items-center gap-2">
-            <el-tag effect="plain" type="info">{{ type.label }}</el-tag>
-            <span class="text-xs text-slate-400">{{ imageTypeHint(type.value) }}</span>
+          <div v-for="type in CARD_IMAGE_TYPE_OPTIONS" :key="type.value" class="mb-4">
+            <div class="mb-2 flex items-center gap-2">
+              <el-tag effect="plain" type="info">{{ type.label }}</el-tag>
+              <span class="text-xs text-slate-400">{{ imageTypeHint(type.value) }}</span>
+            </div>
+            <ImageUpload v-model="imageMap[type.value]" :max-size="10" />
           </div>
-          <ImageUpload v-model="imageMap[type.value]" :max-size="10" />
         </div>
       </el-form>
 
@@ -371,3 +379,13 @@ onMounted(async () => {
   }
 })
 </script>
+
+<style lang="scss" scoped>
+@media (max-width: 767px) {
+  .edit-card {
+    :deep(.el-card__body) {
+      padding: 20px 0 !important;
+    }
+  }
+}
+</style>

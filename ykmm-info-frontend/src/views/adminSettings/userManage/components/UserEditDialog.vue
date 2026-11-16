@@ -2,7 +2,7 @@
   <el-dialog
     :model-value="modelValue"
     title="编辑用户"
-    width="480px"
+    width="min(480px, 92vw)"
     @update:model-value="handleVisibleChange"
   >
     <el-form ref="formRef" :model="form" :rules="rules" label-width="72px">

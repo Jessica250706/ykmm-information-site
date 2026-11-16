@@ -1,5 +1,5 @@
 <template>
-  <el-dialog v-model="visible" :title="title" width="480px" @closed="handleClosed">
+  <el-dialog v-model="visible" :title="title" width="min(480px, 92vw)" @closed="handleClosed">
     <el-form ref="formRef" :model="form" :rules="rules" label-width="80px">
       <el-form-item label="话数" prop="episodeNo">
         <el-input-number

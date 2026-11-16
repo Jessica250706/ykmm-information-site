@@ -34,7 +34,7 @@
     <el-dialog
       v-model="dialogVisible"
       :title="editingCategory ? '编辑分类' : '新增分类'"
-      width="480px"
+      width="min(480px, 92vw)"
     >
       <el-form ref="catFormRef" :model="catForm" :rules="catRules" label-width="80px">
         <el-form-item label="ID" prop="id">

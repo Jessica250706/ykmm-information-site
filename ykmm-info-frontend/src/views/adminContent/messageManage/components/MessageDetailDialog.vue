@@ -3,7 +3,7 @@
     v-model="visible"
     :close-on-click-modal="false"
     title="消息详情"
-    width="640px"
+    width="min(640px, 92vw)"
     @closed="handleClosed"
   >
     <div v-loading="loading">

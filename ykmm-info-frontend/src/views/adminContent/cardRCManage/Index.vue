@@ -66,7 +66,7 @@
     <el-dialog
       v-model="dialogVisible"
       :title="form.id ? '编辑 RC' : '新增 RC'"
-      width="520px"
+      width="min(520px, 92vw)"
       @closed="handleDialogClosed"
     >
       <el-form ref="formRef" :model="form" :rules="rules" label-width="90px">

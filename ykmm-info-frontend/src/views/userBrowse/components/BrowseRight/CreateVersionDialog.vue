@@ -3,7 +3,7 @@
     v-model="visible"
     :close-on-click-modal="false"
     :title="dialogTitle"
-    width="520px"
+    width="min(520px, 92vw)"
     append-to-body
   >
     <el-form label-width="110px">

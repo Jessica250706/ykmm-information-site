@@ -57,7 +57,7 @@
     <el-dialog
       v-model="dialogVisible"
       :title="form.id ? '编辑 RTV' : '新增 RTV'"
-      width="480px"
+      width="min(480px, 92vw)"
       @closed="handleDialogClosed"
     >
       <el-form ref="formRef" :model="form" :rules="rules" label-width="80px">

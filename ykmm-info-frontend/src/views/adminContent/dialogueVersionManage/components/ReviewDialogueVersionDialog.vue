@@ -3,7 +3,7 @@
     v-model="visible"
     :close-on-click-modal="false"
     title="审核对话版本"
-    width="480px"
+    width="min(480px, 92vw)"
     @closed="handleClosed"
   >
     <div v-if="version" class="space-y-3">

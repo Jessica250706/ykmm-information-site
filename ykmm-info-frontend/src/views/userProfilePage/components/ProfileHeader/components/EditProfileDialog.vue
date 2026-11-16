@@ -3,7 +3,7 @@
     v-model="visible"
     :close-on-click-modal="false"
     title="修改个人信息"
-    width="480px"
+    width="min(480px, 92vw)"
     @closed="handleClosed"
   >
     <el-form ref="formRef" :model="form" :rules="rules" label-width="72px">

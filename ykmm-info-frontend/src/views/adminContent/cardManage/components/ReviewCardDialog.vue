@@ -3,7 +3,7 @@
     v-model="visible"
     :close-on-click-modal="false"
     title="审核卡面"
-    width="440px"
+    width="min(440px, 92vw)"
     @closed="handleClosed"
   >
     <div v-if="card" class="space-y-4">
