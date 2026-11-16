@@ -34,3 +34,4 @@ build/
 
 ### 本地敏感配置 ###
 xq-server/src/main/resources/application-dev.yml
+xq-server/src/main/resources/application-prod.yml
