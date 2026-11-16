@@ -2,8 +2,7 @@
   <div class="min-h-screen">
     <el-container class="min-h-screen">
       <el-header
-        class="sticky top-0 z-30 border-b border-slate-200 bg-white/85 backdrop-blur px-0!"
-        height="64px"
+        class="sticky top-0 z-30 border-b border-slate-200 bg-white/85 backdrop-blur px-0! h-13.5! sm:h-16!"
       >
         <div class="mx-auto flex h-full max-w-6xl items-center px-3 sm:px-4">
           <!-- Logo -->
@@ -12,7 +11,7 @@
             class="flex shrink-0 items-center gap-2"
           >
             <el-avatar
-              :size="32"
+              :size="isMobile ? 28 : 32"
               :style="{ backgroundColor: 'var(--el-color-primary)' }"
               class="text-sm font-bold"
             >
@@ -151,7 +150,7 @@
 
       <!-- 内容区 -->
       <el-main class="p-0!">
-        <div class="userLayout mx-auto w-full max-w-6xl overflow-hidden px-3 py-4 sm:px-4 sm:py-6">
+        <div class="userLayout mx-auto w-full max-w-6xl overflow-hidden px-3 py-2 sm:px-4 sm:py-6">
           <RouterView v-slot="{ Component }">
             <Transition mode="out-in" name="fade">
               <component :is="Component" />
@@ -169,6 +168,7 @@ import { Menu } from '@element-plus/icons-vue'
 import { ElMessageBox } from 'element-plus'
 import { storeToRefs } from 'pinia'
 import { RouterLink, RouterView, useRoute, useRouter } from 'vue-router'
+import { useIsMobile } from '@/composables/useIsMobile'
 import { AdminRouteName, CommonRouteName, UserRouteName } from '@/constants'
 import { useMenuStore, useMessageStore, useUserStore } from '@/stores'
 import ChangeColor from './components/ChangeColor.vue'
@@ -184,6 +184,8 @@ const { isAdmin, isLogin, userInfo } = storeToRefs(userStore)
 
 const messageStore = useMessageStore()
 const { unreadCount, hasUnread } = storeToRefs(messageStore)
+
+const isMobile = useIsMobile()
 
 /** 移动端导航抽屉展开状态 */
 const mobileMenuVisible = ref(false)

@@ -1,10 +1,14 @@
 <template>
   <div
-    :class="{ 'justify-center': !showEditPanel }"
-    class="story-browse flex h-full gap-4 overflow-hidden"
+    :class="[
+      'story-browse flex h-full overflow-hidden',
+      isMobile ? 'flex-col' : 'gap-4',
+      !isMobile && !showEditPanel ? 'justify-center' : '',
+    ]"
   >
-    <!-- 左侧：分类树 -->
+    <!-- PC 端：左侧常驻 -->
     <BrowseLeft
+      v-if="!isMobile"
       v-show="showLeft"
       :category-tree="categoryTree"
       :current-id="currentHighlightId"
@@ -16,11 +20,32 @@
       @switch-type="handleSwitchType"
     />
 
+    <!-- 移动端：左侧作为抽屉 -->
+    <el-drawer
+      v-if="isMobile"
+      v-model="showLeft"
+      :body-style="{ padding: 0 }"
+      :size="280"
+      :with-header="false"
+      direction="ltr"
+    >
+      <BrowseLeft
+        :category-tree="categoryTree"
+        :current-id="currentHighlightId"
+        :expanded-keys="expandedKeys"
+        :no-card="true"
+        :type-label="typeLabel"
+        :types="storyCategoryTypeStore.types"
+        @node-click="handleNodeClick"
+        @switch-type="handleSwitchType"
+      />
+    </el-drawer>
+
     <!-- 中间：内容 -->
     <BrowseCenter
       v-model:current-version-id="currentVersionId"
       :can-edit="effectiveCanEdit"
-      :class="showEditPanel ? 'flex-1 max-w-1/2' : 'flex-1 max-w-3xl'"
+      :class="isMobile ? 'w-full flex-1' : showEditPanel ? 'flex-1 max-w-1/2' : 'flex-1 max-w-3xl'"
       :color="
         storyCategoryTypeStore.getTypeColor(
           currentCategory ? currentCategory?.categoryType : storyDetail?.categoryType,
@@ -29,6 +54,7 @@
       :current-category="currentCategory"
       :editing-line-id="editingLineId"
       :editing-mode="editingMode"
+      :is-mobile="isMobile"
       :loading-content="loadingContent"
       :loading-stories="loadingStories"
       :selected-version-key="selectedVersionKey"
@@ -51,19 +77,21 @@
       @update:selected-version-key="handleSelectedVersionKeyChange"
     />
 
-    <!-- 右侧：编辑区（仅登录用户可见） -->
+    <!-- 右侧：编辑区 -->
     <BrowseRight
       v-if="showEditPanel"
       v-model:editing-mode="editingMode"
       :all-lines="currentVersion?.lines ?? []"
+      :class="isMobile ? 'w-full h-1/2' : 'h-full'"
       :current-option-version="currentOptionVersion"
       :current-version="currentVersion"
       :editing-line="editingLine"
       :editing-line-index="editingLineIndex"
+      :is-mobile="isMobile"
       :pending-insert-after-id="pendingInsertAfterId"
       :source-type="SOURCE_TYPE.STORY"
       :story-detail="storyDetail"
-      class="h-full shrink-0 overflow-hidden"
+      class="shrink-0 overflow-hidden"
       @add-line="handleAddLine"
       @create-version="handleCreateVersion"
       @delete-line="handleDeleteLine"
@@ -75,9 +103,10 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { ElMessage } from 'element-plus'
 import { createDialogueVersionAPI } from '@/api/dialogueVersion'
+import { useIsMobile } from '@/composables/useIsMobile'
 import { SOURCE_TYPE } from '@/constants'
 import { useStoryCategoryTypeStore } from '@/stores'
 import type { DialogueLineVO } from '@/types/dialogueLine'
@@ -98,6 +127,19 @@ import { useVersionSelection } from './composables/useVersionSelection.ts'
 import { useVersionSelectionSync } from './composables/useVersionSelectionSync.ts'
 
 const storyCategoryTypeStore = useStoryCategoryTypeStore()
+
+/* -------- 移动端适配 -------- */
+const isMobile = useIsMobile()
+
+/**
+ * 切换为手机端时，关闭左侧抽屉（避免手机首屏就弹出抽屉）。
+ * PC 端不受影响。
+ */
+watch(isMobile, (mobile) => {
+  if (mobile) {
+    showLeft.value = false
+  }
+})
 
 /* -------- 路由 -------- */
 const { type, kind, nodeId, typeLabel } = useBrowseRoute()
@@ -186,6 +228,9 @@ const { goCategory, goStory, goBack, handleSwitchType } = useBrowseNavigation()
 /* -------- 交互 -------- */
 function handleNodeClick(data: StoryCategoryVO) {
   goCategory(type.value, data.id!)
+  if (isMobile.value) {
+    showLeft.value = false
+  }
 }
 
 function handleSelectLine(line: DialogueLineVO) {

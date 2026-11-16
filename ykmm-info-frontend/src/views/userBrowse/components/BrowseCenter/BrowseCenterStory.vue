@@ -5,6 +5,7 @@
       v-if="sourceType === SOURCE_TYPE.STORY"
       :color="color"
       :description="storyDetail?.description"
+      :is-mobile-editing="isMobileEditing"
       :show-review="canReview"
       :subtitle="storyDetail?.categoryName"
       :tag="storyDetail?.categoryTypeLabel"
@@ -15,6 +16,7 @@
     <BrowseHeader
       v-else-if="sourceType === SOURCE_TYPE.RC"
       :color="color"
+      :is-mobile-editing="isMobileEditing"
       :show-review="canReview"
       :subtitle="
         cardDetail?.initiatorRoleName
@@ -32,6 +34,7 @@
     <BrowseHeader
       v-else-if="sourceType === SOURCE_TYPE.RTV || sourceType === SOURCE_TYPE.RABITTER"
       :color="color"
+      :is-mobile-editing="isMobileEditing"
       :show-review="canReview"
       :subtitle="cardName"
       :tag="SOURCE_TYPE_LABEL[sourceType]"
@@ -44,7 +47,7 @@
     />
 
     <!-- 版本选择 -->
-    <div class="mb-3 flex items-center gap-2 shrink-0">
+    <div v-if="!isMobileEditing" class="mb-2 flex items-center gap-2 shrink-0">
       <span class="text-xs text-slate-500 shrink-0">版本：</span>
       <el-select
         :model-value="selectedVersionKey"
@@ -118,7 +121,7 @@
     </div>
 
     <!-- 状态 + 贡献者 -->
-    <VersionMetaBar :option="currentOptionVersion" class="mt-3 shrink-0" />
+    <VersionMetaBar v-if="!isMobileEditing" :option="currentOptionVersion" class="mt-3 shrink-0" />
 
     <!-- 审核弹窗（仅管理员操作时打开） -->
     <ReviewDialogueVersionDialog ref="reviewDialogRef" @success="handleReviewSuccess" />
@@ -164,6 +167,10 @@ const props = defineProps<{
   sourceType: number
   /** 卡片名称 */
   cardName?: string
+  /** 是否是手机端 */
+  isMobile?: boolean
+  /** 右侧编辑区是否渲染 */
+  showEditPanel?: boolean
 }>()
 
 const emit = defineEmits<{
@@ -193,6 +200,9 @@ const currentVersion = computed<DialogueVersionVO | null>(() => {
 
 /** 传给 DialogueView 的 versionId，保证与 currentVersion 一致 */
 const resolvedVersionId = computed<number | null>(() => currentVersion.value?.id ?? null)
+
+/** 移动端 + 编辑区打开：此时隐藏辅助信息，给编辑区让出空间 */
+const isMobileEditing = computed(() => props.isMobile && props.showEditPanel)
 
 /* -------- 审核按钮显隐 -------- */
 const userStore = useUserStore()

@@ -1,7 +1,7 @@
 <template>
-  <BrowsePanel :no-card="noCard" variant="center">
+  <BrowsePanel :no-card="isMobile" variant="center">
     <!-- 顶部：左右栏开关 -->
-    <div class="mb-3 flex shrink-0 items-center justify-between border-b pb-2">
+    <div class="mb-2 flex shrink-0 items-center justify-between border-b pb-1">
       <el-button size="small" text @click="emit('toggleLeft')">
         <span class="mr-1">{{ showLeft ? '◀' : '▶' }}</span>
         {{ showLeft ? '收起目录' : '展开目录' }}
@@ -24,6 +24,9 @@
         :color="color"
         :editing-line-id="editingLineId"
         :editing-mode="editingMode"
+        :is-mobile="isMobile"
+        :show-edit-panel="showEditPanel"
+        :show-right="showRight"
         :source-type="sourceType"
         :story-detail="storyDetail"
         :version-options="versionOptions"
@@ -59,6 +62,8 @@
         :color="color"
         :editing-line-id="editingLineId"
         :editing-mode="editingMode"
+        :is-mobile="isMobile"
+        :show-edit-panel="showEditPanel"
         :source-type="sourceType"
         :version-options="versionOptions"
         :version-select-items="versionSelectItems"
@@ -124,8 +129,10 @@ const props = defineProps<{
   showRight?: boolean
   /** 当前用户对选中版本是否有编辑权限 */
   canEdit?: boolean
-  /** 是否跳过 el-card（手机端） */
-  noCard?: boolean
+  /** 是否是手机端 */
+  isMobile?: boolean
+  /** 右侧编辑区是否渲染 */
+  showEditPanel?: boolean
 }>()
 
 const emit = defineEmits<{

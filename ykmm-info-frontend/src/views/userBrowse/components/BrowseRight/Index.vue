@@ -1,8 +1,8 @@
 <template>
   <div class="browse-right-root flex h-full min-h-0 flex-col">
-    <BrowsePanel :no-card="noCard" variant="right">
+    <BrowsePanel :no-card="isMobile" variant="right">
       <!-- 顶部：编辑模式开关 -->
-      <div class="flex items-center justify-between border-b pb-3 mb-3 shrink-0">
+      <div class="flex items-center justify-between border-b pb-2 mb-2 shrink-0 pt-2 sm:pt-0">
         <div class="font-medium">编辑区</div>
         <el-switch v-model="editingModeLocal" active-text="编辑模式" inline-prompt />
       </div>
@@ -99,8 +99,8 @@ const props = defineProps<{
   currentOptionVersion: DialogueVersionOptionVO | null
   /** 来源类型：1-RC 2-RTV 3-Rabitter 4-story */
   sourceType: SourceTypeValue
-  /** 是否跳过 el-card（手机端） */
-  noCard?: boolean
+  /** 是否是手机端 */
+  isMobile?: boolean
 }>()
 
 const emit = defineEmits<{

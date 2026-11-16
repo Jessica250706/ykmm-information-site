@@ -1,5 +1,5 @@
 <template>
-  <div class="mb-4 shrink-0">
+  <div class="mb-2 shrink-0">
     <div class="flex justify-between items-center">
       <h2 class="text-lg font-semibold">{{ title }}</h2>
 
@@ -17,7 +17,7 @@
 
     <!-- 标签行 -->
     <div
-      v-if="tag || subtitle"
+      v-if="(tag || subtitle) && !isMobileEditing"
       class="mt-1 flex flex-wrap items-center gap-2 text-xs text-slate-400"
     >
       <el-tag v-if="tag" :style="categoryTagStyle(color)" effect="plain" size="small">
@@ -55,6 +55,8 @@ withDefaults(
     showBack?: boolean
     /** 是否显示审核按钮（仅管理员 + 待审核版本时传 true） */
     showReview?: boolean
+    /** 移动端 + 编辑区打开：此时隐藏辅助信息，给编辑区让出空间 */
+    isMobileEditing?: boolean
   }>(),
   {
     title: '',
@@ -64,6 +66,7 @@ withDefaults(
     description: '',
     showBack: true,
     showReview: false,
+    isMobileEditing: false,
   },
 )
 

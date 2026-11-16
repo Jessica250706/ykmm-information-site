@@ -1,8 +1,5 @@
 <template>
-  <el-card
-    body-class="flex flex-col h-full overflow-hidden p-0"
-    class="flex w-64 shrink-0 flex-col overflow-hidden border-r bg-white"
-  >
+  <BrowsePanel :no-card="noCard" variant="left">
     <!-- 标题 -->
     <div class="flex shrink-0 items-center justify-between border-b py-3">
       <div class="min-w-0">
@@ -36,11 +33,12 @@
 
       <p v-if="!episodes.length" class="py-8 text-center text-xs text-slate-400">暂无话数</p>
     </div>
-  </el-card>
+  </BrowsePanel>
 </template>
 
 <script setup lang="ts">
 import type { CardVO } from '@/types/card'
+import BrowsePanel from '../BrowsePanel.vue'
 
 interface EpisodeItem {
   id?: number
@@ -57,6 +55,8 @@ defineProps<{
   episodes: EpisodeItem[]
   /** 当前选中话数 id */
   currentId: number | null
+  /** 是否跳过 el-card（手机端） */
+  noCard?: boolean
 }>()
 
 const emit = defineEmits<{

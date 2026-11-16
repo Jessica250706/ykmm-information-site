@@ -1,10 +1,14 @@
 <template>
   <div
-    :class="{ 'justify-center': !showEditPanel }"
-    class="card-dialogue-editor flex h-full gap-4 overflow-hidden"
+    :class="[
+      'card-dialogue-editor flex h-full overflow-hidden',
+      isMobile ? 'flex-col' : 'gap-4',
+      !isMobile && !showEditPanel ? 'justify-center' : '',
+    ]"
   >
-    <!-- 左侧：话数列表 -->
+    <!-- PC 端：左侧常驻 -->
     <CardEpisodeList
+      v-if="!isMobile"
       v-show="showLeft"
       :card-info="cardInfo"
       :current-id="currentEpisodeId"
@@ -15,20 +19,42 @@
       @select="handleSelectEpisode"
     />
 
+    <!-- 移动端：左侧作为抽屉 -->
+    <el-drawer
+      v-if="isMobile"
+      v-model="showLeft"
+      :body-style="{ padding: 0 }"
+      :size="280"
+      :with-header="false"
+      direction="ltr"
+    >
+      <CardEpisodeList
+        :card-info="cardInfo"
+        :current-id="currentEpisodeId"
+        :episodes="episodes"
+        :no-card="true"
+        :source-label="sourceLabel"
+        @back="handleBack"
+        @select="handleSelectEpisode"
+      />
+    </el-drawer>
+
     <!-- 中间：对话内容 -->
     <BrowseCenter
       v-model:current-version-id="currentVersionId"
       :can-edit="effectiveCanEdit"
       :card-detail="episodeDetail"
       :card-name="cardName"
-      :class="showEditPanel ? 'flex-1 max-w-1/2' : 'flex-1 max-w-3/7'"
+      :class="isMobile ? 'w-full flex-1' : showEditPanel ? 'flex-1 max-w-1/2' : 'flex-1 max-w-3/7'"
       :color="color"
       :current-category="null"
       :editing-line-id="editingLineId"
       :editing-mode="editingMode"
+      :is-mobile="isMobile"
       :loading-content="loadingDetail"
       :loading-stories="false"
       :selected-version-key="selectedVersionKey"
+      :show-edit-panel="showEditPanel"
       :show-left="showLeft"
       :show-right="showRight"
       :source-type="sourceType as SourceTypeValue"
@@ -47,19 +73,21 @@
       @update:selected-version-key="handleSelectedVersionKeyChange"
     />
 
-    <!-- 右侧：编辑区（仅登录用户可见） -->
+    <!-- 右侧：编辑区 -->
     <BrowseRight
       v-if="showEditPanel"
       v-model:editing-mode="editingMode"
       :all-lines="currentVersion?.lines ?? []"
+      :class="isMobile ? 'w-full h-[50%]!' : 'h-full'"
       :current-option-version="currentOptionVersion"
       :current-version="currentVersion"
       :editing-line="editingLine"
       :editing-line-index="editingLineIndex"
+      :is-mobile="isMobile"
       :pending-insert-after-id="pendingInsertAfterId"
       :source-type="sourceType as SourceTypeValue"
       :story-detail="episodeDetail"
-      class="h-full shrink-0 overflow-hidden"
+      class="shrink-0 overflow-hidden"
       @add-line="handleAddLine"
       @clear-line="editingLineId = null"
       @create-version="handleCreateVersion"
@@ -76,6 +104,7 @@ import { watch } from 'vue'
 import { ref } from 'vue'
 import { ElMessage } from 'element-plus'
 import { createDialogueVersionAPI } from '@/api/dialogueVersion'
+import { useIsMobile } from '@/composables/useIsMobile'
 import { type SourceTypeValue } from '@/constants'
 import type { DialogueLineVO } from '@/types/dialogueLine'
 import type { DialogueVersionOptionVO } from '@/types/dialogueVersion'
@@ -114,10 +143,19 @@ const emit = defineEmits<{
   back: []
 }>()
 
-/* -------- ★ 卡面信息（composable） -------- */
+/* -------- 移动端适配 -------- */
+const isMobile = useIsMobile()
+
+watch(isMobile, (mobile) => {
+  if (mobile) {
+    showLeft.value = false
+  }
+})
+
+/* -------- 卡面信息（composable） -------- */
 const { color, cardInfo, cardName, loadCardInfo } = useCardInfo(() => props.cardId)
 
-/* -------- ★ 当前话数 + URL 同步（composable） -------- */
+/* -------- 当前话数 + URL 同步（composable） -------- */
 const { currentEpisodeId, syncEpisodeToUrl } = useEpisodeRoute()
 
 /* -------- 话数对话详情 -------- */
@@ -187,6 +225,9 @@ function handleSelectEpisode(id: number) {
   if (currentEpisodeId.value === id) return
   currentEpisodeId.value = id
   syncEpisodeToUrl(id)
+  if (isMobile.value) {
+    showLeft.value = false
+  }
 }
 
 function handleBack() {

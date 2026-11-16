@@ -26,8 +26,22 @@ const props = withDefaults(
   { noCard: false },
 )
 
-/** 外层容器样式（el-card 的 class） */
+/**
+ * 容器样式。
+ * - noCard = false（PC）：走 el-card 外层样式（left 固定 256px，right 固定 384px）
+ * - noCard = true（手机 / 抽屉）：撑满父容器，去边框、去固定宽
+ */
 const containerClass = computed(() => {
+  if (props.noCard) {
+    switch (props.variant) {
+      case 'left':
+        return 'flex h-full w-full flex-col overflow-hidden bg-white'
+      case 'center':
+        return 'flex min-w-0 flex-1 flex-col overflow-hidden bg-white p-0!'
+      case 'right':
+        return 'flex min-h-0 flex-col overflow-hidden bg-white p-0!'
+    }
+  }
   switch (props.variant) {
     case 'left':
       return 'flex w-64 shrink-0 flex-col overflow-hidden border-r bg-white'
