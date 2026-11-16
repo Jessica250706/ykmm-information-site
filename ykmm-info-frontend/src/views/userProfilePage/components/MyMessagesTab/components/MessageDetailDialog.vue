@@ -3,7 +3,7 @@
     v-model="visible"
     :close-on-click-modal="false"
     title="消息详情"
-    width="560px"
+    width="min(560px, 92vw)"
     @closed="handleClosed"
   >
     <div v-loading="loading" class="space-y-3">
@@ -34,15 +34,18 @@
     </div>
 
     <template #footer>
-      <el-button @click="visible = false">关闭</el-button>
-      <el-button
-        v-if="message && message.targetType && message.targetId"
-        :loading="navigating"
-        type="primary"
-        @click="handleNavigate"
-      >
-        查看详情
-      </el-button>
+      <div class="flex justify-end gap-2 max-sm:flex-col-reverse">
+        <el-button class="ml-0! max-sm:w-full" @click="visible = false">关闭</el-button>
+        <el-button
+          v-if="message && message.targetType && message.targetId"
+          :loading="navigating"
+          class="ml-0! max-sm:w-full"
+          type="primary"
+          @click="handleNavigate"
+        >
+          查看详情
+        </el-button>
+      </div>
     </template>
   </el-dialog>
 </template>
