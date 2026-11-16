@@ -1,44 +1,51 @@
 <template>
   <div class="flex h-full min-h-0 flex-col">
-    <!-- 状态 + 附属剧情筛选 + 刷新 -->
-    <div class="mb-3 flex shrink-0 items-center gap-3">
-      <el-select
-        v-model="statusFilter"
-        placeholder="全部状态"
-        style="width: 200px"
-        clearable
-        @change="reload"
-      >
-        <el-option
-          v-for="opt in STATUS_OPTIONS"
-          :key="opt.value"
-          :label="opt.label"
-          :value="opt.value"
-        />
-      </el-select>
+    <!-- 状态 + 附属剧情筛选 -->
+    <div class="mb-3 flex shrink-0 gap-2 items-center sm:gap-3">
+      <div class="flex min-w-0 items-center gap-2">
+        <el-select
+          v-model="statusFilter"
+          class="flex-1 sm:flex-none"
+          placeholder="全部状态"
+          style="width: 200px"
+          clearable
+          @change="reload"
+        >
+          <el-option
+            v-for="opt in STATUS_OPTIONS"
+            :key="opt.value"
+            :label="opt.label"
+            :value="opt.value"
+          />
+        </el-select>
 
-      <el-select
-        v-model="attachedStoryTypeFilter"
-        placeholder="全部附属剧情"
-        style="width: 200px"
-        clearable
-        @change="reload"
-      >
-        <el-option
-          v-for="opt in CARD_ATTACHED_STORY_TYPE_OPTIONS"
-          :key="opt.value"
-          :label="opt.label"
-          :value="opt.value"
-        />
-      </el-select>
+        <el-select
+          v-model="attachedStoryTypeFilter"
+          class="flex-1 sm:flex-none"
+          placeholder="全部附属剧情"
+          style="width: 200px"
+          clearable
+          @change="reload"
+        >
+          <el-option
+            v-for="opt in CARD_ATTACHED_STORY_TYPE_OPTIONS"
+            :key="opt.value"
+            :label="opt.label"
+            :value="opt.value"
+          />
+        </el-select>
+      </div>
 
-      <span class="text-sm text-slate-500">共 {{ total }} 张</span>
+      <span class="text-sm text-slate-500 shrink-0">共 {{ total }} 张</span>
     </div>
 
     <div v-loading="loading" class="min-h-0 flex-1 overflow-y-auto">
       <el-empty v-if="!loading && !list.length" description="还没有上传过卡面" />
 
-      <div v-else class="grid gap-4 grid-cols-5">
+      <div
+        v-else
+        class="grid gap-2 sm:gap-4 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5"
+      >
         <article
           v-for="card in list"
           :key="card.id"
@@ -63,7 +70,7 @@
               {{ statusLabel(card.status) }}
             </el-tag>
           </div>
-          <div class="p-2.5">
+          <div class="p-2 sm:p-2.5">
             <p class="truncate text-sm font-medium">{{ card.name || '-' }}</p>
             <p class="mt-0.5 truncate text-xs text-slate-400">{{ card.seriesName || '-' }}</p>
           </div>
@@ -71,7 +78,7 @@
       </div>
     </div>
 
-    <div v-if="total > pageSize" class="flex shrink-0 pt-3 justify-end">
+    <div v-if="total > pageSize" class="flex shrink-0 justify-center pt-3 sm:justify-end">
       <el-pagination
         v-model:current-page="pageNum"
         :page-size="pageSize"

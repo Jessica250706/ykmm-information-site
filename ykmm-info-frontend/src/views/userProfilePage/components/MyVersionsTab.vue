@@ -1,9 +1,11 @@
 <template>
   <div class="flex h-full min-h-0 flex-col">
-    <div class="mb-3 flex shrink-0 items-center gap-3">
-      <div class="mb-3 flex shrink-0 flex-wrap items-center gap-3">
+    <!-- 筛选 -->
+    <div class="mb-3 flex items-center shrink-0 gap-2 sm:gap-3">
+      <div class="flex min-w-0 items-center gap-2">
         <el-select
           v-model="sourceTypeFilter"
+          class="flex-1 sm:flex-none"
           placeholder="全部来源"
           style="width: 240px"
           clearable
@@ -19,6 +21,7 @@
 
         <el-select
           v-model="statusFilter"
+          class="flex-1 sm:flex-none"
           placeholder="全部状态"
           style="width: 240px"
           clearable
@@ -31,9 +34,9 @@
             :value="opt.value"
           />
         </el-select>
-
-        <span class="text-sm text-slate-500">共 {{ total }} 个</span>
       </div>
+
+      <span class="text-sm text-slate-500 shrink-0">共 {{ total }} 个</span>
     </div>
 
     <div v-loading="loading" class="min-h-0 flex-1 overflow-y-auto">
@@ -114,7 +117,7 @@
       </ul>
     </div>
 
-    <div v-if="total > pageSize" class="shrink-0 pt-3">
+    <div v-if="total > pageSize" class="flex shrink-0 pt-3 justify-center sm:justify-end">
       <el-pagination
         v-model:current-page="pageNum"
         :page-size="pageSize"
