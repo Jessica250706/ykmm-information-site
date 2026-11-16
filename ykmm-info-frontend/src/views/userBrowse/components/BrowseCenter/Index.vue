@@ -7,7 +7,12 @@
         {{ showLeft ? '收起目录' : '展开目录' }}
       </el-button>
 
-      <el-button v-if="canEdit" size="small" text @click="emit('toggleRight')">
+      <el-button
+        v-if="canEdit && !(currentCategory && sourceType === SOURCE_TYPE.STORY)"
+        size="small"
+        text
+        @click="emit('toggleRight')"
+      >
         {{ showRight ? '收起编辑区' : '展开编辑区' }}
         <span class="ml-1">{{ showRight ? '▶' : '◀' }}</span>
       </el-button>
@@ -31,7 +36,7 @@
         :story-detail="storyDetail"
         :version-options="versionOptions"
         :version-select-items="versionSelectItems"
-        @go-back="emit('goBack')"
+        @go-back="handleGoBack"
         @review-success="emit('review-success')"
         @select-line="(line) => emit('select-line', line)"
       />
@@ -67,7 +72,7 @@
         :source-type="sourceType"
         :version-options="versionOptions"
         :version-select-items="versionSelectItems"
-        @go-back="emit('goBack')"
+        @go-back="handleGoBack"
         @review-success="emit('review-success')"
         @select-line="(line) => emit('select-line', line)"
       />
@@ -171,4 +176,16 @@ const selectedVersionKeyComputed = computed({
 const hasAnyData = computed(
   () => !!(props.storyDetail || props.cardDetail || props.currentCategory),
 )
+
+/**
+ * 返回上一级。
+ * 如果当前编辑区是展开的（showRight = true），先一并收起编辑区，
+ * 保证返回后的目标页面不会被右侧编辑区挤压布局。
+ */
+function handleGoBack() {
+  if (props.showRight) {
+    emit('toggleRight')
+  }
+  emit('goBack')
+}
 </script>
