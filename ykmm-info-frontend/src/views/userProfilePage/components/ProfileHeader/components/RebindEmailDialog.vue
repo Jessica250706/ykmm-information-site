@@ -3,11 +3,17 @@
     v-model="visible"
     :close-on-click-modal="false"
     title="换绑邮箱"
-    width="520px"
+    width="min(500px, 92vw)"
     @closed="handleClosed"
   >
-    <!-- 步骤条 -->
-    <el-steps :active="activeStep" class="mb-6!" finish-status="success" align-center>
+    <!-- 步骤条：移动端缩小 -->
+    <el-steps
+      :active="activeStep"
+      :simple="isMobile"
+      class="mb-4! sm:mb-6!"
+      finish-status="success"
+      align-center
+    >
       <el-step title="验证旧邮箱" />
       <el-step title="设置新邮箱" />
     </el-steps>
@@ -22,24 +28,27 @@
         show-icon
       />
 
-      <el-form label-width="96px">
+      <el-form
+        :label-position="isMobile ? 'top' : 'right'"
+        :label-width="isMobile ? 'auto' : '96px'"
+      >
         <el-form-item label="当前邮箱">
           <el-input :model-value="currentEmail" disabled />
         </el-form-item>
 
         <el-form-item label="邮箱验证码" prop="oldCode">
-          <div class="flex w-full items-center justify-between gap-2">
+          <div class="flex w-full flex-col gap-2 sm:flex-row sm:items-center">
             <el-input-otp
               v-model="form.oldCode"
               :length="6"
-              class="min-w-0 flex-1"
+              class="w-full sm:min-w-0 sm:flex-1"
               size="normal"
               @change="handleOldCodeChange"
             />
             <el-button
               :disabled="oldCountdown > 0"
               :loading="sendingOld"
-              class="shrink-0"
+              class="shrink-0 max-sm:w-full"
               @click="handleSendOld"
             >
               {{ oldCodeButtonText }}
@@ -59,24 +68,30 @@
         show-icon
       />
 
-      <el-form ref="formRef" :model="form" :rules="rules" label-width="96px">
+      <el-form
+        ref="formRef"
+        :label-position="isMobile ? 'top' : 'right'"
+        :label-width="isMobile ? 'auto' : '96px'"
+        :model="form"
+        :rules="rules"
+      >
         <el-form-item label="新邮箱" prop="newEmail">
           <el-input v-model.trim="form.newEmail" placeholder="请输入新邮箱" clearable />
         </el-form-item>
 
         <el-form-item label="邮箱验证码" prop="newCode">
-          <div class="flex w-full items-center justify-between gap-2">
+          <div class="flex w-full flex-col gap-2 sm:flex-row sm:items-center">
             <el-input-otp
               v-model="form.newCode"
               :length="6"
-              class="min-w-0 flex-1"
+              class="w-full sm:min-w-0 sm:flex-1"
               size="normal"
               @change="handleNewCodeChange"
             />
             <el-button
               :disabled="newCountdown > 0"
               :loading="sendingNew"
-              class="shrink-0"
+              class="shrink-0 max-sm:w-full"
               @click="handleSendNew"
             >
               {{ newCodeButtonText }}
@@ -87,25 +102,36 @@
     </div>
 
     <template #footer>
-      <el-button @click="visible = false">取消</el-button>
+      <div class="flex justify-end gap-2 max-sm:flex-col-reverse">
+        <el-button class="max-sm:w-full" @click="visible = false">取消</el-button>
 
-      <!-- Step 1：上一步（隐藏） + 下一步 -->
-      <template v-if="activeStep === 0">
-        <el-button
-          :disabled="form.oldCode.length !== 6"
-          :loading="verifyingOld"
-          type="primary"
-          @click="handleNext"
-        >
-          下一步
-        </el-button>
-      </template>
+        <template v-if="activeStep === 0">
+          <el-button
+            :disabled="form.oldCode.length !== 6"
+            :loading="verifyingOld"
+            class="max-sm:w-full ml-0!"
+            type="info"
+            plain
+            @click="handleNext"
+          >
+            下一步
+          </el-button>
+        </template>
 
-      <!-- Step 2：上一步 + 提交 -->
-      <template v-else>
-        <el-button @click="handlePrev">上一步</el-button>
-        <el-button :loading="submitting" type="primary" @click="handleSubmit">确认换绑</el-button>
-      </template>
+        <template v-else>
+          <el-button class="max-sm:w-full ml-0!" type="info" plain @click="handlePrev">
+            上一步
+          </el-button>
+          <el-button
+            :loading="submitting"
+            class="max-sm:w-full ml-0!"
+            type="primary"
+            @click="handleSubmit"
+          >
+            确认换绑
+          </el-button>
+        </template>
+      </div>
     </template>
   </el-dialog>
 </template>
@@ -114,10 +140,12 @@
 import { computed, reactive, ref } from 'vue'
 import { ElMessage } from 'element-plus'
 import { rebindEmailAPI, sendRebindEmailCodeAPI, verifyOldEmailCodeAPI } from '@/api/user'
+import { useIsMobile } from '@/composables/useIsMobile'
 import { useUserStore } from '@/stores'
 import type { FormInstance, FormRules } from 'element-plus'
 
 const userStore = useUserStore()
+const isMobile = useIsMobile()
 
 const visible = ref(false)
 const formRef = ref<FormInstance>()

@@ -42,7 +42,8 @@ public class RedisConstant {
      */
     public static final Long DICT_CACHE_TTL_HOURS = 1L;
 
-    public static final Duration REGISTER_CODE_TTL = Duration.ofMinutes(5);
+    public static final Integer REGISTER_CODE_TTL_MINUTES = 30;
+    public static final Duration REGISTER_CODE_TTL = Duration.ofMinutes(REGISTER_CODE_TTL_MINUTES);
     public static final Duration REGISTER_CODE_SEND_LIMIT = Duration.ofSeconds(60);
 
     /** 缓存 TTL：7 天兜底（正常会有主动更新，TTL 只是防脏数据） */

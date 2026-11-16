@@ -1,17 +1,20 @@
 <template>
-  <div class="flex flex-wrap items-center gap-4 rounded-2xl bg-white p-5 shadow-sm">
-    <el-avatar :size="64" :src="userInfo?.avatar" class="bg-slate-200 text-xl">
+  <div class="flex flex-wrap items-center gap-3 rounded-2xl bg-white p-4 shadow-sm md:gap-4 md:p-5">
+    <el-avatar
+      :src="userInfo?.avatar"
+      class="bg-slate-200 text-lg h-12! w-12! md:text-xl md:h-16! md:w-16!"
+    >
       {{ avatarText }}
     </el-avatar>
 
     <div class="min-w-0 flex-1">
       <div class="flex flex-wrap items-center gap-2">
-        <span class="text-lg font-semibold">{{ displayName }}</span>
+        <span class="truncate text-base font-semibold md:text-lg">{{ displayName }}</span>
         <el-tag :type="isAdmin ? 'danger' : 'primary'" effect="plain" size="small">
           {{ isAdmin ? '管理员' : '普通用户' }}
         </el-tag>
       </div>
-      <div class="mt-1 text-sm text-slate-500">
+      <div class="mt-1 truncate text-sm text-slate-500">
         <span v-if="userInfo?.email">{{ userInfo.email }}</span>
       </div>
       <div v-if="userInfo?.createdAt" class="mt-0.5 text-xs text-slate-400">
@@ -19,23 +22,23 @@
       </div>
     </div>
 
-    <div class="flex items-center gap-2">
-      <el-button plain @click="handleEdit">
-        <el-icon class="mr-1"><Edit /></el-icon>
-        编辑资料
-      </el-button>
+    <!-- ==================== PC 端 ==================== -->
+    <div class="hidden shrink-0 md:block">
+      <UserActionsDropdown :is-admin="isAdmin" @command="handleActionCommand">
+        <el-button plain>
+          <el-icon class="mr-1"><Menu /></el-icon>
+          操作
+        </el-button>
+      </UserActionsDropdown>
+    </div>
 
-      <el-button plain @click="handleRebind">
-        <el-icon class="mr-1"><Message /></el-icon>
-        换绑邮箱
-      </el-button>
-
-      <el-button plain @click="handleChangePassword">
-        <el-icon class="mr-1"><Lock /></el-icon>
-        修改密码
-      </el-button>
-
-      <el-button v-if="isAdmin" plain @click="router.push('/admin')">进入管理端</el-button>
+    <!-- ==================== 移动端 ==================== -->
+    <div class="shrink-0 md:hidden">
+      <UserActionsDropdown :is-admin="isAdmin" @command="handleActionCommand">
+        <el-button size="small" title="操作" circle plain>
+          <el-icon><MoreFilled /></el-icon>
+        </el-button>
+      </UserActionsDropdown>
     </div>
 
     <EditProfileDialog ref="editDialogRef" />
@@ -46,13 +49,14 @@
 
 <script setup lang="ts">
 import { computed, ref } from 'vue'
-import { Edit, Lock, Message } from '@element-plus/icons-vue'
+import { MoreFilled } from '@element-plus/icons-vue'
 import { storeToRefs } from 'pinia'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '@/stores'
 import ChangePasswordDialog from './components/ChangePasswordDialog.vue'
 import EditProfileDialog from './components/EditProfileDialog.vue'
 import RebindEmailDialog from './components/RebindEmailDialog.vue'
+import UserActionsDropdown from './components/UserActionsDropdown.vue'
 
 const router = useRouter()
 const userStore = useUserStore()
@@ -80,5 +84,23 @@ function handleRebind() {
 
 function handleChangePassword() {
   changePasswordDialogRef.value?.open()
+}
+
+/** PC + 移动端共用的下拉命令分发 */
+function handleActionCommand(cmd: string) {
+  switch (cmd) {
+    case 'edit':
+      handleEdit()
+      break
+    case 'rebind':
+      handleRebind()
+      break
+    case 'password':
+      handleChangePassword()
+      break
+    case 'admin':
+      void router.push('/admin')
+      break
+  }
 }
 </script>

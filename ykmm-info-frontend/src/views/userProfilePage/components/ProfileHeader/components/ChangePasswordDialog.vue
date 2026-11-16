@@ -3,7 +3,7 @@
     v-model="visible"
     :close-on-click-modal="false"
     title="修改密码"
-    width="500px"
+    width="min(500px, 92vw)"
     @closed="handleClosed"
   >
     <el-tabs v-model="mode">
@@ -11,10 +11,11 @@
       <el-tab-pane label="原密码修改" name="password">
         <el-form
           ref="passwordFormRef"
+          :label-position="isMobile ? 'top' : 'right'"
+          :label-width="isMobile ? 'auto' : '100px'"
           :model="passwordForm"
           :rules="passwordRules"
           class="mt-2!"
-          label-width="100px"
         >
           <el-form-item label="原密码" prop="oldPassword">
             <el-input
@@ -55,19 +56,25 @@
           show-icon
         />
 
-        <el-form ref="codeFormRef" :model="codeForm" :rules="codeRules" label-width="100px">
+        <el-form
+          ref="codeFormRef"
+          :label-position="isMobile ? 'top' : 'right'"
+          :label-width="isMobile ? 'auto' : '100px'"
+          :model="codeForm"
+          :rules="codeRules"
+        >
           <el-form-item label="邮箱验证码" prop="code">
-            <div class="flex w-full items-center justify-between gap-2">
+            <div class="flex w-full flex-col gap-2 sm:flex-row sm:items-center">
               <el-input-otp
                 v-model="codeForm.code"
                 :length="6"
-                class="min-w-0 flex-1"
+                class="w-full sm:min-w-0 sm:flex-1"
                 size="normal"
               />
               <el-button
                 :disabled="countdown > 0"
                 :loading="sendingCode"
-                class="shrink-0"
+                class="shrink-0 max-sm:w-full"
                 @click="handleSendCode"
               >
                 {{ codeButtonText }}
@@ -108,12 +115,15 @@ import { computed, reactive, ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { useRouter } from 'vue-router'
 import { changePasswordAPI, resetPasswordByCodeAPI, sendResetPasswordCodeAPI } from '@/api/user'
+import { useIsMobile } from '@/composables/useIsMobile'
 import { CommonRouteName } from '@/constants'
 import { useUserStore } from '@/stores'
 import type { FormInstance, FormRules } from 'element-plus'
 
 const router = useRouter()
 const userStore = useUserStore()
+
+const isMobile = useIsMobile()
 
 type Mode = 'password' | 'code'
 

@@ -1,5 +1,6 @@
 package com.xq.service.impl;
 
+import com.xq.constant.RedisConstant;
 import com.xq.service.MailService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -26,7 +27,7 @@ public class MailServiceImpl implements MailService {
     @Override
     public void sendRegisterCode(String to, String code) {
         String subject = "注册验证码";
-        String text = "您正在注册账号，验证码为：" + code + "，5分钟内有效。请勿泄露给他人。";
+        String text = "您正在注册ykmm-site的账号，验证码为：" + code + "，" + RedisConstant.REGISTER_CODE_TTL_MINUTES + "分钟内有效。请勿泄露给他人。";
         doSend(to, subject, text, "注册验证码");
     }
 
@@ -38,9 +39,8 @@ public class MailServiceImpl implements MailService {
     @Async("mailExecutor")
     @Override
     public void sendEmailCode(String to, String code, String title) {
-        String subject = title;
-        String text = "您正在进行「" + title + "」操作，验证码为：" + code + "，5分钟内有效。请勿泄露给他人。";
-        doSend(to, subject, text, title);
+        String text = "您正在进行「" + title + "」操作，验证码为：" + code + "，" + RedisConstant.REGISTER_CODE_TTL_MINUTES + "分钟内有效。请勿泄露给他人。";
+        doSend(to, title, text, title);
     }
 
     /**

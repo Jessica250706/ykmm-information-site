@@ -4,7 +4,9 @@
       <template #header>
         <div class="text-center">
           <h1 class="text-xl font-semibold text-slate-800">注册</h1>
-          <p class="mt-1 text-sm text-slate-500">创建一个账号，开启你的旅程</p>
+          <p class="mt-1 text-sm text-slate-500">
+            为了保障信息安全， 最好不要使用您的常用账户和常用密码进行注册
+          </p>
         </div>
       </template>
 
@@ -45,6 +47,7 @@
               {{ codeButtonText }}
             </el-button>
           </div>
+          <p class="mt-1 text-xs text-slate-400">若发现没有收到验证码邮件，可以检查垃圾邮件</p>
         </el-form-item>
 
         <el-form-item label="昵称" prop="nickname">

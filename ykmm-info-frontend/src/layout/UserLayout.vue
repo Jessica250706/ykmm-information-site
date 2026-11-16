@@ -64,7 +64,7 @@
             >
               <div
                 :class="isActive('/profile') ? 'theme-pill-active' : 'hover:bg-slate-100'"
-                class="flex cursor-pointer items-center gap-2 rounded-full py-1 pl-1 pr-2 transition"
+                class="flex cursor-pointer items-center gap-2 rounded-full py-1 pl-1 pr-1 sm:pr-2 transition"
               >
                 <el-badge :hidden="!hasUnread" :max="99" :value="unreadCount" class="avatar-badge">
                   <el-avatar :size="28" :src="userInfo?.avatar" class="bg-slate-200! text-xs!">
