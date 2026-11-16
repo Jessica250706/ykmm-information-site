@@ -12,6 +12,7 @@
     c.first_pool_time AS firstPoolTime,
     c.attribute,
     c.skill_desc AS skillDesc,
+    c.contributor,
     c.attached_story_type AS attachedStoryType,
     c.costume_type AS costumeType,
     c.chibi_id AS chibiId,
@@ -103,11 +104,11 @@
   <insert id="insert" parameterType="com.xq.entity.Card"
           useGeneratedKeys="true" keyProperty="id">
     INSERT INTO card (name, series_id, category, max_rarity, first_pool_time,
-                      attribute, skill_desc, attached_story_type,
+                      attribute, skill_desc, contributor, attached_story_type,
                       costume_type, chibi_id, costume_id,
                       status, creator_id)
     VALUES (#{name}, #{seriesId}, #{category}, #{maxRarity}, #{firstPoolTime},
-            #{attribute}, #{skillDesc}, #{attachedStoryType},
+            #{attribute}, #{skillDesc}, #{contributor}, #{attachedStoryType},
             #{costumeType}, #{chibiId}, #{costumeId},
             #{status}, #{creatorId})
   </insert>
@@ -122,6 +123,7 @@
       <if test="firstPoolTime != null">first_pool_time = #{firstPoolTime},</if>
       <if test="attribute != null">attribute = #{attribute},</if>
       <if test="skillDesc != null">skill_desc = #{skillDesc},</if>
+      <if test="contributor != null">contributor = #{contributor},</if>
       <if test="attachedStoryType != null">attached_story_type = #{attachedStoryType},</if>
       <if test="costumeType != null">costume_type = #{costumeType},</if>
       <if test="chibiId != null">chibi_id = #{chibiId},</if>

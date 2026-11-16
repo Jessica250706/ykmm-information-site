@@ -55,7 +55,10 @@
 
       <div class="flex justify-between gap-3">
         <dt class="shrink-0 text-slate-400">贡献者</dt>
-        <dd class="truncate text-right">{{ card.creatorName || '未知' }}</dd>
+        <dd class="truncate text-right">
+          {{ card.creatorName || '未知' }}
+          <span v-if="card.contributor">（创建者）、{{ card.contributor }}</span>
+        </dd>
       </div>
     </dl>
   </div>

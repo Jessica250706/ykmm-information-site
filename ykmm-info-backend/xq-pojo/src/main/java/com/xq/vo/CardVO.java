@@ -67,6 +67,10 @@ public class CardVO implements Serializable {
      */
     private String skillDesc;
     /**
+     * 贡献者信息
+     */
+    private String contributor;
+    /**
      * 附属剧情类型
      */
     private Integer attachedStoryType;

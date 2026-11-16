@@ -123,6 +123,18 @@
           />
         </el-form-item>
 
+        <el-form-item label="贡献者" prop="contributor">
+          <el-input
+            v-model="form.contributor"
+            maxlength="255"
+            placeholder="可选，如：小白（图源）、小A（基本信息）"
+            show-word-limit
+          />
+          <div class="mt-1 text-xs text-slate-400">
+            多位贡献者用顿号或逗号分隔，标注每人贡献的内容
+          </div>
+        </el-form-item>
+
         <!-- -------- 卡面图片 -------- -->
         <el-divider content-position="left">卡面图片</el-divider>
 
@@ -185,6 +197,7 @@ const form = reactive<CardDTO>({
   attachedStoryType: undefined,
   costumeType: undefined,
   personIds: [],
+  contributor: '',
 })
 
 /** 每种图片类型独立的 URL 列表 */
@@ -284,6 +297,7 @@ async function loadDetail() {
   form.attachedStoryType = data.attachedStoryType
   form.costumeType = data.costumeType
   form.personIds = (data.persons ?? []).map((p) => p.personId!).filter((id) => id != null)
+  form.contributor = data.contributor
 
   // 清空后按类型填一张
   Object.keys(imageMap).forEach((k) => {

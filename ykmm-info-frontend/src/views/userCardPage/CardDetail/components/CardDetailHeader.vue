@@ -4,7 +4,9 @@
     <div class="flex min-w-0 items-center gap-2 sm:gap-3">
       <el-button class="shrink-0" @click="emit('back')">
         <span class="hidden sm:inline">← 返回</span>
-        <el-icon class="sm:hidden"><ArrowLeft /></el-icon>
+        <span class="sm:hidden">
+          <el-icon><ArrowLeft /></el-icon>
+        </span>
       </el-button>
 
       <h1 class="min-w-0 truncate text-base font-semibold sm:text-xl">

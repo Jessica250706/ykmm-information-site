@@ -78,6 +78,10 @@ export interface CardVO {
    */
   chibiId?: number
   /**
+   * 贡献者信息
+   */
+  contributor?: string
+  /**
    * 造型ID
    */
   costumeId?: number

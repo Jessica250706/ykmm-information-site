@@ -86,7 +86,15 @@ public class CardDTO implements Serializable {
     private String skillDesc;
 
     /**
-     * 附属剧情类型：0无 1RC 2RTV 3Rabbiter
+     * 贡献者信息（可选）
+     * <p>多来源时用顿号分隔，如"小白（图源）、小A（基本信息）"。
+     * 新增/编辑均可为 null（不填写）。
+     */
+    @Size(max = 255, message = "贡献者信息长度不能超过 255", groups = {CreateGroup.class, UpdateGroup.class})
+    private String contributor;
+
+    /**
+     * 附属剧情类型：0无 1RC 2RTV 3Rabitter
      */
     @EnumValue(enumClass = DialogueSourceTypeEnum.class, nullable = true,
             message = "附属剧情类型不合法",

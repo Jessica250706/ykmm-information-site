@@ -44,7 +44,10 @@ public class Card implements Serializable {
     /** 魅力技能描述 */
     private String skillDesc;
 
-    /** 0无 1RC 2RTV 3Rabbiter */
+    /** 贡献者信息：多来源时用顿号分隔，如"小白（图源）、小A（基本信息）" */
+    private String contributor;
+
+    /** 0无 1RC 2RTV 3Rabitter */
     private Integer attachedStoryType;
 
     /** 0无 1偶像小人 2 3D造型 */
