@@ -7,10 +7,11 @@
       </el-empty>
     </div>
 
-    <!-- 详情 -->
-    <el-scrollbar v-else class="min-h-0 flex-1">
-      <article class="mx-auto max-w-3xl px-4 py-4 sm:px-8 sm:py-6">
-        <header class="border-b pb-4">
+    <!-- 详情：header 固定 + 内容滚动 -->
+    <template v-else>
+      <!-- 固定标题区 -->
+      <header class="shrink-0 border-b mb-4">
+        <div class="mx-auto max-w-3xl px-4 pb-4 pt-4 sm:px-8 sm:pt-6">
           <!-- 标题行：标题 + 移动端打开抽屉按钮 -->
           <div class="flex items-start justify-between gap-3">
             <h1
@@ -49,12 +50,16 @@
               <span>浏览 {{ notice.viewCount ?? 0 }}</span>
             </div>
           </div>
-        </header>
+        </div>
+      </header>
 
-        <!-- 富文本内容 -->
-        <RichContent :html="notice.content" class="mt-6" />
-      </article>
-    </el-scrollbar>
+      <!-- 滚动内容区：仅内容部分滚动 -->
+      <el-scrollbar class="min-h-0 flex-1">
+        <article class="mx-auto max-w-3xl px-3 py-0 sm:px-4 sm:py-2">
+          <RichContent :html="notice.content" />
+        </article>
+      </el-scrollbar>
+    </template>
   </NoticePanel>
 </template>
 
